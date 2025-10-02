@@ -48,6 +48,15 @@ class SocialService {
     }
   }
 
+  // Toggle follow user
+  static Future<void> toggleFollowUser(String userId, String currentUserId) async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 300));
+    } catch (e) {
+      throw Exception('Failed to toggle follow: $e');
+    }
+  }
+
   // Posts
   static Future<List<SocialPost>> getFeed(String userId) async {
     try {
