@@ -17,13 +17,13 @@ class StoryViewer extends StatefulWidget {
 }
 
 class _StoryViewerState extends State<StoryViewer> {
-  late StoryItemController _controller;
+  // StoryItemController not available
   int _currentStoryIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _controller = StoryItemController();
+    // No controller needed
   }
 
   @override

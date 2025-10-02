@@ -91,15 +91,15 @@ class LeaderboardItem extends StatelessWidget {
                       ),
                     ),
                     // isVerified not in model
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.verified,
-                        size: 14,
-                        color: Colors.blue,
-                      ),
-                    ],
-                  ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.verified,
+                      size: 14,
+                      color: Colors.blue,
+                    ),
+                  ],
                 ),
+              ],
                 const SizedBox(height: 2),
                 Text(
                   'Score: ${entry.score}',
