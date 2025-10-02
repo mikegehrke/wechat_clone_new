@@ -184,7 +184,7 @@ class Match {
 
 class SwipeAction {
   final String targetUserId;
-  final SwipeType type;
+  final DatingSwipeType type;
   final DateTime timestamp;
 
   SwipeAction({
@@ -196,9 +196,9 @@ class SwipeAction {
   factory SwipeAction.fromJson(Map<String, dynamic> json) {
     return SwipeAction(
       targetUserId: json['targetUserId'],
-      type: SwipeType.values.firstWhere(
-        (e) => e.toString() == 'SwipeType.${json['type']}',
-        orElse: () => SwipeType.like,
+      type: DatingSwipeType.values.firstWhere(
+        (e) => e.toString() == 'DatingSwipeType.${json['type']}',
+        orElse: () => DatingSwipeType.like,
       ),
       timestamp: DateTime.parse(json['timestamp']),
     );
