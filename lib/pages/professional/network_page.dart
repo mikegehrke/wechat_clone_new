@@ -144,7 +144,7 @@ class _NetworkPageState extends State<NetworkPage> with SingleTickerProviderStat
               radius: 30,
               backgroundColor: Colors.blue[100],
               child: Text(
-                profile.name[0],
+                profile.firstName[0],
                 style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
@@ -154,21 +154,21 @@ class _NetworkPageState extends State<NetworkPage> with SingleTickerProviderStat
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    profile.name,
+                    '${profile.firstName} ${profile.lastName}',
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    profile.jobTitle,
+                    profile.headline,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
                     ),
                   ),
                   Text(
-                    profile.company,
+                    profile.currentCompany,
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[500],
@@ -204,7 +204,7 @@ class _NetworkPageState extends State<NetworkPage> with SingleTickerProviderStat
     });
     
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Connected with ${profile.name}')),
+      SnackBar(content: Text('Connected with ${profile.firstName} ${profile.lastName}')),
     );
   }
 }

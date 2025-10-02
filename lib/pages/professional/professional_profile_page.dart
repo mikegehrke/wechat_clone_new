@@ -97,7 +97,7 @@ class _ProfessionalProfilePageState extends State<ProfessionalProfilePage> with 
                 radius: 50,
                 backgroundColor: Colors.white,
                 child: Text(
-                  _profile.name[0].toUpperCase(),
+                  _profile.firstName[0].toUpperCase(),
                   style: const TextStyle(
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
@@ -107,7 +107,7 @@ class _ProfessionalProfilePageState extends State<ProfessionalProfilePage> with 
               ),
               const SizedBox(height: 16),
               Text(
-                _profile.name,
+                '${_profile.firstName} ${_profile.lastName}',
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -116,7 +116,7 @@ class _ProfessionalProfilePageState extends State<ProfessionalProfilePage> with 
               ),
               const SizedBox(height: 8),
               Text(
-                _profile.jobTitle,
+                _profile.headline,
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.white70,
@@ -124,7 +124,7 @@ class _ProfessionalProfilePageState extends State<ProfessionalProfilePage> with 
               ),
               const SizedBox(height: 4),
               Text(
-                _profile.company,
+                _profile.currentCompany,
                 style: const TextStyle(
                   fontSize: 14,
                   color: Colors.white70,
@@ -141,7 +141,7 @@ class _ProfessionalProfilePageState extends State<ProfessionalProfilePage> with 
                   ),
                   const SizedBox(width: 24),
                   _buildStatButton(
-                    '${_profile.postsCount}',
+                    '0', // Posts count not in model
                     'Posts',
                     () {},
                   ),
@@ -158,8 +158,8 @@ class _ProfessionalProfilePageState extends State<ProfessionalProfilePage> with 
                       foregroundColor: const Color(0xFF0077B5),
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     ),
-                    icon: Icon(_profile.isConnected ? Icons.check : Icons.person_add),
-                    label: Text(_profile.isConnected ? 'Connected' : 'Connect'),
+                    icon: const Icon(Icons.person_add),
+                    label: const Text('Connect'),
                   ),
                   const SizedBox(width: 12),
                   OutlinedButton.icon(
@@ -220,7 +220,7 @@ class _ProfessionalProfilePageState extends State<ProfessionalProfilePage> with 
         ),
         const SizedBox(height: 12),
         Text(
-          _profile.bio,
+          _profile.summary,
           style: const TextStyle(
             fontSize: 14,
             height: 1.6,
@@ -259,7 +259,7 @@ class _ProfessionalProfilePageState extends State<ProfessionalProfilePage> with 
         const SizedBox(height: 20),
         _buildExperienceItem(
           'Senior Software Engineer',
-          _profile.company,
+          _profile.currentCompany,
           'Jan 2022 - Present',
           'Leading development of mobile applications and mentoring junior developers.',
         ),
@@ -418,15 +418,12 @@ class _ProfessionalProfilePageState extends State<ProfessionalProfilePage> with 
   }
 
   void _connect() {
-    setState(() {
-      _profile = _profile.copyWith(isConnected: !_profile.isConnected);
-    });
-    
+    // In real app, would update connection status
     ProfessionalService.toggleConnect(_profile.id, 'demo_user_1');
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_profile.isConnected ? 'Connected' : 'Disconnected'),
+        content: const Text('Connection request sent'),
       ),
     );
   }

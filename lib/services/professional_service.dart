@@ -12,6 +12,17 @@ class ProfessionalService {
     }
   }
 
+  // Get connection suggestions
+  static Future<List<ProfessionalProfile>> getConnectionSuggestions(String userId) async {
+    try {
+      // In real app, fetch from backend
+      await Future.delayed(const Duration(milliseconds: 500));
+      return List.generate(5, (i) => _createMockProfile('suggestion_$i'));
+    } catch (e) {
+      throw Exception('Failed to get connection suggestions: $e');
+    }
+  }
+
   // Get professional profile
   static Future<ProfessionalProfile?> getProfile(String userId) async {
     try {

@@ -447,7 +447,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Position: ${_job.title}'),
-            Text('Company: ${_job.company}'),
+            Text('Company: ${_job.companyName}'),
             const SizedBox(height: 16),
             const Text('Your resume and profile will be sent to the employer.'),
           ],
