@@ -2,6 +2,15 @@ import 'dart:math';
 import '../models/social.dart';
 
 class SocialService {
+  // Toggle like on post
+  static Future<void> toggleLikePost(String postId, String userId) async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 300));
+    } catch (e) {
+      throw Exception('Failed to toggle like: $e');
+    }
+  }
+
   // Posts
   static Future<List<SocialPost>> getFeed(String userId) async {
     try {

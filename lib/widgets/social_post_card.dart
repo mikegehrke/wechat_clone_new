@@ -3,20 +3,20 @@ import '../models/social.dart';
 
 class SocialPostCard extends StatelessWidget {
   final SocialPost post;
-  final VoidCallback onTap;
-  final VoidCallback onLike;
-  final VoidCallback onComment;
-  final VoidCallback onShare;
-  final VoidCallback onBookmark;
+  final VoidCallback? onTap;
+  final VoidCallback? onLike;
+  final VoidCallback? onComment;
+  final VoidCallback? onShare;
+  final VoidCallback? onBookmark;
 
   const SocialPostCard({
     super.key,
     required this.post,
-    required this.onTap,
-    required this.onLike,
-    required this.onComment,
-    required this.onShare,
-    required this.onBookmark,
+    this.onTap,
+    this.onLike,
+    this.onComment,
+    this.onShare,
+    this.onBookmark,
   });
 
   @override
