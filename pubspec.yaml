@@ -79,7 +79,6 @@ dependencies:
   # Real Image Processing
   image: ^4.1.3
   # Video Editing (CapCut-style)
-  ffmpeg_kit_flutter: ^6.0.3
   # video_editor: ^2.0.0
   # flutter_ffmpeg: ^0.4.2  # Deprecated, use ffmpeg_kit_flutter instead
   # Audio Processing
