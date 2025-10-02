@@ -663,11 +663,12 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
     if (transaction is WalletTransaction) {
       paymentTx = PaymentTransaction(
         id: transaction.id,
+        userId: 'demo_user_1',
         amount: transaction.amount,
         type: transaction.type == 'credit' ? 'received' : 'sent',
         status: 'completed', // Default for wallet transactions
-        createdAt: transaction.date,
-        description: transaction.title,
+        createdAt: transaction.createdAt,
+        description: transaction.description,
         fee: 0,
       );
     } else {

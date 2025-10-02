@@ -20,7 +20,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
   void initState() {
     super.initState();
     _job = widget.job;
-    _isSaved = _job.isSaved;
+    _isSaved = false; // Track save state locally
   }
 
   @override
@@ -62,7 +62,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                       ),
                       child: Center(
                         child: Text(
-                          _job.company[0].toUpperCase(),
+                          _job.companyName[0].toUpperCase(),
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
@@ -85,7 +85,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            _job.company,
+                            _job.companyName,
                             style: TextStyle(
                               fontSize: 16,
                               color: Colors.grey[700],
@@ -121,10 +121,10 @@ class _JobDetailPageState extends State<JobDetailPage> {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _buildInfoChip(Icons.work_outline, _job.type),
-                    _buildInfoChip(Icons.trending_up, _job.level),
-                    if (_job.salary.isNotEmpty)
-                      _buildInfoChip(Icons.attach_money, _job.salary),
+                    _buildInfoChip(Icons.work_outline, _job.jobType),
+                    _buildInfoChip(Icons.trending_up, _job.experienceLevel),
+                    if (_job.salaryMin != null && _job.salaryMax != null)
+                      _buildInfoChip(Icons.attach_money, '\$${_job.salaryMin!.toInt()}k - \$${_job.salaryMax!.toInt()}k'),
                     _buildInfoChip(
                       Icons.calendar_today,
                       'Posted ${_formatPostedTime(_job.postedDate)}',
@@ -180,7 +180,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: _job.skills.map((skill) => Chip(
+                  children: _job.requirements.map((skill) => Chip(
                     label: Text(skill),
                     backgroundColor: Colors.blue[50],
                     labelStyle: TextStyle(

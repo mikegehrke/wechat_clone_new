@@ -2,6 +2,16 @@ import 'dart:math';
 import '../models/professional.dart';
 
 class ProfessionalService {
+  // Toggle save job
+  static Future<void> toggleSaveJob(String jobId, String userId) async {
+    try {
+      // In real app, save to backend
+      await Future.delayed(const Duration(milliseconds: 300));
+    } catch (e) {
+      throw Exception('Failed to toggle save job: $e');
+    }
+  }
+
   // Get professional profile
   static Future<ProfessionalProfile?> getProfile(String userId) async {
     try {

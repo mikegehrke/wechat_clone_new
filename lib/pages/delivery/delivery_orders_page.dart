@@ -226,7 +226,7 @@ class _DeliveryOrdersPageState extends State<DeliveryOrdersPage> with SingleTick
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        item.name,
+                        item.foodItem.name,
                         style: const TextStyle(fontSize: 14),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

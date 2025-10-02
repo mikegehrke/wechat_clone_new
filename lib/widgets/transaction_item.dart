@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/payment.dart';
 
 class TransactionItem extends StatelessWidget {
-  final WalletTransaction transaction;
+  final dynamic transaction; // Can be WalletTransaction or PaymentTransaction
   final VoidCallback? onTap;
 
   const TransactionItem({
