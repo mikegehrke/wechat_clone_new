@@ -108,7 +108,7 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
                           spacing: 12,
                           runSpacing: 8,
                           children: [
-                            _buildMetaChip(Icons.calendar_today, '${_series.releaseYear}'),
+                            _buildMetaChip(Icons.calendar_today, '${_series.year}'),
                             _buildMetaChip(Icons.live_tv, '${_series.seasons} Seasons'),
                             _buildMetaChip(Icons.star, _series.rating.toStringAsFixed(1)),
                             ..._series.genres.take(2).map((genre) => _buildGenreChip(genre)),
@@ -288,7 +288,7 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
           const SizedBox(height: 16),
           _buildDetailRow('Creator', 'John Doe'),
           _buildDetailRow('Genres', _series.genres.join(', ')),
-          _buildDetailRow('Release Year', _series.releaseYear.toString()),
+          _buildDetailRow('Release Year', _series.year.toString()),
           _buildDetailRow('Seasons', _series.seasons.toString()),
           _buildDetailRow('Status', 'Ongoing'),
 
@@ -555,18 +555,22 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
   }
 
   void _playEpisode(int episodeNumber) {
-    final video = StreamingVideo(
+    final video = VideoContent(
       id: '${_series.id}_s${_selectedSeason}_e$episodeNumber',
       title: '${_series.title} - S$_selectedSeason E$episodeNumber',
       description: 'Episode $episodeNumber description',
       thumbnailUrl: _series.posterUrl,
       videoUrl: '',
-      duration: const Duration(minutes: 45),
+      channelName: _series.creator,
+      channelAvatar: '',
       views: 0,
-      rating: _series.rating,
-      uploadDate: DateTime.now(),
-      isLiked: false,
-      isInWatchlist: _isInWatchlist,
+      likes: 0,
+      dislikes: 0,
+      comments: 0,
+      publishedAt: DateTime.now(),
+      duration: const Duration(minutes: 45),
+      tags: _series.genres,
+      category: _series.genres.isNotEmpty ? _series.genres.first : 'Series',
     );
 
     Navigator.push(

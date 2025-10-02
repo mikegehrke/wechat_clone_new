@@ -5,12 +5,14 @@ class SocialUserCard extends StatelessWidget {
   final SocialUser user;
   final VoidCallback? onTap;
   final VoidCallback? onFollow;
+  final VoidCallback? onMessage;
 
   const SocialUserCard({
     super.key,
     required this.user,
     this.onTap,
     this.onFollow,
+    this.onMessage,
   });
 
   @override

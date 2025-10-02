@@ -108,7 +108,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                     spacing: 12,
                     runSpacing: 8,
                     children: [
-                      _buildMetaChip(Icons.calendar_today, _movie.releaseYear.toString()),
+                      _buildMetaChip(Icons.calendar_today, _movie.year.toString()),
                       _buildMetaChip(Icons.access_time, _formatDuration(_movie.duration)),
                       _buildMetaChip(Icons.star, _movie.rating.toStringAsFixed(1)),
                       ..._movie.genres.take(2).map((genre) => _buildGenreChip(genre)),
@@ -360,19 +360,23 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   }
 
   void _playMovie() {
-    // Convert Movie to StreamingVideo for player
-    final video = StreamingVideo(
+    // Convert Movie to VideoContent for player
+    final video = VideoContent(
       id: _movie.id,
       title: _movie.title,
       description: _movie.description,
       thumbnailUrl: _movie.posterUrl,
-      videoUrl: '',
-      duration: _movie.duration,
+      videoUrl: _movie.videoUrl,
+      channelName: _movie.director,
+      channelAvatar: '',
       views: 0,
-      rating: _movie.rating,
-      uploadDate: DateTime.now(),
-      isLiked: false,
-      isInWatchlist: _isInWatchlist,
+      likes: 0,
+      dislikes: 0,
+      comments: 0,
+      publishedAt: DateTime.now(),
+      duration: _movie.duration,
+      tags: _movie.genres,
+      category: _movie.genres.isNotEmpty ? _movie.genres.first : 'Movie',
     );
 
     Navigator.push(

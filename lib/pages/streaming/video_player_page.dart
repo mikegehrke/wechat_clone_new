@@ -5,7 +5,7 @@ import 'package:video_player/video_player.dart';
 import '../../models/streaming.dart';
 
 class VideoPlayerPage extends StatefulWidget {
-  final StreamingVideo video;
+  final VideoContent video;
 
   const VideoPlayerPage({super.key, required this.video});
 

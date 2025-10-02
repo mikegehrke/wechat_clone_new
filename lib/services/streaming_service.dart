@@ -2,6 +2,15 @@ import 'dart:math';
 import '../models/streaming.dart';
 
 class StreamingService {
+  // Toggle watchlist
+  static Future<void> toggleWatchlist(String videoId, String userId) async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 300));
+    } catch (e) {
+      throw Exception('Failed to toggle watchlist: $e');
+    }
+  }
+
   // Get trending videos
   static Future<List<VideoContent>> getTrendingVideos() async {
     try {

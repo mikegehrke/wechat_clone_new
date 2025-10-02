@@ -5,12 +5,16 @@ class SocialEventCard extends StatelessWidget {
   final SocialEvent event;
   final VoidCallback? onTap;
   final VoidCallback? onJoin;
+  final VoidCallback? onAttend;
+  final VoidCallback? onInterested;
 
   const SocialEventCard({
     super.key,
     required this.event,
     this.onTap,
     this.onJoin,
+    this.onAttend,
+    this.onInterested,
   });
 
   @override
