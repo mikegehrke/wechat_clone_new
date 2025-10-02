@@ -359,7 +359,14 @@ class _SocialChatPageState extends State<SocialChatPage> {
 
       _scrollToBottom();
 
-      await SocialService.sendMessage(message);
+      await SocialService.sendMessage(
+        chatId: message.chatId,
+        senderId: message.senderId,
+        senderName: message.senderName,
+        senderAvatar: message.senderAvatar,
+        content: message.content,
+        type: message.type,
+      );
     } catch (e) {
       _messageController.text = messageText;
       setState(() => _isSending = false);

@@ -315,7 +315,7 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_event.isJoined ? 'You joined the event' : 'You left the event'),
+            content: const Text('Event action completed'),
             backgroundColor: const Color(0xFF07C160),
           ),
         );
