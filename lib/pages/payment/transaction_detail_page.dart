@@ -118,7 +118,7 @@ class TransactionDetailPage extends StatelessWidget {
           const SizedBox(height: 32),
           
           // Actions
-          if (transaction.status == TransactionStatus.completed) ...[
+          if (transaction.status == 'completed') ...[
             SizedBox(
               width: double.infinity,
               height: 48,
@@ -249,31 +249,35 @@ class TransactionDetailPage extends StatelessWidget {
 
   Color _getStatusColor() {
     switch (transaction.status) {
-      case TransactionStatus.completed:
+      case 'completed':
         return Colors.green;
-      case TransactionStatus.pending:
+      case 'pending':
         return Colors.orange;
-      case TransactionStatus.failed:
+      case 'failed':
         return Colors.red;
-      case TransactionStatus.cancelled:
+      case 'cancelled':
         return Colors.grey;
-      case TransactionStatus.refunded:
+      case 'refunded':
         return Colors.blue;
+      default:
+        return Colors.grey;
     }
   }
 
   IconData _getStatusIcon() {
     switch (transaction.status) {
-      case TransactionStatus.completed:
+      case 'completed':
         return Icons.check_circle;
-      case TransactionStatus.pending:
+      case 'pending':
         return Icons.schedule;
-      case TransactionStatus.failed:
+      case 'failed':
         return Icons.error;
-      case TransactionStatus.cancelled:
+      case 'cancelled':
         return Icons.cancel;
-      case TransactionStatus.refunded:
+      case 'refunded':
         return Icons.undo;
+      default:
+        return Icons.help_outline;
     }
   }
 
