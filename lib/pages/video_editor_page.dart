@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
 import '../widgets/video_timeline.dart';
 import '../widgets/video_tools_panel.dart';
