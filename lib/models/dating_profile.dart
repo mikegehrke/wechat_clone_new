@@ -13,7 +13,6 @@ class DatingProfile {
   final String lookingFor;
   final bool isVerified;
   final DateTime lastActive;
-  final List<String> photos; // Multiple photos for swiping
 
   DatingProfile({
     required this.id,

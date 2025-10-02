@@ -1,4 +1,5 @@
 // App-weite Grundlagen Models
+import 'package:flutter/material.dart';
 
 class UserAccount {
   final String id;
