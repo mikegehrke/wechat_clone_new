@@ -306,7 +306,7 @@ class PushNotificationsService {
     required List<int> daysOfWeek,
   }) async {
     try {
-      _settings['quietHoursEnabled'] = true;
+      _settings['quietHoursEnabled'] = 'true';
       _settings['quietHoursStart'] = '${startTime.hour}:${startTime.minute}';
       _settings['quietHoursEnd'] = '${endTime.hour}:${endTime.minute}';
       _settings['quietHoursDays'] = daysOfWeek.join(',');

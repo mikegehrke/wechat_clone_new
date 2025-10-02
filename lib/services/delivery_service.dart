@@ -466,11 +466,9 @@ class DeliveryService {
         paymentMethod: PaymentMethod(
           id: 'pm_1',
           type: 'card',
-          cardNumber: '4242',
-          cardBrand: 'visa',
+          lastFourDigits: '4242',
+          brand: 'visa',
           isDefault: true,
-          isVerified: true,
-          createdAt: DateTime.now(),
         ),
         status: OrderStatus.pending,
         createdAt: DateTime.now(),

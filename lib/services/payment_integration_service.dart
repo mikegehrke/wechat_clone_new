@@ -1,6 +1,6 @@
 import '../models/payment.dart';
-import '../models/delivery.dart';
-import '../models/product.dart';
+import '../models/delivery.dart' as delivery;
+import '../models/product.dart' as product;
 import '../models/game.dart';
 import '../models/streaming.dart';
 import '../models/professional.dart';
@@ -9,7 +9,7 @@ import 'payment_service.dart';
 class PaymentIntegrationService {
   // E-commerce Payment Integration
   static Future<PaymentTransaction> payForShopping({
-    required List<CartItem> cartItems,
+    required List<product.CartItem> cartItems,
     required String paymentMethodId,
     required String shippingAddress,
     required String userId,

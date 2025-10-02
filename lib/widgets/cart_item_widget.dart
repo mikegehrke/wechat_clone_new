@@ -73,7 +73,7 @@ class CartItemWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.product.name,
+                    item.product.title,
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -82,10 +82,10 @@ class CartItemWidget extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   
-                  if (item.selectedVariant != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      'Variant: ${item.selectedVariant}',
+                  // item doesn't have selectedVariant
+                  const SizedBox(height: 4),
+                  Text(
+                    'Size: Default',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[600],
@@ -219,6 +219,10 @@ class CartItemWidget extends StatelessWidget {
           color: enabled ? Colors.black : Colors.grey[400],
         ),
       ),
+    );
+  }
+}
+     ),
     );
   }
 }
