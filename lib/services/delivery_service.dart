@@ -420,4 +420,46 @@ class DeliveryService {
     ];
     return colors[Random().nextInt(colors.length)];
   }
+
+  // Place order
+  static Future<DeliveryOrder> placeOrder({
+    required String userId,
+    required String restaurantId,
+    required List<CartItem> items,
+    required String deliveryAddress,
+    String? deliveryInstructions,
+    required String paymentMethod,
+    double tip = 0.0,
+  }) async {
+    try {
+      // In real app, send order to backend API
+      await Future.delayed(const Duration(seconds: 2)); // Simulate API call
+      
+      final subtotal = items.fold(0.0, (sum, item) => sum + (item.foodItem.price * item.quantity));
+      final deliveryFee = 2.99;
+      final tax = subtotal * 0.08;
+      final total = subtotal + deliveryFee + tax + tip;
+      
+      return DeliveryOrder(
+        id: 'order_${DateTime.now().millisecondsSinceEpoch}',
+        userId: userId,
+        restaurantId: restaurantId,
+        restaurantName: 'Restaurant Name', // In real app, fetch from restaurant
+        items: items,
+        subtotal: subtotal,
+        deliveryFee: deliveryFee,
+        tax: tax,
+        tip: tip,
+        total: total,
+        status: OrderStatus.pending,
+        createdAt: DateTime.now(),
+        estimatedDeliveryTime: DateTime.now().add(const Duration(minutes: 30)),
+        deliveryAddress: deliveryAddress,
+        deliveryInstructions: deliveryInstructions,
+        paymentMethod: paymentMethod,
+      );
+    } catch (e) {
+      throw Exception('Failed to place order: $e');
+    }
+  }
 }
