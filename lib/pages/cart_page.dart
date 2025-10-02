@@ -112,8 +112,13 @@ class _CartPageState extends State<CartPage> {
                 padding: const EdgeInsets.only(bottom: 16),
                 child: CartItemWidget(
                   item: item,
-                  onQuantityChanged: (newQuantity) {
-                    _updateQuantity(item.id, newQuantity);
+                  onIncrease: () {
+                    _updateQuantity(item.id, item.quantity + 1);
+                  },
+                  onDecrease: () {
+                    if (item.quantity > 1) {
+                      _updateQuantity(item.id, item.quantity - 1);
+                    }
                   },
                   onRemove: () {
                     _removeItem(item.id);
