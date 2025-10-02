@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import '../models/payment.dart';
 import '../services/payment_service.dart';
 import '../widgets/payment_method_card.dart';
-import '../widgets/transaction_item.dart';
 import '../widgets/wallet_balance_card.dart';
+import '../widgets/transaction_item.dart';
 import '../widgets/subscription_card.dart';
-import 'add_payment_method_page.dart';
-import 'send_money_page.dart';
-import 'request_money_page.dart';
-import 'transaction_detail_page.dart';
+import 'payment/add_payment_method_page.dart';
+import 'payment/send_money_page.dart';
+import 'payment/request_money_page.dart';
+import 'payment/transaction_detail_page.dart';
 
 class PaymentPage extends StatefulWidget {
   const PaymentPage({super.key});
@@ -656,11 +656,29 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
     );
   }
 
-  void _navigateToTransactionDetail(PaymentTransaction transaction) {
+  void _navigateToTransactionDetail(dynamic transaction) {
+    // Convert WalletTransaction to PaymentTransaction if needed
+    PaymentTransaction paymentTx;
+    
+    if (transaction is WalletTransaction) {
+      paymentTx = PaymentTransaction(
+        id: transaction.id,
+        userId: transaction.userId,
+        amount: transaction.amount,
+        type: transaction.type == 'credit' ? TransactionType.received : TransactionType.sent,
+        status: TransactionStatus.completed, // Default for wallet transactions
+        timestamp: transaction.timestamp,
+        description: transaction.description,
+        fee: 0,
+      );
+    } else {
+      paymentTx = transaction as PaymentTransaction;
+    }
+    
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => TransactionDetailPage(transaction: transaction),
+        builder: (context) => TransactionDetailPage(transaction: paymentTx),
       ),
     );
   }
