@@ -93,26 +93,13 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
   }
 
   Future<void> _pickVideo() async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.video,
-        allowMultiple: false,
-      );
-
-      if (result != null && result.files.isNotEmpty) {
-        final filePath = result.files.first.path;
-        if (filePath != null) {
-          await _loadVideo(filePath);
-        }
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to pick video: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    // FilePicker removed - use image_picker or camera instead
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Video picker not implemented yet'),
+        backgroundColor: Colors.orange,
+      ),
+    );
   }
 
   void _togglePlayPause() {
@@ -188,33 +175,13 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
   }
 
   void _showAudioPicker() async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.audio,
-        allowMultiple: false,
-      );
-
-      if (result != null && result.files.isNotEmpty) {
-        final filePath = result.files.first.path;
-        if (filePath != null) {
-          setState(() {
-            _audioTracks.add(AudioTrack(
-              id: DateTime.now().millisecondsSinceEpoch.toString(),
-              filePath: filePath,
-              startTime: _currentPosition,
-              volume: 1.0,
-            ));
-          });
-        }
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to pick audio: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    // FilePicker removed - audio picker not implemented yet
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Audio picker not implemented yet'),
+        backgroundColor: Colors.orange,
+      ),
+    );
   }
 
   Future<void> _exportVideo() async {
