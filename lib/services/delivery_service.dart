@@ -403,7 +403,7 @@ class DeliveryService {
   }
 
   static List<String> _getAllergens(String item) {
-    final allergens = {
+    final allergens = <String, List<String>>{
       'Margherita Pizza': ['Gluten', 'Dairy'],
       'Chicken Burger': ['Gluten', 'Eggs'],
       'Caesar Salad': ['Dairy', 'Gluten'],

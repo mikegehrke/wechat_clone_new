@@ -223,6 +223,22 @@ class CartItem {
     };
   }
 
+  CartItem copyWith({
+    String? id,
+    FoodItem? foodItem,
+    int? quantity,
+    List<String>? customizations,
+    String? specialInstructions,
+  }) {
+    return CartItem(
+      id: id ?? this.id,
+      foodItem: foodItem ?? this.foodItem,
+      quantity: quantity ?? this.quantity,
+      customizations: customizations ?? this.customizations,
+      specialInstructions: specialInstructions ?? this.specialInstructions,
+    );
+  }
+
   double get totalPrice {
     return foodItem.price * quantity;
   }
