@@ -33,9 +33,9 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
             flexibleSpace: FlexibleSpaceBar(
-              background: _event.imageUrl.isNotEmpty
+              background: (_event.imageUrl?.isNotEmpty ?? false)
                   ? Image.network(
-                      _event.imageUrl,
+                      _event.imageUrl!,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(
                         color: Colors.blue[100],
@@ -70,7 +70,7 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
                 children: [
                   // Event name
                   Text(
-                    _event.name,
+                    _event.title,
                     style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -82,7 +82,7 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
                   _buildInfoRow(
                     Icons.calendar_today,
                     'Date & Time',
-                    _formatDateTime(_event.startTime, _event.endTime),
+                    _formatDateTime(_event.startDate, _event.endDate),
                   ),
                   
                   // Location
@@ -117,7 +117,7 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
                         ),
                       ),
                       Text(
-                        '${_event.attendeesCount} going',
+                        '${_event.attendees.length} going',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -133,7 +133,7 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
                     height: 60,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
-                      itemCount: _event.attendeesCount.clamp(0, 10),
+                      itemCount: _event.attendees.length.clamp(0, 10),
                       itemBuilder: (context, index) {
                         return Padding(
                           padding: const EdgeInsets.only(right: 12),
@@ -207,12 +207,8 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _toggleJoin,
               style: ElevatedButton.styleFrom(
-                backgroundColor: _event.isJoined
-                    ? Colors.grey[300]
-                    : const Color(0xFF07C160),
-                foregroundColor: _event.isJoined
-                    ? Colors.black
-                    : Colors.white,
+                backgroundColor: const Color(0xFF07C160),
+                foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -227,7 +223,7 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
                       ),
                     )
                   : Text(
-                      _event.isJoined ? 'Leave Event' : 'Join Event',
+                      'Join Event',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -309,15 +305,10 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
     setState(() => _isLoading = true);
 
     try {
-      await SocialService.toggleJoinEvent(_event.id, 'demo_user_1');
+      // In real app, would toggle join status
+      await Future.delayed(const Duration(milliseconds: 500));
       
       setState(() {
-        _event = _event.copyWith(
-          isJoined: !_event.isJoined,
-          attendeesCount: _event.isJoined 
-              ? _event.attendeesCount - 1 
-              : _event.attendeesCount + 1,
-        );
         _isLoading = false;
       });
 
