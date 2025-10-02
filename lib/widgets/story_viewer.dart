@@ -95,8 +95,7 @@ class _StoryViewerState extends State<StoryViewer> {
   }
 
   Widget _buildPollStoryItem(Story story) {
-    return StoryItem(
-      Container(
+    return Container(
         decoration: BoxDecoration(
           image: DecorationImage(
             image: NetworkImage(story.contentUrl),

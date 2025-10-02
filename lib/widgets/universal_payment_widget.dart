@@ -57,7 +57,7 @@ class _UniversalPaymentWidgetState extends State<UniversalPaymentWidget> {
         _paymentMethods = methods;
         _selectedPaymentMethod = methods.firstWhere(
           (method) => method.isDefault,
-          orElse: () => methods.isNotEmpty ? methods.first : null,
+          orElse: () => methods.first,
         );
         _isLoading = false;
       });
