@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../../models/delivery.dart';
 import '../../services/delivery_service.dart';
 
+// Type alias for clarity
+typedef Order = DeliveryOrder;
+
 class DeliveryOrdersPage extends StatefulWidget {
   const DeliveryOrdersPage({super.key});
 
@@ -319,7 +322,7 @@ class _DeliveryOrdersPageState extends State<DeliveryOrdersPage> with SingleTick
         text = 'Picked Up';
         icon = Icons.delivery_dining;
         break;
-      case OrderStatus.onTheWay:
+      case OrderStatus.delivering:
         color = Colors.amber;
         text = 'On the Way';
         icon = Icons.local_shipping;
@@ -419,7 +422,7 @@ class _DeliveryOrdersPageState extends State<DeliveryOrdersPage> with SingleTick
     VoidCallback onPressed;
     
     switch (order.status) {
-      case OrderStatus.onTheWay:
+      case OrderStatus.delivering:
         text = 'Track';
         onPressed = () => _trackOrder(order);
         break;
