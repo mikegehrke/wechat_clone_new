@@ -287,7 +287,7 @@ class GameService {
   }
 
   static List<GameAchievement> _createMockAchievements(String gameId) {
-    final achievements = [
+    final achievements = <Map<String, dynamic>>[
       {'title': 'First Steps', 'description': 'Complete the tutorial', 'points': 10},
       {'title': 'Speed Demon', 'description': 'Complete a level in under 30 seconds', 'points': 25},
       {'title': 'Perfectionist', 'description': 'Get 3 stars on all levels', 'points': 50},
@@ -296,10 +296,10 @@ class GameService {
     ];
     
     return achievements.map((ach) => GameAchievement(
-      id: 'achievement_${ach['title']!.toLowerCase().replaceAll(' ', '_')}',
+      id: 'achievement_${(ach['title'] as String).toLowerCase().replaceAll(' ', '_')}',
       gameId: gameId,
-      title: ach['title']!,
-      description: ach['description']!,
+      title: ach['title'] as String,
+      description: ach['description'] as String,
       iconUrl: 'https://via.placeholder.com/64x64/${_getRandomColor()}/FFFFFF?text=🏆',
       points: ach['points'] as int,
       isUnlocked: Random().nextBool(),

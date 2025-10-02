@@ -88,9 +88,9 @@ class _MatchDialogState extends State<MatchDialog>
                     
                     const SizedBox(height: 16),
                     
-                    const Text(
+                    Text(
                       'You and ${widget.profile.name} liked each other!',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         color: Colors.grey,
                       ),
