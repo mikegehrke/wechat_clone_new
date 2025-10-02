@@ -13,6 +13,49 @@ class PaymentService {
     }
   }
 
+  // Request money from users
+  static Future<void> requestMoney({
+    required String fromUserId,
+    required List<String> toUserIds,
+    required double amount,
+    required String reason,
+  }) async {
+    try {
+      // In real app, create payment request in backend
+      await Future.delayed(const Duration(seconds: 1));
+      // Success
+    } catch (e) {
+      throw Exception('Failed to request money: $e');
+    }
+  }
+
+  // Get payment methods for user
+  static Future<List<PaymentMethod>> getPaymentMethods(String userId) async {
+    try {
+      // In real app, fetch from backend
+      await Future.delayed(const Duration(milliseconds: 500));
+      return [
+        PaymentMethod(
+          id: 'pm_1',
+          type: 'card',
+          cardNumber: '•••• 4242',
+          cardBrand: 'Visa',
+          isDefault: true,
+          createdAt: DateTime.now(),
+        ),
+        PaymentMethod(
+          id: 'pm_2',
+          type: 'paypal',
+          paypalEmail: 'user@example.com',
+          isDefault: false,
+          createdAt: DateTime.now(),
+        ),
+      ];
+    } catch (e) {
+      throw Exception('Failed to get payment methods: $e');
+    }
+  }
+
   // Stripe Payment Methods
   static Future<PaymentMethod> createStripePaymentMethod({
     required String cardNumber,

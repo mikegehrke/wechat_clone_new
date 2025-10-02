@@ -99,7 +99,7 @@ class _RequestMoneyPageState extends State<RequestMoneyPage> {
     await Future.delayed(const Duration(milliseconds: 300));
 
     final results = _contacts.where((user) =>
-      user.name.toLowerCase().contains(query.toLowerCase()) ||
+      user.username.toLowerCase().contains(query.toLowerCase()) ||
       user.email.toLowerCase().contains(query.toLowerCase())
     ).toList();
 
@@ -234,11 +234,11 @@ class _RequestMoneyPageState extends State<RequestMoneyPage> {
                               avatar: CircleAvatar(
                                 backgroundColor: Colors.blue[100],
                                 child: Text(
-                                  user.name[0].toUpperCase(),
+                                  user.username[0].toUpperCase(),
                                   style: const TextStyle(fontSize: 12),
                                 ),
                               ),
-                              label: Text(user.name),
+                              label: Text(user.username),
                               onDeleted: () {
                                 setState(() => _selectedUsers.remove(user));
                               },
@@ -353,7 +353,7 @@ class _RequestMoneyPageState extends State<RequestMoneyPage> {
                     ),
             ),
             title: Text(
-              user.name,
+              user.username,
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             subtitle: Text(user.email),
@@ -398,7 +398,7 @@ class _RequestMoneyPageState extends State<RequestMoneyPage> {
             const SizedBox(height: 8),
             ..._selectedUsers.map((user) => Padding(
               padding: const EdgeInsets.only(bottom: 4),
-              child: Text('• ${user.name}'),
+              child: Text('• ${user.username}'),
             )),
             const SizedBox(height: 12),
             Text('For: $reason'),

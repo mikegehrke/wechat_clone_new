@@ -68,27 +68,27 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
     return [
       User(
         id: 'user_1',
-        name: 'Sarah Johnson',
+        username: 'Sarah Johnson',
         email: 'sarah@example.com',
-        phone: '+1234567890',
+        phoneNumber: '+1234567890',
         avatar: '',
-        createdAt: DateTime.now(),
+        lastSeen: DateTime.now(),
       ),
       User(
         id: 'user_2',
-        name: 'Michael Chen',
+        username: 'Michael Chen',
         email: 'michael@example.com',
-        phone: '+1234567891',
+        phoneNumber: '+1234567891',
         avatar: '',
-        createdAt: DateTime.now(),
+        lastSeen: DateTime.now(),
       ),
       User(
         id: 'user_3',
-        name: 'Emma Wilson',
+        username: 'Emma Wilson',
         email: 'emma@example.com',
-        phone: '+1234567892',
+        phoneNumber: '+1234567892',
         avatar: '',
-        createdAt: DateTime.now(),
+        lastSeen: DateTime.now(),
       ),
     ];
   }
