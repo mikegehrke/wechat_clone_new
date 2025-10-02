@@ -101,7 +101,7 @@ class _FoodItemDetailPageState extends State<FoodItemDetailPage> {
                             _buildBadge('Vegetarian', Colors.green, Icons.eco),
                           if (widget.item.isSpicy)
                             _buildBadge('Spicy', Colors.red, Icons.local_fire_department),
-                          if (widget.item.isPopular)
+                          if (widget.item.rating >= 4.5)
                             _buildBadge('Popular', Colors.orange, Icons.star),
                         ],
                       ),

@@ -433,9 +433,9 @@ class _GameDetailPageState extends State<GameDetailPage> with TickerProviderStat
         final review = _reviews[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
-          child: GameReviewItem(
-            review: review,
-            onHelpful: () {
+                  child: GameReviewItem(
+                    review: review,
+                    onLike: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Marked as helpful')),
               );
@@ -497,11 +497,6 @@ class _GameDetailPageState extends State<GameDetailPage> with TickerProviderStat
           padding: const EdgeInsets.only(bottom: 16),
           child: GameAchievementItem(
             achievement: achievement,
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${achievement.title}: ${achievement.description}')),
-              );
-            },
           ),
         );
       },
@@ -557,13 +552,9 @@ class _GameDetailPageState extends State<GameDetailPage> with TickerProviderStat
         final entry = _leaderboard!.entries[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
-          child: LeaderboardItem(
-            entry: entry,
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('${entry.username}: ${entry.formattedScore} points')),
-              );
-            },
+                  child: LeaderboardItem(
+                    entry: entry,
+                    rank: index + 1,
           ),
         );
       },

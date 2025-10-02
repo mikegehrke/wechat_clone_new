@@ -17,7 +17,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   bool _isProcessing = false;
 
   double get _subtotal => widget.cartItems.fold(
-    0, (sum, item) => sum + (item.price * item.quantity));
+    0, (sum, item) => sum + (item.product.price * item.quantity));
   double get _shipping => 5.99;
   double get _tax => _subtotal * 0.08;
   double get _total => _subtotal + _shipping + _tax;
@@ -146,8 +146,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
         children: [
           Text('${item.quantity}x', style: const TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(width: 8),
-          Expanded(child: Text(item.product.name)),
-          Text('\$${(item.price * item.quantity).toStringAsFixed(2)}'),
+          Expanded(child: Text(item.product.title)),
+          Text('\$${(item.product.price * item.quantity).toStringAsFixed(2)}'),
         ],
       ),
     );
