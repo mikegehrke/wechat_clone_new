@@ -5,7 +5,7 @@ import '../widgets/restaurant_card.dart';
 import '../widgets/cuisine_filter.dart';
 import '../widgets/delivery_search_bar.dart';
 import 'restaurant_detail_page.dart';
-import 'delivery_orders_page.dart';
+import 'delivery/delivery_orders_page.dart';
 
 class DeliveryPage extends StatefulWidget {
   const DeliveryPage({super.key});
@@ -340,7 +340,7 @@ class _DeliveryPageState extends State<DeliveryPage> with TickerProviderStateMix
       'Lebanese': Icons.local_bar,
       'Brazilian': Icons.local_activity,
       'Ethiopian': Icons.local_grocery_store,
-      'Caribbean': Icons.local_beach_access,
+      'Caribbean': Icons.beach_access,
       'German': Icons.local_gas_station,
       'Spanish': Icons.local_hotel,
       'British': Icons.local_library,
