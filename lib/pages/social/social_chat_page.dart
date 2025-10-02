@@ -252,7 +252,7 @@ class _SocialChatPageState extends State<SocialChatPage> {
     );
   }
 
-  Widget _buildMessageBubble(Message message, bool isMe, bool showAvatar) {
+  Widget _buildMessageBubble(SocialMessage message, bool isMe, bool showAvatar) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -350,7 +350,6 @@ class _SocialChatPageState extends State<SocialChatPage> {
         createdAt: DateTime.now(),
         type: MessageType.text,
         isRead: false,
-        status: msg.MessageStatus.sent,
       );
 
       setState(() {
