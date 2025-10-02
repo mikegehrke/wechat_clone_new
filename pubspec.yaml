@@ -56,7 +56,8 @@ dependencies:
   flame: ^1.15.0
   # Streaming
   chewie: ^1.7.4
-  youtube_player_flutter: ^8.1.2
+  # youtube_player_flutter: ^8.1.2  # Temporarily disabled - causes build issues
+  youtube_player_iframe: ^5.1.2  # Updated YouTube player without webview issues
   # Real-time Database
   firebase_core: ^3.6.0
   cloud_firestore: ^5.4.4
