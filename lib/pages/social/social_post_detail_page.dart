@@ -15,7 +15,7 @@ class SocialPostDetailPage extends StatefulWidget {
 class _SocialPostDetailPageState extends State<SocialPostDetailPage> {
   late SocialPost _post;
   final _commentController = TextEditingController();
-  List<PostComment> _comments = [];
+  List<SocialComment> _comments = [];
   bool _isLoadingComments = false;
   bool _isPostingComment = false;
 
@@ -174,7 +174,7 @@ class _SocialPostDetailPageState extends State<SocialPostDetailPage> {
                     ),
                   )
                 else
-                  ..._comments.map((comment) => _buildCommentItem(comment)),
+                  ..._comments.map((comment) => _buildCommentItem(comment)).cast<Widget>(),
               ],
             ),
           ),
@@ -256,7 +256,7 @@ class _SocialPostDetailPageState extends State<SocialPostDetailPage> {
             radius: 20,
             backgroundColor: Colors.blue[100],
             child: Text(
-              comment.userName[0].toUpperCase(),
+              comment.authorName[0].toUpperCase(),
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
@@ -275,7 +275,7 @@ class _SocialPostDetailPageState extends State<SocialPostDetailPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        comment.userName,
+                        comment.authorName,
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -414,7 +414,7 @@ class _SocialPostDetailPageState extends State<SocialPostDetailPage> {
   }
 
   void _replyToComment(SocialComment comment) {
-    _commentController.text = '@${comment.userName} ';
+    _commentController.text = '@${comment.authorName} ';
   }
 
   void _sharePost() {

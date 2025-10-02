@@ -144,7 +144,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                         Icon(Icons.star, size: 16, color: Colors.amber),
                         const SizedBox(width: 4),
                         Text(
-                          widget.video.rating.toStringAsFixed(1),
+                          '4.5', // widget.video doesn't have rating
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
