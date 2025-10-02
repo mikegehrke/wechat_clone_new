@@ -44,7 +44,7 @@ class PaymentIntegrationService {
 
   // Food Delivery Payment Integration
   static Future<PaymentTransaction> payForDelivery({
-    required DeliveryOrder order,
+    required delivery.DeliveryOrder order,
     required String paymentMethodId,
     required String userId,
   }) async {
