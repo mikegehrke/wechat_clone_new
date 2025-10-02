@@ -49,7 +49,7 @@ class FoodItemCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (item.isPopular)
+                      if (item.rating >= 4.5)
                         _buildBadge('Popular', Colors.orange, Icons.local_fire_department),
                       if (item.isVegetarian)
                         _buildBadge('Veg', Colors.green, Icons.eco),
@@ -60,7 +60,7 @@ class FoodItemCard extends StatelessWidget {
                 ),
                 
                 // Discount badge
-                if (item.discount > 0)
+                // Discount not in model
                   Positioned(
                     top: 8,
                     right: 8,
@@ -71,7 +71,7 @@ class FoodItemCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        '${item.discount}% OFF',
+                        // '10% OFF',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 11,
@@ -129,7 +129,7 @@ class FoodItemCard extends StatelessWidget {
                       Icon(Icons.access_time, size: 12, color: Colors.grey[600]),
                       const SizedBox(width: 4),
                       Text(
-                        '${item.prepTime} min',
+                        '20-30 min',
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[600],
@@ -155,9 +155,9 @@ class FoodItemCard extends StatelessWidget {
                               color: Color(0xFF07C160),
                             ),
                           ),
-                          if (item.originalPrice > item.price)
+                          // Original price not in model
                             Text(
-                              '\$${item.originalPrice.toStringAsFixed(2)}',
+                              // '\$10.99',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey[600],

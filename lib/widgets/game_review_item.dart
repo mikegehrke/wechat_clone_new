@@ -32,7 +32,7 @@ class GameReviewItem extends StatelessWidget {
                 radius: 20,
                 backgroundColor: Colors.blue[100],
                 child: Text(
-                  review.userName[0].toUpperCase(),
+                  review.username[0].toUpperCase(),
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.blue,
@@ -45,7 +45,7 @@ class GameReviewItem extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      review.userName,
+                      review.username,
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
@@ -68,7 +68,7 @@ class GameReviewItem extends StatelessWidget {
                   ],
                 ),
               ),
-              if (review.isVerifiedPurchase)
+              if (review.isVerified)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
@@ -92,7 +92,7 @@ class GameReviewItem extends StatelessWidget {
           
           // Review text
           Text(
-            review.comment,
+            review.review,
             style: const TextStyle(
               fontSize: 14,
               height: 1.5,
