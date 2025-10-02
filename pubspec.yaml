@@ -78,14 +78,14 @@ dependencies:
   image: ^4.1.3
   # Video Editing (CapCut-style)
   ffmpeg_kit_flutter: ^6.0.3
-  video_editor: ^2.0.0
-  flutter_ffmpeg: ^0.4.2
+  # video_editor: ^2.0.0
+  # flutter_ffmpeg: ^0.4.2  # Deprecated, use ffmpeg_kit_flutter instead
   # Audio Processing
   audioplayers: ^5.2.1
   audio_waveforms: ^1.0.5
   # Advanced Video Features
-  flutter_gl: ^0.0.8
-  opencv_dart: ^1.0.4
+  # flutter_gl: ^0.0.8  # Experimental
+  # opencv_dart: ^1.0.4  # Too heavy, optional
   # File Management
   path: ^1.8.3
   mime: ^1.0.4
@@ -94,10 +94,11 @@ dependencies:
   flutter_slider_drawer: ^2.1.1
   # Instagram Stories & Reels
   story_view: ^0.16.0
-  instagram_stories: ^0.0.1
+  # instagram_stories: ^0.0.1  # Package doesn't exist
   # Dating Features (Tinder-style)
-  flutter_swiper: ^1.1.6
-  flutter_tindercard: ^0.1.0
+  # flutter_swiper: ^1.1.6  # Deprecated
+  flutter_card_swiper: ^7.0.1
+  # flutter_tindercard: ^0.1.0  # Not maintained
   dio: ^5.3.2
   # Real-time Features
   # Advanced UI
