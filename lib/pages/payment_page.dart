@@ -375,7 +375,7 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: TransactionItem(
-            transaction: transaction,
+            transaction: transaction as PaymentTransaction,
             onTap: () => _navigateToTransactionDetail(transaction),
           ),
         );
@@ -663,12 +663,11 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
     if (transaction is WalletTransaction) {
       paymentTx = PaymentTransaction(
         id: transaction.id,
-        userId: transaction.userId,
         amount: transaction.amount,
-        type: transaction.type == 'credit' ? TransactionType.received : TransactionType.sent,
-        status: TransactionStatus.completed, // Default for wallet transactions
-        timestamp: transaction.timestamp,
-        description: transaction.description,
+        type: transaction.type == 'credit' ? 'received' : 'sent',
+        status: 'completed', // Default for wallet transactions
+        createdAt: transaction.date,
+        description: transaction.title,
         fee: 0,
       );
     } else {

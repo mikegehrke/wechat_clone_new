@@ -283,31 +283,35 @@ class TransactionDetailPage extends StatelessWidget {
 
   String _getStatusText() {
     switch (transaction.status) {
-      case TransactionStatus.completed:
+      case 'completed':
         return 'Completed';
-      case TransactionStatus.pending:
+      case 'pending':
         return 'Pending';
-      case TransactionStatus.failed:
+      case 'failed':
         return 'Failed';
-      case TransactionStatus.cancelled:
+      case 'cancelled':
         return 'Cancelled';
-      case TransactionStatus.refunded:
+      case 'refunded':
         return 'Refunded';
+      default:
+        return 'Unknown';
     }
   }
 
   String _getTypeText() {
     switch (transaction.type) {
-      case TransactionType.sent:
+      case 'sent':
         return 'Money Sent';
-      case TransactionType.received:
+      case 'received':
         return 'Money Received';
-      case TransactionType.payment:
+      case 'payment':
         return 'Payment';
-      case TransactionType.refund:
+      case 'refund':
         return 'Refund';
-      case TransactionType.withdrawal:
+      case 'withdrawal':
         return 'Withdrawal';
+      default:
+        return 'Transaction';
     }
   }
 
