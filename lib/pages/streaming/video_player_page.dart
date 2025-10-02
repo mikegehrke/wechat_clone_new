@@ -24,8 +24,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   void initState() {
     super.initState();
     _initializePlayer();
-    _isLiked = widget.video.isLiked;
-    _isInWatchlist = widget.video.isInWatchlist;
+    // _isLiked and _isInWatchlist already initialized to false
   }
 
   Future<void> _initializePlayer() async {

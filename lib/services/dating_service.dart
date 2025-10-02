@@ -24,7 +24,7 @@ class DatingService {
   static Future<bool> swipeProfile({
     required String userId,
     required String targetUserId,
-    required SwipeType swipeType,
+    required DatingSwipeType swipeType,
   }) async {
     try {
       // Record swipe action
@@ -36,7 +36,7 @@ class DatingService {
       });
 
       // Check for mutual like
-      if (swipeType == SwipeType.like || swipeType == SwipeType.superLike) {
+      if (swipeType == DatingSwipeType.like || swipeType == DatingSwipeType.superLike) {
         final mutualSwipe = await _firestore
             .collection('swipes')
             .where('userId', isEqualTo: targetUserId)
