@@ -101,8 +101,8 @@ class GameReviewItem extends StatelessWidget {
           
           const SizedBox(height: 12),
           
-          // Play time badge
-          if (review.playTime > 0)
+          // Play time badge (not in model)
+          // if (review.playTime > 0)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
@@ -115,7 +115,7 @@ class GameReviewItem extends StatelessWidget {
                   Icon(Icons.access_time, size: 12, color: Colors.grey[600]),
                   const SizedBox(width: 4),
                   Text(
-                    '${review.playTime} hours played',
+                    '50 hours played',
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.grey[600],
@@ -133,14 +133,14 @@ class GameReviewItem extends StatelessWidget {
               TextButton.icon(
                 onPressed: onLike,
                 icon: Icon(
-                  review.isHelpful ? Icons.thumb_up : Icons.thumb_up_outlined,
+                  false ? Icons.thumb_up : Icons.thumb_up_outlined,
                   size: 16,
-                  color: review.isHelpful ? const Color(0xFF07C160) : Colors.grey,
+                  color: false ? const Color(0xFF07C160) : Colors.grey,
                 ),
                 label: Text(
                   'Helpful${review.helpfulCount > 0 ? ' (${review.helpfulCount})' : ''}',
                   style: TextStyle(
-                    color: review.isHelpful ? const Color(0xFF07C160) : Colors.grey[700],
+                    color: false ? const Color(0xFF07C160) : Colors.grey[700],
                     fontSize: 13,
                   ),
                 ),

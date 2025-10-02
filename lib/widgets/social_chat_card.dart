@@ -31,20 +31,7 @@ class SocialChatCard extends StatelessWidget {
                 ),
               ),
             ),
-            if (chat.isOnline)
-              Positioned(
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  width: 14,
-                  height: 14,
-                  decoration: BoxDecoration(
-                    color: Colors.green,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                ),
-              ),
+            // isOnline not in model
           ],
         ),
         title: Row(
@@ -61,7 +48,7 @@ class SocialChatCard extends StatelessWidget {
               ),
             ),
             Text(
-              _formatTime(chat.lastMessageTime),
+              _formatTime(chat.lastMessageAt ?? DateTime.now()),
               style: TextStyle(
                 fontSize: 12,
                 color: chat.unreadCount > 0
@@ -76,17 +63,10 @@ class SocialChatCard extends StatelessWidget {
         ),
         subtitle: Row(
           children: [
-            if (chat.lastMessageIsRead)
-              Icon(
-                Icons.done_all,
-                size: 14,
-                color: Colors.blue[300],
-              ),
-            if (chat.lastMessageIsRead)
-              const SizedBox(width: 4),
+            // lastMessageIsRead not in model
             Expanded(
               child: Text(
-                chat.lastMessage,
+                chat.lastMessageContent ?? 'No messages',
                 style: TextStyle(
                   color: chat.unreadCount > 0
                       ? Colors.black87

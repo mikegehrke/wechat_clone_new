@@ -255,7 +255,7 @@ class SocialPostCard extends StatelessWidget {
     required IconData icon,
     required String label,
     required Color color,
-    required VoidCallback onTap,
+    VoidCallback? onTap,
     int? count,
   }) {
     return InkWell(

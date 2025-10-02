@@ -3,7 +3,7 @@ import '../models/product.dart';
 import 'rating_stars.dart';
 
 class ReviewItem extends StatelessWidget {
-  final ProductReview review;
+  final Review review;
   final VoidCallback? onLike;
   final VoidCallback? onReport;
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart';
+import 'package:carousel_slider/carousel_slider.dart' as carousel;
 
 class ProductImageCarousel extends StatefulWidget {
   final List<String> images;
@@ -17,7 +17,7 @@ class ProductImageCarousel extends StatefulWidget {
 
 class _ProductImageCarouselState extends State<ProductImageCarousel> {
   int _currentIndex = 0;
-  final CarouselController _carouselController = CarouselController();
+  final carousel.CarouselController _carouselController = carousel.CarouselController();
 
   @override
   Widget build(BuildContext context) {

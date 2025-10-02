@@ -31,11 +31,11 @@ class SocialEventCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Event image
-            if (event.imageUrl.isNotEmpty)
+            if (event.imageUrl?.isNotEmpty ?? false)
               AspectRatio(
                 aspectRatio: 16 / 9,
                 child: Image.network(
-                  event.imageUrl,
+                  event.imageUrl!,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) => Container(
                     color: Colors.grey[300],
@@ -59,7 +59,7 @@ class SocialEventCard extends StatelessWidget {
                 children: [
                   // Event name
                   Text(
-                    event.name,
+                    event.title,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -75,7 +75,7 @@ class SocialEventCard extends StatelessWidget {
                       Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
                       const SizedBox(width: 8),
                       Text(
-                        _formatDate(event.startTime),
+                        _formatDate(event.startDate),
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[700],
@@ -111,7 +111,7 @@ class SocialEventCard extends StatelessWidget {
                       _buildAttendeeAvatars(),
                       const SizedBox(width: 8),
                       Text(
-                        '${event.attendeesCount} going',
+                        '${event.attendees.length} going',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[700],
@@ -125,10 +125,10 @@ class SocialEventCard extends StatelessWidget {
                         ElevatedButton(
                           onPressed: onJoin,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: event.isJoined
+                            backgroundColor: false
                                 ? Colors.grey[300]
                                 : const Color(0xFF07C160),
-                            foregroundColor: event.isJoined
+                            foregroundColor: false
                                 ? Colors.black
                                 : Colors.white,
                             padding: const EdgeInsets.symmetric(
@@ -139,7 +139,7 @@ class SocialEventCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(20),
                             ),
                           ),
-                          child: Text(event.isJoined ? 'Joined' : 'Join'),
+                          child: const Text('Join'),
                         ),
                     ],
                   ),
@@ -154,9 +154,9 @@ class SocialEventCard extends StatelessWidget {
 
   Widget _buildAttendeeAvatars() {
     const maxAvatars = 3;
-    final displayCount = event.attendeesCount > maxAvatars
+    final displayCount = event.attendees.length > maxAvatars
         ? maxAvatars
-        : event.attendeesCount;
+        : event.attendees.length;
     
     return SizedBox(
       width: displayCount * 24.0,

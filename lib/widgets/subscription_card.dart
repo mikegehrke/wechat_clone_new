@@ -48,7 +48,7 @@ class SubscriptionCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          subscription.serviceName,
+                          subscription.planName,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -84,7 +84,7 @@ class SubscriptionCard extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        _formatDate(subscription.nextBillingDate),
+                        _formatDate(subscription.nextBillingDate ?? DateTime.now()),
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -93,7 +93,7 @@ class SubscriptionCard extends StatelessWidget {
                     ],
                   ),
                   Text(
-                    '\$${subscription.amount.toStringAsFixed(2)}',
+                    '\$${subscription.price.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -102,7 +102,7 @@ class SubscriptionCard extends StatelessWidget {
                   ),
                 ],
               ),
-              if (onCancel != null && subscription.status == SubscriptionStatus.active) ...[
+              if (onCancel != null && subscription.status == 'active') ...[
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
@@ -127,25 +127,29 @@ class SubscriptionCard extends StatelessWidget {
     String text;
 
     switch (subscription.status) {
-      case SubscriptionStatus.active:
+      case 'active':
         color = Colors.green;
         text = 'Active';
         break;
-      case SubscriptionStatus.paused:
+      case 'paused':
         color = Colors.orange;
         text = 'Paused';
         break;
-      case SubscriptionStatus.cancelled:
+      case 'cancelled':
         color = Colors.red;
         text = 'Cancelled';
         break;
-      case SubscriptionStatus.expired:
+      case 'expired':
         color = Colors.grey;
         text = 'Expired';
         break;
-      case SubscriptionStatus.trial:
+      case 'trial':
         color = Colors.blue;
         text = 'Trial';
+        break;
+      default:
+        color = Colors.grey;
+        text = 'Unknown';
         break;
     }
 
@@ -168,7 +172,7 @@ class SubscriptionCard extends StatelessWidget {
   }
 
   String _getPlanText() {
-    final interval = subscription.billingInterval;
+    final interval = subscription.billingCycle;
     return '${interval[0].toUpperCase()}${interval.substring(1)}ly Plan';
   }
 
@@ -182,7 +186,7 @@ class SubscriptionCard extends StatelessWidget {
 
   Color _getServiceColor() {
     // You can customize colors based on service name
-    switch (subscription.serviceName.toLowerCase()) {
+    switch (subscription.planName.toLowerCase()) {
       case 'netflix':
         return Colors.red;
       case 'spotify':
@@ -197,7 +201,7 @@ class SubscriptionCard extends StatelessWidget {
   }
 
   IconData _getServiceIcon() {
-    switch (subscription.serviceName.toLowerCase()) {
+    switch (subscription.planName.toLowerCase()) {
       case 'netflix':
       case 'disney+':
       case 'hulu':

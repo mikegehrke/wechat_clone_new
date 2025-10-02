@@ -31,13 +31,13 @@ class SocialUserCard extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 30,
-                    backgroundImage: user.avatar.isNotEmpty
-                        ? NetworkImage(user.avatar)
+                    backgroundImage: user.avatarUrl.isNotEmpty
+                        ? NetworkImage(user.avatarUrl)
                         : null,
                     backgroundColor: Colors.blue[100],
-                    child: user.avatar.isEmpty
+                    child: user.avatarUrl.isEmpty
                         ? Text(
-                            user.name[0].toUpperCase(),
+                            user.displayName[0].toUpperCase(),
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
@@ -45,7 +45,7 @@ class SocialUserCard extends StatelessWidget {
                           )
                         : null,
                   ),
-                  if (user.isOnline)
+                  // isOnline not in model
                     Positioned(
                       right: 0,
                       bottom: 0,
@@ -71,7 +71,7 @@ class SocialUserCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          user.name,
+                          user.displayName,
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -87,10 +87,10 @@ class SocialUserCard extends StatelessWidget {
                         ],
                       ],
                     ),
-                    if (user.bio.isNotEmpty) ...[
+                    if (user.bio?.isNotEmpty ?? false) ...[
                       const SizedBox(height: 4),
                       Text(
-                        user.bio,
+                        user.bio!,
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[600],
@@ -118,10 +118,10 @@ class SocialUserCard extends StatelessWidget {
                 ElevatedButton(
                   onPressed: onFollow,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: user.isFollowing
+                    backgroundColor: false
                         ? Colors.grey[300]
                         : const Color(0xFF07C160),
-                    foregroundColor: user.isFollowing
+                    foregroundColor: false
                         ? Colors.black
                         : Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -129,7 +129,7 @@ class SocialUserCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  child: Text(user.isFollowing ? 'Following' : 'Follow'),
+                  child: const Text('Follow'),
                 ),
             ],
           ),
