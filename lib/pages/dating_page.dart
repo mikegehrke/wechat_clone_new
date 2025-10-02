@@ -123,7 +123,6 @@ class _DatingPageState extends State<DatingPage> {
             controller: _controller,
             cardsCount: _profiles.length,
             onSwipe: _onSwipe,
-            onTap: _onTap,
             cardBuilder: (context, index, horizontalThreshold, verticalThreshold) {
               if (index >= _profiles.length) return null;
               return DatingCard(
@@ -255,17 +254,17 @@ class _DatingPageState extends State<DatingPage> {
     if (currentIndex == null) return false;
 
     final profile = _profiles[previousIndex];
-    SwipeType swipeType;
+    DatingSwipeType swipeType;
 
     switch (direction) {
       case CardSwiperDirection.left:
-        swipeType = SwipeType.pass;
+        swipeType = DatingSwipeType.pass;
         break;
       case CardSwiperDirection.right:
-        swipeType = SwipeType.like;
+        swipeType = DatingSwipeType.like;
         break;
       case CardSwiperDirection.top:
-        swipeType = SwipeType.superLike;
+        swipeType = DatingSwipeType.superLike;
         break;
       default:
         return false;
@@ -283,23 +282,23 @@ class _DatingPageState extends State<DatingPage> {
 
   void _passProfile() {
     if (_currentIndex < _profiles.length) {
-      _controller.swipeLeft();
+      _controller.swipe(CardSwiperDirection.left);
     }
   }
 
   void _superLikeProfile() {
     if (_currentIndex < _profiles.length) {
-      _controller.swipeTop();
+      _controller.swipe(CardSwiperDirection.top);
     }
   }
 
   void _likeProfile() {
     if (_currentIndex < _profiles.length) {
-      _controller.swipeRight();
+      _controller.swipe(CardSwiperDirection.right);
     }
   }
 
-  Future<void> _handleSwipe(DatingProfile profile, SwipeType swipeType) async {
+  Future<void> _handleSwipe(DatingProfile profile, DatingSwipeType swipeType) async {
     try {
       final isMatch = await DatingService.swipeProfile(
         userId: _currentUserId,

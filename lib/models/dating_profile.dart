@@ -214,7 +214,7 @@ class SwipeAction {
   }
 }
 
-enum SwipeType {
+enum DatingSwipeType {
   like,
   superLike,
   pass,
