@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart' as carousel;
 
 class ProductImageCarousel extends StatefulWidget {
   final List<String> images;
@@ -17,7 +16,13 @@ class ProductImageCarousel extends StatefulWidget {
 
 class _ProductImageCarouselState extends State<ProductImageCarousel> {
   int _currentIndex = 0;
-  final carousel.CarouselController _carouselController = carousel.CarouselController();
+  final PageController _pageController = PageController();
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,50 +38,47 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
 
     return Stack(
       children: [
-        carousel.CarouselSlider.builder(
-          carouselController: _carouselController,
-          options: carousel.CarouselOptions(
-            height: widget.height,
-            viewportFraction: 1.0,
-            enlargeCenterPage: false,
-            onPageChanged: (index, reason) {
+        SizedBox(
+          height: widget.height,
+          child: PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
               setState(() => _currentIndex = index);
             },
-          ),
-          itemCount: widget.images.length,
-          itemBuilder: (context, index, realIndex) {
-            final imageUrl = widget.images[index];
-            return GestureDetector(
-                  onTap: () => _showFullScreenImage(context),
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    decoration: const BoxDecoration(color: Colors.white),
-                    child: Image.network(
-                      imageUrl,
-                      fit: BoxFit.contain,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Center(
-                          child: CircularProgressIndicator(
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                                : null,
-                          ),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: Colors.grey[200],
-                          child: const Center(
-                            child: Icon(Icons.broken_image, size: 64, color: Colors.grey),
-                          ),
-                        );
-                      },
-                    ),
+            itemCount: widget.images.length,
+            itemBuilder: (context, index) {
+              final imageUrl = widget.images[index];
+              return GestureDetector(
+                onTap: () => _showFullScreenImage(context),
+                child: Container(
+                  decoration: const BoxDecoration(color: Colors.white),
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.contain,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                              : null,
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        color: Colors.grey[200],
+                        child: const Center(
+                          child: Icon(Icons.broken_image, size: 64, color: Colors.grey),
+                        ),
+                      );
+                    },
                   ),
-                );
-          },
+                ),
+              );
+            },
+          ),
         ),
         
         // Image counter
@@ -108,7 +110,14 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
             top: widget.height / 2 - 20,
             child: _buildNavigationButton(
               Icons.chevron_left,
-              () => _carouselController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.linear),
+              () {
+                if (_currentIndex > 0) {
+                  _pageController.previousPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                }
+              },
               enabled: _currentIndex > 0,
             ),
           ),
@@ -117,7 +126,14 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
             top: widget.height / 2 - 20,
             child: _buildNavigationButton(
               Icons.chevron_right,
-              () => _carouselController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.linear),
+              () {
+                if (_currentIndex < widget.images.length - 1) {
+                  _pageController.nextPage(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                }
+              },
               enabled: _currentIndex < widget.images.length - 1,
             ),
           ),
@@ -173,24 +189,20 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
             elevation: 0,
           ),
           body: Center(
-            child: carousel.CarouselSlider(
-              options: carousel.CarouselOptions(
-                height: MediaQuery.of(context).size.height,
-                viewportFraction: 1.0,
-                initialPage: _currentIndex,
-                enableInfiniteScroll: false,
-              ),
-              items: widget.images.map((imageUrl) {
+            child: PageView.builder(
+              controller: PageController(initialPage: _currentIndex),
+              itemCount: widget.images.length,
+              itemBuilder: (context, index) {
                 return InteractiveViewer(
                   panEnabled: true,
                   minScale: 0.5,
                   maxScale: 4.0,
                   child: Image.network(
-                    imageUrl,
+                    widget.images[index],
                     fit: BoxFit.contain,
                   ),
                 );
-              }).toList(),
+              },
             ),
           ),
         ),
