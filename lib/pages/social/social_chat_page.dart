@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/social.dart';
-import '../../models/message.dart';
+import '../../models/message.dart' as msg;
 import '../../services/social_service.dart';
 
 class SocialChatPage extends StatefulWidget {
@@ -15,7 +15,7 @@ class SocialChatPage extends StatefulWidget {
 class _SocialChatPageState extends State<SocialChatPage> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
-  List<Message> _messages = [];
+  List<SocialMessage> _messages = [];
   bool _isLoading = false;
   bool _isSending = false;
 
@@ -80,7 +80,8 @@ class _SocialChatPageState extends State<SocialChatPage> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
-                if (widget.chat.isOnline)
+                // Online indicator removed (not in SocialChat model)
+                if (false)
                   Positioned(
                     right: 0,
                     bottom: 0,
@@ -109,10 +110,10 @@ class _SocialChatPageState extends State<SocialChatPage> {
                     ),
                   ),
                   Text(
-                    widget.chat.isOnline ? 'Online' : 'Offline',
+                    'Active', // Online status not in model
                     style: TextStyle(
                       fontSize: 12,
-                      color: widget.chat.isOnline ? Colors.green : Colors.grey[600],
+                      color: Colors.grey[600],
                     ),
                   ),
                 ],
@@ -288,7 +289,7 @@ class _SocialChatPageState extends State<SocialChatPage> {
                     ),
                   ),
                   child: Text(
-                    message.content,
+                    message.content ?? '',
                     style: TextStyle(
                       color: isMe ? Colors.white : Colors.black,
                       fontSize: 15,
@@ -300,7 +301,7 @@ class _SocialChatPageState extends State<SocialChatPage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      _formatTime(message.timestamp),
+                      _formatTime(message.createdAt),
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.grey[600],
@@ -339,14 +340,17 @@ class _SocialChatPageState extends State<SocialChatPage> {
     _messageController.clear();
 
     try {
-      final message = Message(
+      final message = SocialMessage(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
+        chatId: widget.chat.id,
         senderId: 'demo_user_1',
-        receiverId: widget.chat.id,
+        senderName: 'Demo User',
+        senderAvatar: '',
         content: messageText,
-        timestamp: DateTime.now(),
+        createdAt: DateTime.now(),
         type: MessageType.text,
         isRead: false,
+        status: msg.MessageStatus.sent,
       );
 
       setState(() {
