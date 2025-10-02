@@ -345,7 +345,7 @@ class _RequestMoneyPageState extends State<RequestMoneyPage> {
               child: isSelected
                   ? const Icon(Icons.check, color: Colors.white)
                   : Text(
-                      user.name[0].toUpperCase(),
+                      user.username[0].toUpperCase(),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.blue,
@@ -423,13 +423,14 @@ class _RequestMoneyPageState extends State<RequestMoneyPage> {
     if (confirmed != true) return;
 
     try {
+      await PaymentService.requestMoney(
+        fromUserId: 'demo_user_1',
+        toUserIds: _selectedUsers.map((u) => u.id).toList(),
+        amount: amount,
+        reason: reason,
+      );
+      
       for (final user in _selectedUsers) {
-        await PaymentService.requestMoney(
-          fromUserId: 'demo_user_1',
-          toUserId: user.id,
-          amount: amount,
-          reason: reason,
-        );
       }
 
       if (mounted) {

@@ -108,7 +108,7 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
     await Future.delayed(const Duration(milliseconds: 500));
 
     final results = _recentContacts.where((user) =>
-      user.name.toLowerCase().contains(query.toLowerCase()) ||
+      user.username.toLowerCase().contains(query.toLowerCase()) ||
       user.email.toLowerCase().contains(query.toLowerCase())
     ).toList();
 
@@ -343,7 +343,7 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
           leading: CircleAvatar(
             backgroundColor: Colors.blue[100],
             child: Text(
-              user.name[0].toUpperCase(),
+              user.username[0].toUpperCase(),
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.blue,
@@ -351,7 +351,7 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
             ),
           ),
           title: Text(
-            user.name,
+            user.username,
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
           subtitle: Text(user.email),
@@ -378,7 +378,7 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
               radius: 30,
               backgroundColor: Colors.blue[100],
               child: Text(
-                _selectedRecipient!.name[0].toUpperCase(),
+                _selectedRecipient!.username[0].toUpperCase(),
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,

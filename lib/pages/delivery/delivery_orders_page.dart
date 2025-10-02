@@ -267,7 +267,7 @@ class _DeliveryOrdersPageState extends State<DeliveryOrdersPage> with SingleTick
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '\$${order.totalAmount.toStringAsFixed(2)}',
+                        '\$${order.total.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
@@ -369,7 +369,7 @@ class _DeliveryOrdersPageState extends State<DeliveryOrdersPage> with SingleTick
       OrderStatus.confirmed,
       OrderStatus.preparing,
       OrderStatus.ready,
-      OrderStatus.onTheWay,
+      OrderStatus.delivering,
       OrderStatus.delivered,
     ];
     
@@ -545,15 +545,15 @@ class _DeliveryOrdersPageState extends State<DeliveryOrdersPage> with SingleTick
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              item.name,
+                              item.foodItem.name,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
-                            if (item.specialInstructions.isNotEmpty)
+                            if (item.specialInstructions?.isNotEmpty ?? false)
                               Text(
-                                item.specialInstructions,
+                                item.specialInstructions!,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey[600],
@@ -622,7 +622,7 @@ class _DeliveryOrdersPageState extends State<DeliveryOrdersPage> with SingleTick
                         ),
                       ),
                       Text(
-                        '\$${order.totalAmount.toStringAsFixed(2)}',
+                        '\$${order.total.toStringAsFixed(2)}',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
