@@ -71,7 +71,7 @@ class FoodItemCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        // '10% OFF',
+                        '10% OFF',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 11,
@@ -157,7 +157,7 @@ class FoodItemCard extends StatelessWidget {
                           ),
                           // Original price not in model
                             Text(
-                              // '\$10.99',
+                              '\$10.99',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey[600],

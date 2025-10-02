@@ -152,7 +152,7 @@ class CartItemWidget extends StatelessWidget {
                             _buildQuantityButton(
                               Icons.add,
                               onIncrease,
-                              enabled: item.quantity < item.product.stock,
+                              enabled: item.quantity < item.product.stockQuantity,
                             ),
                           ],
                         ),
@@ -165,7 +165,7 @@ class CartItemWidget extends StatelessWidget {
                   // Stock status and remove button
                   Row(
                     children: [
-                      if (item.product.stock <= 10)
+                      if (item.product.stockQuantity <= 10)
                         Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
@@ -176,7 +176,7 @@ class CartItemWidget extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            'Only ${item.product.stock} left',
+                            'Only ${item.product.stockQuantity} left',
                             style: const TextStyle(
                               fontSize: 11,
                               color: Colors.orange,
