@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class PaymentMethod {
   final String id;
   final String type; // 'card', 'paypal', 'apple_pay', 'google_pay', 'bank_transfer'
