@@ -31,7 +31,7 @@ class ReviewItem extends StatelessWidget {
                   radius: 20,
                   backgroundColor: Colors.blue[100],
                   child: Text(
-                    review.userName[0].toUpperCase(),
+                    review.username[0].toUpperCase(),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.blue,
@@ -46,13 +46,13 @@ class ReviewItem extends StatelessWidget {
                       Row(
                         children: [
                           Text(
-                            review.userName,
+                            review.username,
                             style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 15,
                             ),
                           ),
-                          if (review.isVerifiedPurchase) ...[
+                          if (review.isVerified) ...[
                             const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -120,21 +120,21 @@ class ReviewItem extends StatelessWidget {
             
             // Review content
             Text(
-              review.comment,
+              review.review,
               style: const TextStyle(
                 fontSize: 14,
                 height: 1.5,
               ),
             ),
             
-            // Review images
-            if (review.images.isNotEmpty) ...[
+            // Review images - not in GameReview
+            if (false) ...[
               const SizedBox(height: 12),
               SizedBox(
                 height: 80,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: review.images.length,
+                  itemCount: 0,
                   itemBuilder: (context, index) {
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
@@ -143,7 +143,7 @@ class ReviewItem extends StatelessWidget {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: Image.network(
-                            review.images[index],
+                            '',
                             width: 80,
                             height: 80,
                             fit: BoxFit.cover,
@@ -174,14 +174,14 @@ class ReviewItem extends StatelessWidget {
                 TextButton.icon(
                   onPressed: onLike,
                   icon: Icon(
-                    review.isHelpful ? Icons.thumb_up : Icons.thumb_up_outlined,
+                    false ? Icons.thumb_up : Icons.thumb_up_outlined,
                     size: 18,
-                    color: review.isHelpful ? const Color(0xFF07C160) : Colors.grey,
+                    color: false ? const Color(0xFF07C160) : Colors.grey,
                   ),
                   label: Text(
                     'Helpful${review.helpfulCount > 0 ? ' (${review.helpfulCount})' : ''}',
                     style: TextStyle(
-                      color: review.isHelpful ? const Color(0xFF07C160) : Colors.grey[700],
+                      color: false ? const Color(0xFF07C160) : Colors.grey[700],
                       fontSize: 13,
                     ),
                   ),
@@ -201,8 +201,8 @@ class ReviewItem extends StatelessWidget {
               ],
             ),
             
-            // Seller response
-            if (review.sellerResponse != null) ...[
+            // Seller response - not in GameReview
+            if (false) ...[
               const SizedBox(height: 12),
               Container(
                 padding: const EdgeInsets.all(12),
@@ -229,9 +229,9 @@ class ReviewItem extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      review.sellerResponse!,
-                      style: const TextStyle(fontSize: 13),
+                    const Text(
+                      'No response', // sellerResponse not in GameReview
+                      style: TextStyle(fontSize: 13),
                     ),
                   ],
                 ),
@@ -270,16 +270,16 @@ class ReviewItem extends StatelessWidget {
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
-            title: Text('${initialIndex + 1}/${review.images.length}'),
+            title: const Text('0/0'), // No images in GameReview
           ),
           body: PageView.builder(
             controller: PageController(initialPage: initialIndex),
-            itemCount: review.images.length,
+            itemCount: 0, // No images in GameReview
             itemBuilder: (context, index) {
               return InteractiveViewer(
                 child: Center(
                   child: Image.network(
-                    review.images[index],
+                    '',
                     fit: BoxFit.contain,
                   ),
                 ),

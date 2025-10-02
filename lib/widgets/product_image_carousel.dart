@@ -33,7 +33,7 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
 
     return Stack(
       children: [
-        CarouselSlider(
+        CarouselSlider.builder(
           carouselController: _carouselController,
           options: CarouselOptions(
             height: widget.height,
@@ -43,10 +43,10 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
               setState(() => _currentIndex = index);
             },
           ),
-          items: widget.images.map((imageUrl) {
-            return Builder(
-              builder: (BuildContext context) {
-                return GestureDetector(
+          itemCount: widget.images.length,
+          itemBuilder: (context, index, realIndex) {
+            final imageUrl = widget.images[index];
+            return GestureDetector(
                   onTap: () => _showFullScreenImage(context),
                   child: Container(
                     width: MediaQuery.of(context).size.width,
@@ -76,9 +76,7 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
                     ),
                   ),
                 );
-              },
-            );
-          }).toList(),
+          },
         ),
         
         // Image counter
@@ -110,7 +108,7 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
             top: widget.height / 2 - 20,
             child: _buildNavigationButton(
               Icons.chevron_left,
-              () => _carouselController.previousPage(),
+              () => _carouselController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.linear),
               enabled: _currentIndex > 0,
             ),
           ),
@@ -119,7 +117,7 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
             top: widget.height / 2 - 20,
             child: _buildNavigationButton(
               Icons.chevron_right,
-              () => _carouselController.nextPage(),
+              () => _carouselController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.linear),
               enabled: _currentIndex < widget.images.length - 1,
             ),
           ),

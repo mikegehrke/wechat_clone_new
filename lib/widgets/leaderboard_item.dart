@@ -99,7 +99,6 @@ class LeaderboardItem extends StatelessWidget {
                     ),
                   ],
                 ),
-              ],
                 const SizedBox(height: 2),
                 Text(
                   'Score: ${entry.score}',
