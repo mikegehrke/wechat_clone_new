@@ -30,7 +30,7 @@ class _DeliveryCartPageState extends State<DeliveryCartPage> {
   }
 
   double get _subtotal {
-    return _cartItems.fold(0, (sum, item) => sum + (item.price * item.quantity));
+    return _cartItems.fold(0, (sum, item) => sum + (item.foodItem.price * item.quantity));
   }
 
   double get _deliveryFee => 2.99;
@@ -254,7 +254,7 @@ class _DeliveryCartPageState extends State<DeliveryCartPage> {
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: Image.network(
-              item.imageUrl,
+              item.foodItem.imageUrl,
               width: 60,
               height: 60,
               fit: BoxFit.cover,
@@ -272,15 +272,15 @@ class _DeliveryCartPageState extends State<DeliveryCartPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item.name,
+                  item.foodItem.name,
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                if (item.specialInstructions.isNotEmpty)
+                if (item.specialInstructions?.isNotEmpty ?? false)
                   Text(
-                    item.specialInstructions,
+                    item.specialInstructions!,
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[600],
@@ -301,7 +301,7 @@ class _DeliveryCartPageState extends State<DeliveryCartPage> {
                 ),
               ),
               Text(
-                '\$${(item.price * item.quantity).toStringAsFixed(2)}',
+                '\$${(item.foodItem.price * item.quantity).toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
