@@ -411,7 +411,7 @@ class _SocialPostDetailPageState extends State<SocialPostDetailPage> {
     }
   }
 
-  void _likeComment(PostComment comment) {
+  void _likeComment(SocialComment comment) {
     setState(() {
       final index = _comments.indexOf(comment);
       _comments[index] = comment.copyWith(
