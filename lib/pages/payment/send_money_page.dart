@@ -392,7 +392,7 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _selectedRecipient!.name,
+                    _selectedRecipient!.username,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -472,7 +472,7 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
             Text('Send \$${amount.toStringAsFixed(2)} to:'),
             const SizedBox(height: 8),
             Text(
-              _selectedRecipient!.name,
+              _selectedRecipient!.username,
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             Text(_selectedRecipient!.email),
@@ -515,7 +515,7 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Successfully sent \$${amount.toStringAsFixed(2)} to ${_selectedRecipient!.name}'),
+            content: Text('Successfully sent \$${amount.toStringAsFixed(2)} to ${_selectedRecipient!.username}'),
             backgroundColor: const Color(0xFF07C160),
           ),
         );

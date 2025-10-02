@@ -56,6 +56,23 @@ class PaymentService {
     }
   }
 
+  // Send money to user
+  static Future<void> sendMoney({
+    required String fromUserId,
+    required String toUserId,
+    required double amount,
+    required String paymentMethodId,
+    String? note,
+  }) async {
+    try {
+      // In real app, process payment via backend
+      await Future.delayed(const Duration(seconds: 1));
+      // Success
+    } catch (e) {
+      throw Exception('Failed to send money: $e');
+    }
+  }
+
   // Stripe Payment Methods
   static Future<PaymentMethod> createStripePaymentMethod({
     required String cardNumber,

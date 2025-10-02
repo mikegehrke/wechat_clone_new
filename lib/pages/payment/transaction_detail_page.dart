@@ -12,8 +12,8 @@ class TransactionDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCredit = transaction.type == TransactionType.received || 
-                      transaction.type == TransactionType.refund;
+    final isCredit = transaction.type == 'received' || 
+                      transaction.type == 'refund';
 
     return Scaffold(
       appBar: AppBar(
@@ -74,8 +74,8 @@ class TransactionDetailPage extends StatelessWidget {
           // Transaction details
           _buildDetailRow('Transaction ID', transaction.id.substring(0, 16)),
           _buildDetailRow('Type', _getTypeText()),
-          _buildDetailRow('Date', _formatDate(transaction.timestamp)),
-          _buildDetailRow('Time', _formatTime(transaction.timestamp)),
+          _buildDetailRow('Date', _formatDate(transaction.createdAt)),
+          _buildDetailRow('Time', _formatTime(transaction.createdAt)),
           
           if (transaction.recipientName != null)
             _buildDetailRow(
@@ -83,8 +83,8 @@ class TransactionDetailPage extends StatelessWidget {
               transaction.recipientName!,
             ),
           
-          if (transaction.description.isNotEmpty)
-            _buildDetailRow('Description', transaction.description),
+          if (transaction.description?.isNotEmpty ?? false)
+            _buildDetailRow('Description', transaction.description!),
           
           if (transaction.paymentMethodId != null)
             _buildDetailRow('Payment Method', _getPaymentMethodText()),
@@ -104,14 +104,14 @@ class TransactionDetailPage extends StatelessWidget {
           const SizedBox(height: 16),
           
           _buildAmountRow('Subtotal', transaction.amount),
-          if (transaction.fee > 0)
-            _buildAmountRow('Fee', transaction.fee, isNegative: true),
+          if ((transaction.fee ?? 0) > 0)
+            _buildAmountRow('Fee', transaction.fee!, isNegative: true),
           
           const Divider(height: 24),
           
           _buildAmountRow(
             'Total',
-            transaction.amount - transaction.fee,
+            transaction.amount - (transaction.fee ?? 0),
             isBold: true,
           ),
           
