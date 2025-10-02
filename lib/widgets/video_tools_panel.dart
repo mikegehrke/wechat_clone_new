@@ -578,7 +578,7 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
             crossAxisSpacing: 8,
             mainAxisSpacing: 8,
             children: [
-              _buildTransitionButton('Fade', Icons.blur_on),
+              _buildTransitionButton('Fade', Icons.blur_linear),
               _buildTransitionButton('Slide', Icons.slideshow),
               _buildTransitionButton('Zoom', Icons.zoom_in),
               _buildTransitionButton('Wipe', Icons.swipe),
