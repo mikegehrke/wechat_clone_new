@@ -71,9 +71,7 @@ dependencies:
   # Real Payment
   # Real Location
   # Real Notifications
-  flutter_local_notifications: ^16.2.0
   # Real File Handling
-  file_picker: ^6.1.1
   # Real Social Features
   share_plus: ^7.2.1
   # Real Image Processing
