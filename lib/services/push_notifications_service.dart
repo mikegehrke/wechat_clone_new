@@ -99,19 +99,19 @@ class PushNotificationsService {
 
   String? _pushToken;
   List<PushNotification> _notifications = [];
-  Map<String, bool> _settings = {};
+  Map<String, dynamic> _settings = {};
 
   // Getters
   String? get pushToken => _pushToken;
   List<PushNotification> get notifications => _notifications;
-  Map<String, bool> get settings => _settings;
+  Map<String, dynamic> get settings => _settings;
 
   // Initialize service
   Future<void> initialize() async {
     await _loadNotificationsFromStorage();
     await _loadTokenFromStorage();
     await _loadSettingsFromStorage();
-    await _requestPermission();
+    await requestPermission();
   }
 
   // Permission Management
@@ -306,7 +306,7 @@ class PushNotificationsService {
     required List<int> daysOfWeek,
   }) async {
     try {
-      _settings['quietHoursEnabled'] = 'true';
+      _settings['quietHoursEnabled'] = true;
       _settings['quietHoursStart'] = '${startTime.hour}:${startTime.minute}';
       _settings['quietHoursEnd'] = '${endTime.hour}:${endTime.minute}';
       _settings['quietHoursDays'] = daysOfWeek.join(',');

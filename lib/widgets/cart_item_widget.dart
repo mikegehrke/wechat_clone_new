@@ -34,7 +34,7 @@ class CartItemWidget extends StatelessWidget {
                   width: 24,
                   height: 24,
                   child: Checkbox(
-                    value: item.isSelected,
+                    value: false,
                     onChanged: (value) => onSelect!(value ?? false),
                     activeColor: const Color(0xFF07C160),
                     shape: RoundedRectangleBorder(
@@ -103,17 +103,17 @@ class CartItemWidget extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '\$${item.price.toStringAsFixed(2)}',
+                            '\$${(item.product.price * item.quantity).toStringAsFixed(2)}',
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF07C160),
                             ),
                           ),
-                          if (item.product.originalPrice > item.product.price) ...[
+                          if ((item.product.originalPrice ?? 0) > item.product.price) ...[
                             const SizedBox(height: 2),
                             Text(
-                              '\$${item.product.originalPrice.toStringAsFixed(2)}',
+                              '\$${item.product.originalPrice!.toStringAsFixed(2)}',
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.grey[600],
