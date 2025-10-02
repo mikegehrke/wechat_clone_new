@@ -315,7 +315,7 @@ class _GamesPageState extends State<GamesPage> with TickerProviderStateMixin {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => GameCategoryPage(category: category),
+        builder: (context) => GameCategoryPage(category: category.name),
       ),
     );
   }

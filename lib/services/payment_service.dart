@@ -2,6 +2,17 @@ import 'dart:math';
 import '../models/payment.dart';
 
 class PaymentService {
+  // Add payment method
+  static Future<void> addPaymentMethod(String userId, PaymentMethod paymentMethod) async {
+    try {
+      // In real app, save to backend/database
+      await Future.delayed(const Duration(seconds: 1));
+      // Success
+    } catch (e) {
+      throw Exception('Failed to add payment method: $e');
+    }
+  }
+
   // Stripe Payment Methods
   static Future<PaymentMethod> createStripePaymentMethod({
     required String cardNumber,

@@ -474,6 +474,7 @@ class _AddPaymentMethodPageState extends State<AddPaymentMethodPage> {
             cvv: _cvvController.text,
             cardBrand: _detectCardBrand(_cardNumberController.text),
             isDefault: _isDefault,
+            createdAt: DateTime.now(),
           );
           break;
 
@@ -483,6 +484,7 @@ class _AddPaymentMethodPageState extends State<AddPaymentMethodPage> {
             type: 'paypal',
             paypalEmail: _paypalEmailController.text,
             isDefault: _isDefault,
+            createdAt: DateTime.now(),
           );
           break;
 
@@ -492,8 +494,9 @@ class _AddPaymentMethodPageState extends State<AddPaymentMethodPage> {
             type: 'bank_transfer',
             bankAccountNumber: _accountNumberController.text,
             bankRoutingNumber: _routingNumberController.text,
-            bankAccountHolderName: _accountHolderController.text,
+            bankName: _accountHolderController.text,
             isDefault: _isDefault,
+            createdAt: DateTime.now(),
           );
           break;
 
@@ -502,6 +505,7 @@ class _AddPaymentMethodPageState extends State<AddPaymentMethodPage> {
             id: DateTime.now().millisecondsSinceEpoch.toString(),
             type: _selectedType,
             isDefault: _isDefault,
+            createdAt: DateTime.now(),
           );
       }
 

@@ -5,15 +5,15 @@ import '../widgets/rating_stars.dart';
 class GameCard extends StatelessWidget {
   final Game game;
   final VoidCallback onTap;
-  final VoidCallback onDownload;
-  final VoidCallback onAddToFavorites;
+  final VoidCallback? onDownload;
+  final VoidCallback? onAddToFavorites;
 
   const GameCard({
     super.key,
     required this.game,
     required this.onTap,
-    required this.onDownload,
-    required this.onAddToFavorites,
+    this.onDownload,
+    this.onAddToFavorites,
   });
 
   @override
