@@ -17,7 +17,7 @@ class ProductImageCarousel extends StatefulWidget {
 
 class _ProductImageCarouselState extends State<ProductImageCarousel> {
   int _currentIndex = 0;
-  final CarouselController _carouselController = CarouselController();
+  final carousel.CarouselController _carouselController = carousel.CarouselController();
 
   @override
   Widget build(BuildContext context) {
@@ -33,9 +33,9 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
 
     return Stack(
       children: [
-        CarouselSlider.builder(
+        carousel.CarouselSlider.builder(
           carouselController: _carouselController,
-          options: CarouselOptions(
+          options: carousel.CarouselOptions(
             height: widget.height,
             viewportFraction: 1.0,
             enlargeCenterPage: false,
@@ -173,8 +173,8 @@ class _ProductImageCarouselState extends State<ProductImageCarousel> {
             elevation: 0,
           ),
           body: Center(
-            child: CarouselSlider(
-              options: CarouselOptions(
+            child: carousel.CarouselSlider(
+              options: carousel.CarouselOptions(
                 height: MediaQuery.of(context).size.height,
                 viewportFraction: 1.0,
                 initialPage: _currentIndex,

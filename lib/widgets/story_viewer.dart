@@ -34,7 +34,7 @@ class _StoryViewerState extends State<StoryViewer> {
         color: Colors.black,
         child: Center(
           child: Text(
-            'Story Viewer\n${widget.storyGroup.user.displayName}',
+            'Story Viewer\n${widget.storyGroup.username}',
             style: const TextStyle(color: Colors.white, fontSize: 18),
             textAlign: TextAlign.center,
           ),

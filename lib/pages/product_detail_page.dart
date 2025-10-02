@@ -20,7 +20,7 @@ class ProductDetailPage extends StatefulWidget {
 class _ProductDetailPageState extends State<ProductDetailPage> {
   int _selectedQuantity = 1;
   bool _isLoading = false;
-  List<Map<String, dynamic>> _reviews = [];
+  List<dynamic> _reviews = [];
 
   @override
   void initState() {
