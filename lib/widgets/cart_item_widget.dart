@@ -86,12 +86,11 @@ class CartItemWidget extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     'Size: Default',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
                     ),
-                  ],
+                  ),
                   
                   const SizedBox(height: 8),
                   

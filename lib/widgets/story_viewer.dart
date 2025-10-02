@@ -133,7 +133,6 @@ class _StoryViewerState extends State<StoryViewer> {
           ),
         ),
       ),
-      duration: story.duration,
     );
   }
 

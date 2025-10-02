@@ -98,7 +98,7 @@ class LeaderboardItem extends StatelessWidget {
                         color: Colors.blue,
                       ),
                     ],
-                  ],
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
