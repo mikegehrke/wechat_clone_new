@@ -308,9 +308,8 @@ class AppSettingsService {
       // In real app, clear actual cache
       await Future.delayed(const Duration(seconds: 1));
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cache cleared successfully')),
-      );
+      // Can't use context here (no BuildContext available in service)
+      // Return success instead
     } catch (e) {
       throw Exception('Failed to clear cache: $e');
     }
