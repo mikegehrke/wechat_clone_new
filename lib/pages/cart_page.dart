@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../services/ecommerce_service.dart';
 import '../widgets/cart_item_widget.dart';
-import 'checkout_page.dart';
+import 'ecommerce/checkout_page.dart';
 
 class CartPage extends StatefulWidget {
   const CartPage({super.key});

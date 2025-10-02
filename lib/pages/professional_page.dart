@@ -4,9 +4,9 @@ import '../services/professional_service.dart';
 import '../widgets/professional_post_card.dart';
 import '../widgets/job_posting_card.dart';
 import '../widgets/professional_profile_card.dart';
-import 'professional_profile_page.dart';
-import 'job_detail_page.dart';
-import 'network_page.dart';
+import 'professional/professional_profile_page.dart';
+import 'professional/job_detail_page.dart';
+import 'professional/network_page.dart';
 
 class ProfessionalPage extends StatefulWidget {
   const ProfessionalPage({super.key});

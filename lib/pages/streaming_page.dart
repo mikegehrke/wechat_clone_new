@@ -5,9 +5,9 @@ import '../widgets/video_content_card.dart';
 import '../widgets/movie_card.dart';
 import '../widgets/series_card.dart';
 import '../widgets/streaming_search_bar.dart';
-import 'video_player_page.dart';
-import 'movie_detail_page.dart';
-import 'series_detail_page.dart';
+import 'streaming/video_player_page.dart';
+import 'streaming/movie_detail_page.dart';
+import 'streaming/series_detail_page.dart';
 
 class StreamingPage extends StatefulWidget {
   const StreamingPage({super.key});

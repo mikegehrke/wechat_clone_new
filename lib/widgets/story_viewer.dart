@@ -34,21 +34,27 @@ class _StoryViewerState extends State<StoryViewer> {
           return StoryItem.pageImage(
             url: story.contentUrl,
             controller: _controller,
-            caption: story.caption,
+            caption: story.caption != null ? Text(story.caption!) : null,
             imageFit: BoxFit.cover,
           );
         case StoryType.video:
           return StoryItem.pageVideo(
             story.contentUrl,
             controller: _controller,
-            caption: story.caption,
+            caption: story.caption != null ? Container(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                story.caption!,
+                style: const TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ) : null,
             imageFit: BoxFit.cover,
           );
         case StoryType.text:
           return StoryItem.pageImage(
             url: story.contentUrl,
             controller: _controller,
-            caption: story.caption,
+            caption: story.caption != null ? Text(story.caption!) : null,
             imageFit: BoxFit.cover,
           );
         case StoryType.poll:
@@ -57,7 +63,7 @@ class _StoryViewerState extends State<StoryViewer> {
           return StoryItem.pageImage(
             url: story.contentUrl,
             controller: _controller,
-            caption: story.caption,
+            caption: story.caption != null ? Text(story.caption!) : null,
             imageFit: BoxFit.cover,
           );
       }
@@ -65,7 +71,7 @@ class _StoryViewerState extends State<StoryViewer> {
 
     return Scaffold(
       body: StoryView(
-        storyItems: storyItems,
+        storyItems: storyItems.cast<StoryItem>(),
         controller: _controller,
         onComplete: () {
           Navigator.pop(context);

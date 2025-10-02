@@ -5,11 +5,12 @@ import '../widgets/social_post_card.dart';
 import '../widgets/social_user_card.dart';
 import '../widgets/social_chat_card.dart';
 import '../widgets/social_event_card.dart';
-import 'social_post_detail_page.dart';
-import 'social_user_profile_page.dart';
-import 'social_chat_page.dart';
-import 'social_event_detail_page.dart';
-import 'create_post_page.dart';
+import 'social/social_post_detail_page.dart';
+import 'social/social_user_profile_page.dart';
+import 'social/social_chat_page.dart';
+import 'social/social_event_detail_page.dart';
+import 'social/create_post_page.dart';
+import '../widgets/story_circle.dart';
 
 class SocialPage extends StatefulWidget {
   const SocialPage({super.key});

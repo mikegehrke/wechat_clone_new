@@ -5,7 +5,7 @@ import '../widgets/game_card.dart';
 import '../widgets/game_category_card.dart';
 import '../widgets/game_search_bar.dart';
 import 'game_detail_page.dart';
-import 'game_category_page.dart';
+import 'games/game_category_page.dart';
 
 class GamesPage extends StatefulWidget {
   const GamesPage({super.key});

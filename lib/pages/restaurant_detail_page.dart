@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/delivery.dart';
 import '../services/delivery_service.dart';
-import '../widgets/food_item_card.dart';
 import '../widgets/rating_stars.dart';
-import 'food_item_detail_page.dart';
-import 'delivery_cart_page.dart';
+import '../widgets/food_item_card.dart';
+import 'delivery/food_item_detail_page.dart';
+import 'delivery/delivery_cart_page.dart';
 
 class RestaurantDetailPage extends StatefulWidget {
   final Restaurant restaurant;
