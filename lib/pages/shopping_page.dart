@@ -3,7 +3,7 @@ import '../models/product.dart';
 import '../services/ecommerce_service.dart';
 import '../widgets/product_card.dart';
 import '../widgets/category_grid.dart';
-import '../widgets/search_bar.dart';
+import '../widgets/search_bar.dart' as custom;
 import 'product_detail_page.dart';
 import 'cart_page.dart';
 
@@ -174,7 +174,7 @@ class _ShoppingPageState extends State<ShoppingPage> with TickerProviderStateMix
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Search bar
-          SearchBar(
+          custom.SearchBar(
             onSearch: (query) {
               _tabController.animateTo(2);
               // In real app, pass query to search tab
@@ -308,7 +308,7 @@ class _ShoppingPageState extends State<ShoppingPage> with TickerProviderStateMix
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          SearchBar(
+          custom.SearchBar(
             onSearch: (query) {
               _performSearch(query);
             },

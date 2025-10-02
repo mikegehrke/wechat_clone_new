@@ -372,9 +372,9 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
               ...items.map((item) => Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 child: FoodItemCard(
-                  foodItem: item,
+                  item: item,
                   onTap: () => _navigateToFoodItem(item),
-                  onAddToCart: () => _addToCart(item),
+                  onAdd: () => _addToCart(item),
                 ),
               )),
             ],
@@ -448,9 +448,8 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
       context,
       MaterialPageRoute(
         builder: (context) => FoodItemDetailPage(
-          foodItem: foodItem,
+          item: foodItem,
           restaurant: widget.restaurant,
-          onAddToCart: () => _addToCart(foodItem),
         ),
       ),
     );
@@ -495,11 +494,6 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
         builder: (context) => DeliveryCartPage(
           restaurant: widget.restaurant,
           cartItems: _cartItems,
-          onCartUpdated: (updatedItems) {
-            setState(() {
-              _cartItems = updatedItems;
-            });
-          },
         ),
       ),
     );

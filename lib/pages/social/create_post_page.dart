@@ -215,7 +215,9 @@ class _CreatePostPageState extends State<CreatePostPage> {
 
     try {
       await SocialService.createPost(
-        userId: 'demo_user_1',
+        authorId: 'demo_user_1',
+        authorName: 'Demo User',
+        authorAvatar: '',
         content: _contentController.text,
         images: _selectedImages.map((f) => f.path).toList(),
       );

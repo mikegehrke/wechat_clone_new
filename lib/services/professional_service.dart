@@ -23,6 +23,16 @@ class ProfessionalService {
     }
   }
 
+  // Toggle connection
+  static Future<void> toggleConnect(String profileId, String userId) async {
+    try {
+      // In real app, toggle connection in backend
+      await Future.delayed(const Duration(milliseconds: 300));
+    } catch (e) {
+      throw Exception('Failed to toggle connection: $e');
+    }
+  }
+
   // Get professional profile
   static Future<ProfessionalProfile?> getProfile(String userId) async {
     try {
