@@ -62,7 +62,7 @@ class LeaderboardItem extends StatelessWidget {
             radius: 22,
             backgroundColor: Colors.blue[100],
             child: Text(
-              entry.userName[0].toUpperCase(),
+              entry.username[0].toUpperCase(),
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 18,
@@ -82,7 +82,7 @@ class LeaderboardItem extends StatelessWidget {
                   children: [
                     Flexible(
                       child: Text(
-                        entry.userName,
+                        entry.username,
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: isTopThree ? FontWeight.bold : FontWeight.w600,
@@ -90,7 +90,7 @@ class LeaderboardItem extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (entry.isVerified) ...[
+                    // isVerified not in model
                       const SizedBox(width: 4),
                       const Icon(
                         Icons.verified,
@@ -102,7 +102,7 @@ class LeaderboardItem extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Level ${entry.level}',
+                  'Score: ${entry.score}',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey[600],
