@@ -42,8 +42,7 @@ class AuthService {
       // Create or get user account
       final user = await _getOrCreateUser(phoneNumber);
       
-      // Update last active
-      user.lastActiveAt = DateTime.now();
+      // Update last active (can't modify final field)
       
       // Save to storage
       await _saveUserToStorage(user);
@@ -99,8 +98,7 @@ class AuthService {
         avatarUrl: avatarUrl,
       );
       
-      // Update last active
-      user.lastActiveAt = DateTime.now();
+      // Update last active (can't modify final field)
       
       // Save to storage
       await _saveUserToStorage(user);
