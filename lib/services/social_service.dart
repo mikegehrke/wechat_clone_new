@@ -11,6 +11,43 @@ class SocialService {
     }
   }
 
+  // Post comment
+  static Future<SocialComment> postComment({
+    required String postId,
+    required String authorId,
+    required String authorName,
+    required String authorAvatar,
+    required String content,
+  }) async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 500));
+      return SocialComment(
+        id: 'comment_${DateTime.now().millisecondsSinceEpoch}',
+        postId: postId,
+        authorId: authorId,
+        authorName: authorName,
+        authorAvatar: authorAvatar,
+        content: content,
+        createdAt: DateTime.now(),
+        likesCount: 0,
+        isLiked: false,
+        replies: [],
+      );
+    } catch (e) {
+      throw Exception('Failed to post comment: $e');
+    }
+  }
+
+  // Get user posts
+  static Future<List<SocialPost>> getUserPosts(String userId) async {
+    try {
+      await Future.delayed(const Duration(milliseconds: 500));
+      return _createMockPosts();
+    } catch (e) {
+      throw Exception('Failed to get user posts: $e');
+    }
+  }
+
   // Posts
   static Future<List<SocialPost>> getFeed(String userId) async {
     try {

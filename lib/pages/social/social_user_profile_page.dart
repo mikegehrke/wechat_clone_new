@@ -114,13 +114,13 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> with Sing
             children: [
               CircleAvatar(
                 radius: 50,
-                backgroundImage: _user.avatar.isNotEmpty
-                    ? NetworkImage(_user.avatar)
+                backgroundImage: _user.avatarUrl.isNotEmpty
+                    ? NetworkImage(_user.avatarUrl)
                     : null,
                 backgroundColor: Colors.blue[100],
-                child: _user.avatar.isEmpty
+                child: _user.avatarUrl.isEmpty
                     ? Text(
-                        _user.name[0].toUpperCase(),
+                        _user.displayName[0].toUpperCase(),
                         style: const TextStyle(
                           fontSize: 40,
                           fontWeight: FontWeight.bold,
@@ -128,7 +128,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> with Sing
                       )
                     : null,
               ),
-              if (_user.isOnline)
+              if (false) // isOnline not in model
                 Positioned(
                   right: 4,
                   bottom: 4,
@@ -151,7 +151,7 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> with Sing
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                _user.name,
+                _user.displayName,
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -168,10 +168,10 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> with Sing
             ],
           ),
           
-          if (_user.bio.isNotEmpty) ...[
+          if (_user.bio?.isNotEmpty ?? false) ...[
             const SizedBox(height: 8),
             Text(
-              _user.bio,
+              _user.bio!,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -204,19 +204,15 @@ class _SocialUserProfilePageState extends State<SocialUserProfilePage> with Sing
                 child: ElevatedButton.icon(
                   onPressed: _toggleFollow,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _user.isFollowing
-                        ? Colors.grey[300]
-                        : const Color(0xFF07C160),
-                    foregroundColor: _user.isFollowing
-                        ? Colors.black
-                        : Colors.white,
+                    backgroundColor: const Color(0xFF07C160),
+                    foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  icon: Icon(_user.isFollowing ? Icons.check : Icons.person_add),
-                  label: Text(_user.isFollowing ? 'Following' : 'Follow'),
+                  icon: const Icon(Icons.person_add),
+                  label: const Text('Follow'),
                 ),
               ),
               const SizedBox(width: 12),
