@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # Backend API
+  api:
+    build: .
+    container_name: superapp-api
+    ports:
+      - "5000:5000"
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/superapp
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your_jwt_secret_here_change_this_in_production
+      - REFRESH_TOKEN_SECRET=your_refresh_token_secret_here
+    depends_on:
+      - mongodb
+      - redis
+    volumes:
+      - ./:/app
+      - /app/node_modules
+      - uploads:/app/uploads
+    networks:
+      - superapp-network
+
+  # MongoDB
+  mongodb:
+    image: mongo:6
+    container_name: superapp-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=superapp
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - superapp-network
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: superapp-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - superapp-network
+
+  # MongoDB Express (Web UI for MongoDB)
+  mongo-express:
+    image: mongo-express
+    container_name: superapp-mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin123
+    depends_on:
+      - mongodb
+    networks:
+      - superapp-network
+
+  # Redis Commander (Web UI for Redis)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: superapp-redis-commander
+    ports:
+      - "8082:8081"
+    environment:
+      - REDIS_HOSTS=redis:redis:6379
+    depends_on:
+      - redis
+    networks:
+      - superapp-network
+
+volumes:
+  mongo_data:
+  redis_data:
+  uploads:
+
+networks:
+  superapp-network:
+    driver: bridge

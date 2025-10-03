@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/app_foundations.dart';
+import '../config/api_config.dart';
+import 'api_service.dart';
 
 class AuthService {
   static const String _userKey = 'current_user';
@@ -33,16 +35,27 @@ class AuthService {
   // Authentication Methods
   Future<UserAccount> loginWithPhone({
     required String phoneNumber,
-    required String otpCode,
+    required String password,
   }) async {
     try {
-      // In real app, verify OTP with backend
-      await Future.delayed(const Duration(seconds: 1));
+      final response = await ApiService.post(
+        '${ApiConfig.authEndpoint}/login/phone',
+        body: {
+          'phoneNumber': phoneNumber,
+          'password': password,
+        },
+      );
       
-      // Create or get user account
-      final user = await _getOrCreateUser(phoneNumber);
+      // Save tokens
+      if (response['tokens'] != null) {
+        await ApiService.saveTokens(
+          response['tokens']['accessToken'],
+          response['tokens']['refreshToken'],
+        );
+      }
       
-      // Update last active (can't modify final field)
+      // Create user from response
+      final user = UserAccount.fromJson(response['user']);
       
       // Save to storage
       await _saveUserToStorage(user);
@@ -111,8 +124,11 @@ class AuthService {
 
   Future<void> logout() async {
     try {
-      // In real app, invalidate session on backend
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Call logout endpoint
+      await ApiService.post('${ApiConfig.authEndpoint}/logout');
+      
+      // Clear tokens
+      await ApiService.clearTokens();
       
       // Clear local storage
       final prefs = await SharedPreferences.getInstance();
@@ -126,29 +142,21 @@ class AuthService {
 
   Future<void> register({
     required String phoneNumber,
-    required String email,
     required String username,
     required String displayName,
   }) async {
     try {
-      // In real app, create account on backend
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // Create new user account
-      final user = UserAccount(
-        id: 'user_${DateTime.now().millisecondsSinceEpoch}',
-        phoneNumber: phoneNumber,
-        email: email,
-        username: username,
-        displayName: displayName,
-        createdAt: DateTime.now(),
-        privacy: PrivacySettings(),
-        security: SecuritySettings(),
+      final response = await ApiService.post(
+        '${ApiConfig.authEndpoint}/register/phone',
+        body: {
+          'phoneNumber': phoneNumber,
+          'username': username,
+          'displayName': displayName,
+        },
       );
       
-      // Save to storage
-      await _saveUserToStorage(user);
-      _currentUser = user;
+      // Registration initiated, OTP will be sent
+      // User needs to verify OTP to complete registration
     } catch (e) {
       throw Exception('Registration failed: $e');
     }
@@ -157,12 +165,10 @@ class AuthService {
   // OTP Methods
   Future<void> sendOTP(String phoneNumber) async {
     try {
-      // In real app, send OTP via SMS
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // Mock OTP generation
-      final otp = _generateOTP();
-      print('OTP for $phoneNumber: $otp'); // In real app, send via SMS
+      await ApiService.post(
+        '${ApiConfig.authEndpoint}/send-otp',
+        body: {'phoneNumber': phoneNumber},
+      );
     } catch (e) {
       throw Exception('Failed to send OTP: $e');
     }
@@ -170,11 +176,15 @@ class AuthService {
 
   Future<bool> verifyOTP(String phoneNumber, String otpCode) async {
     try {
-      // In real app, verify OTP with backend
-      await Future.delayed(const Duration(milliseconds: 500));
+      final response = await ApiService.post(
+        '${ApiConfig.authEndpoint}/verify-otp',
+        body: {
+          'phoneNumber': phoneNumber,
+          'otp': otpCode,
+        },
+      );
       
-      // Mock verification (always true for demo)
-      return true;
+      return response['success'] ?? false;
     } catch (e) {
       throw Exception('OTP verification failed: $e');
     }
