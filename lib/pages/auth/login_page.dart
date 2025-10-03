@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:io' show Platform;
 import '../../providers/auth_provider.dart';
+import '../../services/auth_service.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/custom_button.dart';
 import 'register_page.dart';
@@ -42,6 +44,136 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(authProvider.error ?? 'Login failed'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _loginWithGoogle() async {
+    try {
+      final authService = AuthService();
+      await authService.loginWithGoogle();
+      
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const MainNavigation()),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google Sign-In failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _loginWithApple() async {
+    try {
+      final authService = AuthService();
+      await authService.loginWithApple();
+      
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const MainNavigation()),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Apple Sign-In failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _loginWithPhone() async {
+    // Show phone number input dialog
+    final phoneController = TextEditingController();
+    final otpController = TextEditingController();
+    
+    final phone = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Phone Login'),
+        content: TextField(
+          controller: phoneController,
+          decoration: const InputDecoration(
+            labelText: 'Phone Number',
+            hintText: '+49123456789',
+          ),
+          keyboardType: TextInputType.phone,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, phoneController.text),
+            child: const Text('Send OTP'),
+          ),
+        ],
+      ),
+    );
+    
+    if (phone == null || phone.isEmpty) return;
+    
+    try {
+      final authService = AuthService();
+      final verificationId = await authService.sendOTP(phone);
+      
+      if (!mounted) return;
+      
+      // Show OTP input dialog
+      final otp = await showDialog<String>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Enter OTP'),
+          content: TextField(
+            controller: otpController,
+            decoration: const InputDecoration(
+              labelText: 'OTP Code',
+              hintText: '123456',
+            ),
+            keyboardType: TextInputType.number,
+            maxLength: 6,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, otpController.text),
+              child: const Text('Verify'),
+            ),
+          ],
+        ),
+      );
+      
+      if (otp == null || otp.isEmpty) return;
+      
+      await authService.verifyOTP(verificationId, otp);
+      
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const MainNavigation()),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Phone login failed: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -149,6 +281,63 @@ class _LoginPageState extends State<LoginPage> {
                       isLoading: authProvider.isLoading,
                     );
                   },
+                ),
+                const SizedBox(height: 24),
+                
+                // Divider
+                const Row(
+                  children: [
+                    Expanded(child: Divider()),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text('OR', style: TextStyle(color: Colors.grey)),
+                    ),
+                    Expanded(child: Divider()),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                
+                // Google Sign-In Button
+                OutlinedButton.icon(
+                  onPressed: _loginWithGoogle,
+                  icon: Image.network(
+                    'https://www.google.com/favicon.ico',
+                    width: 24,
+                    height: 24,
+                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.g_mobiledata, size: 24),
+                  ),
+                  label: const Text('Continue with Google'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    side: const BorderSide(color: Colors.grey),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                // Apple Sign-In Button (nur iOS/macOS)
+                if (Platform.isIOS || Platform.isMacOS)
+                  OutlinedButton.icon(
+                    onPressed: _loginWithApple,
+                    icon: const Icon(Icons.apple, size: 24),
+                    label: const Text('Continue with Apple'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: const BorderSide(color: Colors.grey),
+                      foregroundColor: Colors.black,
+                    ),
+                  ),
+                if (Platform.isIOS || Platform.isMacOS)
+                  const SizedBox(height: 12),
+                
+                // Phone Login Button
+                OutlinedButton.icon(
+                  onPressed: _loginWithPhone,
+                  icon: const Icon(Icons.phone, size: 24),
+                  label: const Text('Continue with Phone'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    side: const BorderSide(color: Colors.grey),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 
