@@ -1,11 +1,32 @@
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import '../models/social.dart';
 
 class SocialService {
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static final FirebaseStorage _storage = FirebaseStorage.instance;
   // Toggle like on post
   static Future<void> toggleLikePost(String postId, String userId) async {
     try {
-      await Future.delayed(const Duration(milliseconds: 300));
+      final postRef = _firestore.collection('posts').doc(postId);
+      final doc = await postRef.get();
+      
+      if (!doc.exists) throw Exception('Post not found');
+      
+      final data = doc.data()!;
+      final likes = List<String>.from(data['likes'] ?? []);
+      
+      if (likes.contains(userId)) {
+        likes.remove(userId);
+      } else {
+        likes.add(userId);
+      }
+      
+      await postRef.update({
+        'likes': likes,
+        'likesCount': likes.length,
+      });
     } catch (e) {
       throw Exception('Failed to toggle like: $e');
     }
@@ -20,9 +41,29 @@ class SocialService {
     required String content,
   }) async {
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
+      final comment = SocialComment(
+        id: '', // Will be set by Firestore
+        postId: postId,
+        authorId: authorId,
+        authorName: authorName,
+        authorAvatar: authorAvatar,
+        content: content,
+        createdAt: DateTime.now(),
+        likesCount: 0,
+        isLiked: false,
+        replies: [],
+      );
+      
+      final docRef = await _firestore.collection('comments').add(comment.toJson());
+      
+      // Update post comment count
+      final postRef = _firestore.collection('posts').doc(postId);
+      await postRef.update({
+        'commentsCount': FieldValue.increment(1),
+      });
+      
       return SocialComment(
-        id: 'comment_${DateTime.now().millisecondsSinceEpoch}',
+        id: docRef.id,
         postId: postId,
         authorId: authorId,
         authorName: authorName,
@@ -41,17 +82,57 @@ class SocialService {
   // Get user posts
   static Future<List<SocialPost>> getUserPosts(String userId) async {
     try {
-      await Future.delayed(const Duration(milliseconds: 500));
-      return _createMockPosts();
+      final snapshot = await _firestore
+          .collection('posts')
+          .where('authorId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return SocialPost.fromJson(data);
+      }).toList();
     } catch (e) {
-      throw Exception('Failed to get user posts: $e');
+      // Fallback to mock data if Firestore fails
+      print('Failed to get user posts from Firestore: $e');
+      return _createMockPosts().where((p) => p.authorId == userId).toList();
     }
   }
 
   // Toggle follow user
   static Future<void> toggleFollowUser(String userId, String currentUserId) async {
     try {
-      await Future.delayed(const Duration(milliseconds: 300));
+      final followRef = _firestore.collection('follows').doc('${currentUserId}_$userId');
+      final doc = await followRef.get();
+      
+      if (doc.exists) {
+        // Unfollow
+        await followRef.delete();
+        
+        // Update counts
+        await _firestore.collection('users').doc(currentUserId).update({
+          'followingCount': FieldValue.increment(-1),
+        });
+        await _firestore.collection('users').doc(userId).update({
+          'followersCount': FieldValue.increment(-1),
+        });
+      } else {
+        // Follow
+        await followRef.set({
+          'followerId': currentUserId,
+          'followingId': userId,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+        
+        // Update counts
+        await _firestore.collection('users').doc(currentUserId).update({
+          'followingCount': FieldValue.increment(1),
+        });
+        await _firestore.collection('users').doc(userId).update({
+          'followersCount': FieldValue.increment(1),
+        });
+      }
     } catch (e) {
       throw Exception('Failed to toggle follow: $e');
     }
@@ -60,10 +141,36 @@ class SocialService {
   // Posts
   static Future<List<SocialPost>> getFeed(String userId) async {
     try {
-      // In real app, make API call to get social feed
-      return _createMockPosts();
+      // Get posts from followed users
+      final followsSnapshot = await _firestore
+          .collection('follows')
+          .where('followerId', isEqualTo: userId)
+          .get();
+      
+      final followingIds = followsSnapshot.docs
+          .map((doc) => doc.data()['followingId'] as String)
+          .toList();
+      
+      // Add user's own ID
+      followingIds.add(userId);
+      
+      // Get posts from these users
+      final postsSnapshot = await _firestore
+          .collection('posts')
+          .where('authorId', whereIn: followingIds.take(10).toList()) // Firestore limit
+          .orderBy('createdAt', descending: true)
+          .limit(50)
+          .get();
+      
+      return postsSnapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return SocialPost.fromJson(data);
+      }).toList();
     } catch (e) {
-      throw Exception('Failed to get feed: $e');
+      // Fallback to mock data if Firestore fails
+      print('Failed to get feed from Firestore: $e');
+      return _createMockPosts();
     }
   }
 
@@ -82,7 +189,7 @@ class SocialService {
   }) async {
     try {
       final post = SocialPost(
-        id: 'post_${DateTime.now().millisecondsSinceEpoch}',
+        id: '', // Will be set by Firestore
         authorId: authorId,
         authorName: authorName,
         authorAvatar: authorAvatar,
@@ -97,10 +204,24 @@ class SocialService {
         createdAt: DateTime.now(),
       );
 
-      // In real app, save post to database
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Save post to Firestore
+      final docRef = await _firestore.collection('posts').add(post.toJson());
 
-      return post;
+      return SocialPost(
+        id: docRef.id,
+        authorId: authorId,
+        authorName: authorName,
+        authorAvatar: authorAvatar,
+        content: content,
+        images: images,
+        videos: videos,
+        location: location,
+        tags: tags,
+        mentions: mentions,
+        type: type,
+        privacy: privacy,
+        createdAt: DateTime.now(),
+      );
     } catch (e) {
       throw Exception('Failed to create post: $e');
     }
