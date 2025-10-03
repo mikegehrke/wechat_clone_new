@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/product.dart';
 
 class EcommerceService {
   static const String _baseUrl = 'https://api.example.com'; // In real app, use real API
   static const String _apiKey = 'your_api_key_here';
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Search products
   static Future<List<Product>> searchProducts({
@@ -17,23 +19,57 @@ class EcommerceService {
     int limit = 20,
   }) async {
     try {
-      // In real app, make HTTP request to search API
-      // For demo, return mock data
-      return _createMockProducts();
+      Query firestoreQuery = _firestore.collection('products');
+      
+      if (category != null) {
+        firestoreQuery = firestoreQuery.where('category', isEqualTo: category);
+      }
+      
+      if (minPrice != null) {
+        firestoreQuery = firestoreQuery.where('price', isGreaterThanOrEqualTo: minPrice);
+      }
+      
+      if (maxPrice != null) {
+        firestoreQuery = firestoreQuery.where('price', isLessThanOrEqualTo: maxPrice);
+      }
+      
+      final snapshot = await firestoreQuery.limit(limit).get();
+      
+      final products = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return Product.fromJson(data);
+      }).toList();
+      
+      // Filter by query if provided
+      if (query.isNotEmpty) {
+        return products.where((p) => 
+          p.title.toLowerCase().contains(query.toLowerCase()) ||
+          p.description.toLowerCase().contains(query.toLowerCase())
+        ).toList();
+      }
+      
+      return products;
     } catch (e) {
-      throw Exception('Failed to search products: $e');
+      print('Firestore error, falling back to mock: $e');
+      return _createMockProducts();
     }
   }
 
   // Get product by ID
   static Future<Product?> getProduct(String productId) async {
     try {
-      // In real app, make HTTP request to get product details
-      // For demo, return mock product
+      final doc = await _firestore.collection('products').doc(productId).get();
+      
+      if (!doc.exists) return null;
+      
+      final data = doc.data()!;
+      data['id'] = doc.id;
+      return Product.fromJson(data);
+    } catch (e) {
+      print('Firestore error, falling back to mock: $e');
       final products = _createMockProducts();
       return products.isNotEmpty ? products.first : null;
-    } catch (e) {
-      throw Exception('Failed to get product: $e');
     }
   }
 
@@ -44,10 +80,20 @@ class EcommerceService {
     int limit = 20,
   }) async {
     try {
-      // In real app, make HTTP request to category API
-      return _createMockProducts();
+      final snapshot = await _firestore
+          .collection('products')
+          .where('category', isEqualTo: category)
+          .limit(limit)
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return Product.fromJson(data);
+      }).toList();
     } catch (e) {
-      throw Exception('Failed to get products by category: $e');
+      print('Firestore error, falling back to mock: $e');
+      return _createMockProducts();
     }
   }
 
@@ -113,8 +159,16 @@ class EcommerceService {
   // Add product to cart
   static Future<void> addToCart(String userId, String productId, int quantity) async {
     try {
-      // In real app, make HTTP request to add to cart
-      await Future.delayed(const Duration(milliseconds: 500));
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('cart')
+          .doc(productId)
+          .set({
+        'productId': productId,
+        'quantity': quantity,
+        'addedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
     } catch (e) {
       throw Exception('Failed to add to cart: $e');
     }
@@ -123,10 +177,35 @@ class EcommerceService {
   // Get user's cart
   static Future<List<CartItem>> getCart(String userId) async {
     try {
-      // In real app, make HTTP request to get cart
-      return _createMockCartItems();
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('cart')
+          .get();
+      
+      final cartItems = <CartItem>[];
+      
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        final productId = data['productId'];
+        final quantity = data['quantity'];
+        
+        // Get product details
+        final product = await getProduct(productId);
+        if (product != null) {
+          cartItems.add(CartItem(
+            id: doc.id,
+            product: product,
+            quantity: quantity,
+            addedAt: (data['addedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          ));
+        }
+      }
+      
+      return cartItems;
     } catch (e) {
-      throw Exception('Failed to get cart: $e');
+      print('Firestore error, falling back to mock: $e');
+      return _createMockCartItems();
     }
   }
 

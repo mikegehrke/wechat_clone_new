@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PushNotification {
   final String id;
@@ -92,6 +94,10 @@ class PushNotificationsService {
   static const String _tokenKey = 'push_token';
   static const String _settingsKey = 'push_settings';
   
+  // Firebase instances
+  static final FirebaseMessaging _fcm = FirebaseMessaging.instance;
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
   // Singleton
   static final PushNotificationsService _instance = PushNotificationsService._internal();
   factory PushNotificationsService() => _instance;
@@ -117,12 +123,27 @@ class PushNotificationsService {
   // Permission Management
   Future<bool> requestPermission() async {
     try {
-      // In real app, request actual push permission
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Request FCM permission
+      final settings = await _fcm.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
+      );
       
-      // Mock permission granted
+      final granted = settings.authorizationStatus == AuthorizationStatus.authorized;
+      _settings['permissionGranted'] = granted;
       await _saveSettingsToStorage();
-      return true;
+      
+      if (granted) {
+        // Get and save FCM token
+        await getPushToken();
+      }
+      
+      return granted;
     } catch (e) {
       return false;
     }
@@ -130,10 +151,8 @@ class PushNotificationsService {
 
   Future<bool> checkPermission() async {
     try {
-      // In real app, check actual permission status
-      await Future.delayed(const Duration(milliseconds: 100));
-      
-      return _settings['permissionGranted'] ?? false;
+      final settings = await _fcm.getNotificationSettings();
+      return settings.authorizationStatus == AuthorizationStatus.authorized;
     } catch (e) {
       return false;
     }
@@ -142,12 +161,17 @@ class PushNotificationsService {
   // Token Management
   Future<String?> getPushToken() async {
     try {
-      // In real app, get actual push token from FCM/APNs
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Get FCM token
+      _pushToken = await _fcm.getToken();
       
-      if (_pushToken == null) {
-        _pushToken = 'mock_token_${DateTime.now().millisecondsSinceEpoch}';
+      if (_pushToken != null) {
         await _saveTokenToStorage();
+        
+        // Save token to Firestore for backend use
+        // await _firestore.collection('fcmTokens').doc('user_id').set({
+        //   'token': _pushToken,
+        //   'updatedAt': FieldValue.serverTimestamp(),
+        // });
       }
       
       return _pushToken;
@@ -158,11 +182,13 @@ class PushNotificationsService {
 
   Future<void> refreshToken() async {
     try {
-      // In real app, refresh actual push token
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Delete old token and get new one
+      await _fcm.deleteToken();
+      _pushToken = await _fcm.getToken();
       
-      _pushToken = 'mock_token_${DateTime.now().millisecondsSinceEpoch}';
-      await _saveTokenToStorage();
+      if (_pushToken != null) {
+        await _saveTokenToStorage();
+      }
     } catch (e) {
       throw Exception('Failed to refresh token: $e');
     }
@@ -194,8 +220,8 @@ class PushNotificationsService {
       _notifications.insert(0, notification);
       await _saveNotificationsToStorage();
 
-      // In real app, send actual push notification
-      await _showLocalNotification(notification);
+      // Save to Firestore for persistence
+      await _firestore.collection('notifications').add(notification.toJson());
     } catch (e) {
       throw Exception('Failed to send notification: $e');
     }
