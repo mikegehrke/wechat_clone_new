@@ -241,7 +241,7 @@ class EcommerceService {
   }
 
   // Create order
-  static Future<Order> createOrder({
+  static Future<product.Order> createOrder({
     required String userId,
     required List<CartItem> items,
     required ShippingAddress shippingAddress,
@@ -277,7 +277,7 @@ class EcommerceService {
   }
 
   // Get user's orders
-  static Future<List<Order>> getUserOrders(String userId) async {
+  static Future<List<product.Order>> getUserOrders(String userId) async {
     try {
       // In real app, make HTTP request to get orders
       return _createMockOrders();
@@ -287,7 +287,7 @@ class EcommerceService {
   }
 
   // Get order by ID
-  static Future<Order?> getOrder(String orderId) async {
+  static Future<product.Order?> getOrder(String orderId) async {
     try {
       // In real app, make HTTP request to get order
       final orders = _createMockOrders();
@@ -403,7 +403,7 @@ class EcommerceService {
     }).toList();
   }
 
-  static List<Order> _createMockOrders() {
+  static List<product.Order> _createMockOrders() {
     final cartItems = _createMockCartItems();
     return List.generate(5, (index) {
       final subtotal = cartItems.fold(0.0, (sum, item) => sum + item.totalPrice);
