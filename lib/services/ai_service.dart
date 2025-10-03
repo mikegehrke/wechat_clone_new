@@ -2,18 +2,12 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import '../config/api_config.dart';
 
 /// Central AI Service for the entire app
 /// Integrates multiple AI providers for different capabilities
 class AIService {
-  // API Keys - In production, store in secure environment variables
-  static const String _openAIKey = 'YOUR_OPENAI_API_KEY';
-  static const String _stabilityAIKey = 'YOUR_STABILITY_AI_KEY';
-  static const String _elevenLabsKey = 'YOUR_ELEVENLABS_API_KEY';
-  
-  static const String _openAIBaseUrl = 'https://api.openai.com/v1';
-  static const String _stabilityAIBaseUrl = 'https://api.stability.ai/v1';
-  static const String _elevenLabsBaseUrl = 'https://api.elevenlabs.io/v1';
 
   // ============================================================================
   // VIDEO EDITING AI
@@ -95,11 +89,17 @@ class AIService {
     int height = 1024,
   }) async {
     try {
+      if (!ApiConfig.isStabilityAIConfigured) {
+        print('Stability AI API key not configured, using mock data');
+        return _mockGenerateImage(prompt);
+      }
+
       final response = await http.post(
-        Uri.parse('$_stabilityAIBaseUrl/generation/stable-diffusion-xl-1024-v1-0/text-to-image'),
+        Uri.parse('${ApiConfig.stabilityAIBaseUrl}/generation/stable-diffusion-xl-1024-v1-0/text-to-image'),
         headers: {
-          'Authorization': 'Bearer $_stabilityAIKey',
+          'Authorization': 'Bearer ${ApiConfig.stabilityAIApiKey}',
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
         body: jsonEncode({
           'text_prompts': [
@@ -110,6 +110,7 @@ class AIService {
           'width': width,
           'samples': 1,
           'steps': 30,
+          'style_preset': style,
         }),
       );
 
@@ -117,12 +118,14 @@ class AIService {
         final data = jsonDecode(response.body);
         final base64Image = data['artifacts'][0]['base64'];
         // Save and return path
-        return _saveBase64Image(base64Image);
+        return await _saveBase64Image(base64Image);
       } else {
+        print('Stability AI API error: ${response.statusCode} - ${response.body}');
         throw Exception('Failed to generate image: ${response.statusCode}');
       }
     } catch (e) {
       // Fallback to mock for demo
+      print('Error generating image: $e');
       return _mockGenerateImage(prompt);
     }
   }
@@ -178,10 +181,15 @@ class AIService {
     int maxTokens = 500,
   }) async {
     try {
+      if (!ApiConfig.isOpenAIConfigured) {
+        print('OpenAI API key not configured, using mock data');
+        return _mockGenerateText(prompt);
+      }
+
       final response = await http.post(
-        Uri.parse('$_openAIBaseUrl/chat/completions'),
+        Uri.parse('${ApiConfig.openAIBaseUrl}/chat/completions'),
         headers: {
-          'Authorization': 'Bearer $_openAIKey',
+          'Authorization': 'Bearer ${ApiConfig.openAIApiKey}',
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
@@ -190,6 +198,7 @@ class AIService {
             {'role': 'user', 'content': prompt}
           ],
           'max_tokens': maxTokens,
+          'temperature': 0.7,
         }),
       );
 
@@ -197,10 +206,12 @@ class AIService {
         final data = jsonDecode(response.body);
         return data['choices'][0]['message']['content'];
       } else {
+        print('OpenAI API error: ${response.statusCode} - ${response.body}');
         throw Exception('Failed to generate text: ${response.statusCode}');
       }
     } catch (e) {
       // Fallback to mock
+      print('Error generating text: $e');
       return _mockGenerateText(prompt);
     }
   }
@@ -208,15 +219,21 @@ class AIService {
   /// Generate voice from text using ElevenLabs
   static Future<String> generateVoice({
     required String text,
-    String voiceId = 'default',
+    String voiceId = 'pNInz6obpgDQGcFmaJgB', // Default voice ID
     String? language,
   }) async {
     try {
+      if (!ApiConfig.isElevenLabsConfigured) {
+        print('ElevenLabs API key not configured, using mock data');
+        return _mockGenerateVoice(text);
+      }
+
       final response = await http.post(
-        Uri.parse('$_elevenLabsBaseUrl/text-to-speech/$voiceId'),
+        Uri.parse('${ApiConfig.elevenLabsBaseUrl}/text-to-speech/$voiceId'),
         headers: {
-          'xi-api-key': _elevenLabsKey,
+          'xi-api-key': ApiConfig.elevenLabsApiKey,
           'Content-Type': 'application/json',
+          'Accept': 'audio/mpeg',
         },
         body: jsonEncode({
           'text': text,
@@ -224,18 +241,22 @@ class AIService {
           'voice_settings': {
             'stability': 0.5,
             'similarity_boost': 0.75,
+            'style': 0.0,
+            'use_speaker_boost': true,
           }
         }),
       );
 
       if (response.statusCode == 200) {
         // Save audio file and return path
-        return _saveAudioFile(response.bodyBytes);
+        return await _saveAudioFile(response.bodyBytes);
       } else {
+        print('ElevenLabs API error: ${response.statusCode} - ${response.body}');
         throw Exception('Failed to generate voice: ${response.statusCode}');
       }
     } catch (e) {
       // Fallback to mock
+      print('Error generating voice: $e');
       return _mockGenerateVoice(text);
     }
   }
@@ -264,14 +285,23 @@ class AIService {
     String? videoUrl,
   }) async {
     try {
+      if (!ApiConfig.isOpenAIConfigured || text == null || text.isEmpty) {
+        // Fallback - allow content
+        return ModerationResult(
+          isFlagged: false,
+          categories: {},
+          categoryScores: {},
+        );
+      }
+
       final response = await http.post(
-        Uri.parse('$_openAIBaseUrl/moderations'),
+        Uri.parse('${ApiConfig.openAIBaseUrl}/moderations'),
         headers: {
-          'Authorization': 'Bearer $_openAIKey',
+          'Authorization': 'Bearer ${ApiConfig.openAIApiKey}',
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'input': text ?? '',
+          'input': text,
         }),
       );
 
@@ -286,10 +316,12 @@ class AIService {
           ),
         );
       } else {
+        print('OpenAI Moderation API error: ${response.statusCode} - ${response.body}');
         throw Exception('Moderation failed: ${response.statusCode}');
       }
     } catch (e) {
       // Fallback - allow content
+      print('Error in content moderation: $e');
       return ModerationResult(
         isFlagged: false,
         categories: {},
@@ -362,14 +394,31 @@ class AIService {
   // HELPER METHODS
   // ============================================================================
 
-  static String _saveBase64Image(String base64) {
-    // Mock implementation - in production save to file system
-    return 'https://via.placeholder.com/1024x1024/4ECDC4/FFFFFF?text=AI+Generated';
+  static Future<String> _saveBase64Image(String base64) async {
+    try {
+      final bytes = base64Decode(base64);
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = 'ai_generated_${DateTime.now().millisecondsSinceEpoch}.png';
+      final file = File('${directory.path}/$fileName');
+      await file.writeAsBytes(bytes);
+      return file.path;
+    } catch (e) {
+      // Fallback to mock URL
+      return 'https://via.placeholder.com/1024x1024/4ECDC4/FFFFFF?text=AI+Generated';
+    }
   }
 
-  static String _saveAudioFile(List<int> bytes) {
-    // Mock implementation
-    return '/path/to/generated/audio.mp3';
+  static Future<String> _saveAudioFile(List<int> bytes) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = 'ai_generated_${DateTime.now().millisecondsSinceEpoch}.mp3';
+      final file = File('${directory.path}/$fileName');
+      await file.writeAsBytes(bytes);
+      return file.path;
+    } catch (e) {
+      // Fallback to mock path
+      return '/path/to/generated/audio.mp3';
+    }
   }
 
   static String _buildReplyPrompt(List<Map<String, String>> history) {

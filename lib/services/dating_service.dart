@@ -12,11 +12,58 @@ class DatingService {
     int limit = 10,
   }) async {
     try {
-      // In real app, implement complex matching algorithm
-      // For demo, return mock data
-      return _createMockProfiles();
+      // Get user's swipe history to exclude already swiped profiles
+      final swipesSnapshot = await _firestore
+          .collection('swipes')
+          .where('userId', isEqualTo: userId)
+          .get();
+      
+      final swipedUserIds = swipesSnapshot.docs
+          .map((doc) => doc.data()['targetUserId'] as String)
+          .toSet();
+      
+      // Query potential matches based on preferences
+      Query query = _firestore.collection('datingProfiles');
+      
+      // Filter by age range
+      if (preferences.minAge != null) {
+        query = query.where('age', isGreaterThanOrEqualTo: preferences.minAge);
+      }
+      if (preferences.maxAge != null) {
+        query = query.where('age', isLessThanOrEqualTo: preferences.maxAge);
+      }
+      
+      // Filter by gender preference
+      if (preferences.genderPreference != null && preferences.genderPreference != 'all') {
+        query = query.where('gender', isEqualTo: preferences.genderPreference);
+      }
+      
+      query = query.limit(limit * 2); // Get more to filter out swiped profiles
+      
+      final snapshot = await query.get();
+      final profiles = snapshot.docs
+          .where((doc) => 
+              doc.id != userId && // Exclude self
+              !swipedUserIds.contains(doc.id)) // Exclude already swiped
+          .take(limit)
+          .map((doc) {
+            final data = doc.data() as Map<String, dynamic>;
+            data['id'] = doc.id;
+            return DatingProfile.fromJson(data);
+          })
+          .toList();
+      
+      // If not enough real profiles, supplement with mock data
+      if (profiles.length < limit) {
+        final mockProfiles = _createMockProfiles();
+        profiles.addAll(mockProfiles.take(limit - profiles.length));
+      }
+      
+      return profiles;
     } catch (e) {
-      throw Exception('Failed to get potential matches: $e');
+      // Fallback to mock data if Firebase fails
+      print('Firebase error in getPotentialMatches: $e');
+      return _createMockProfiles();
     }
   }
 

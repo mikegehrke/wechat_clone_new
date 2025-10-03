@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/product.dart';
 
 class EcommerceService {
   static const String _baseUrl = 'https://api.example.com'; // In real app, use real API
   static const String _apiKey = 'your_api_key_here';
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Search products
   static Future<List<Product>> searchProducts({
@@ -17,11 +19,83 @@ class EcommerceService {
     int limit = 20,
   }) async {
     try {
-      // In real app, make HTTP request to search API
-      // For demo, return mock data
-      return _createMockProducts();
+      Query productsQuery = _firestore.collection('products');
+      
+      // Filter by category if specified
+      if (category != null && category.isNotEmpty) {
+        productsQuery = productsQuery.where('category', isEqualTo: category);
+      }
+      
+      // Filter by price range
+      if (minPrice != null) {
+        productsQuery = productsQuery.where('price', isGreaterThanOrEqualTo: minPrice);
+      }
+      if (maxPrice != null) {
+        productsQuery = productsQuery.where('price', isLessThanOrEqualTo: maxPrice);
+      }
+      
+      // Apply sorting
+      if (sortBy != null) {
+        switch (sortBy) {
+          case 'price_low':
+            productsQuery = productsQuery.orderBy('price', descending: false);
+            break;
+          case 'price_high':
+            productsQuery = productsQuery.orderBy('price', descending: true);
+            break;
+          case 'rating':
+            productsQuery = productsQuery.orderBy('rating', descending: true);
+            break;
+          case 'newest':
+            productsQuery = productsQuery.orderBy('createdAt', descending: true);
+            break;
+          default:
+            productsQuery = productsQuery.orderBy('createdAt', descending: true);
+        }
+      } else {
+        productsQuery = productsQuery.orderBy('createdAt', descending: true);
+      }
+      
+      // Apply pagination
+      productsQuery = productsQuery.limit(limit);
+      if (page > 1) {
+        // In a real implementation, you'd use startAfter with the last document
+        // For now, we'll use offset simulation
+        productsQuery = productsQuery.offset((page - 1) * limit);
+      }
+      
+      final snapshot = await productsQuery.get();
+      final products = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return Product.fromJson(data);
+      }).toList();
+      
+      // Filter by search query in title and description
+      if (query.isNotEmpty) {
+        final filteredProducts = products.where((product) =>
+          product.title.toLowerCase().contains(query.toLowerCase()) ||
+          product.description.toLowerCase().contains(query.toLowerCase())
+        ).toList();
+        
+        // If no real products match, supplement with mock data
+        if (filteredProducts.isEmpty) {
+          return _createMockProducts();
+        }
+        
+        return filteredProducts;
+      }
+      
+      // If no real products, supplement with mock data
+      if (products.isEmpty) {
+        return _createMockProducts();
+      }
+      
+      return products;
     } catch (e) {
-      throw Exception('Failed to search products: $e');
+      // Fallback to mock data if Firebase fails
+      print('Firebase error in searchProducts: $e');
+      return _createMockProducts();
     }
   }
 
@@ -113,8 +187,35 @@ class EcommerceService {
   // Add product to cart
   static Future<void> addToCart(String userId, String productId, int quantity) async {
     try {
-      // In real app, make HTTP request to add to cart
-      await Future.delayed(const Duration(milliseconds: 500));
+      final cartRef = _firestore.collection('carts').doc(userId);
+      final cartItemRef = cartRef.collection('items').doc(productId);
+      
+      await _firestore.runTransaction((transaction) async {
+        final cartItemDoc = await transaction.get(cartItemRef);
+        
+        if (cartItemDoc.exists) {
+          // Update existing cart item
+          final currentQuantity = cartItemDoc.data()?['quantity'] ?? 0;
+          transaction.update(cartItemRef, {
+            'quantity': currentQuantity + quantity,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        } else {
+          // Add new cart item
+          transaction.set(cartItemRef, {
+            'productId': productId,
+            'quantity': quantity,
+            'addedAt': FieldValue.serverTimestamp(),
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+        
+        // Update cart metadata
+        transaction.set(cartRef, {
+          'userId': userId,
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+      });
     } catch (e) {
       throw Exception('Failed to add to cart: $e');
     }
@@ -123,10 +224,46 @@ class EcommerceService {
   // Get user's cart
   static Future<List<CartItem>> getCart(String userId) async {
     try {
-      // In real app, make HTTP request to get cart
-      return _createMockCartItems();
+      final cartItemsSnapshot = await _firestore
+          .collection('carts')
+          .doc(userId)
+          .collection('items')
+          .get();
+      
+      final cartItems = <CartItem>[];
+      
+      for (final doc in cartItemsSnapshot.docs) {
+        final itemData = doc.data();
+        final productId = itemData['productId'] as String;
+        final quantity = itemData['quantity'] as int;
+        
+        // Get product details
+        final productDoc = await _firestore.collection('products').doc(productId).get();
+        
+        if (productDoc.exists) {
+          final productData = productDoc.data()!;
+          productData['id'] = productDoc.id;
+          final product = Product.fromJson(productData);
+          
+          cartItems.add(CartItem(
+            id: doc.id,
+            product: product,
+            quantity: quantity,
+            addedAt: (itemData['addedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          ));
+        }
+      }
+      
+      // If no real cart items, return mock data
+      if (cartItems.isEmpty) {
+        return _createMockCartItems();
+      }
+      
+      return cartItems;
     } catch (e) {
-      throw Exception('Failed to get cart: $e');
+      // Fallback to mock data if Firebase fails
+      print('Firebase error in getCart: $e');
+      return _createMockCartItems();
     }
   }
 

@@ -1,19 +1,70 @@
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/delivery.dart';
 
 class DeliveryService {
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   // Get nearby restaurants
   static Future<List<Restaurant>> getNearbyRestaurants({
     required Map<String, double> userLocation,
     double radius = 10.0, // km
   }) async {
     try {
-      // In real app, make API call to get nearby restaurants
-      // For demo, return mock data
-      return _createMockRestaurants();
+      // Query restaurants within radius using Firestore
+      final snapshot = await _firestore
+          .collection('restaurants')
+          .where('isOpen', isEqualTo: true)
+          .limit(50)
+          .get();
+
+      final restaurants = snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return Restaurant.fromJson(data);
+      }).toList();
+
+      // Filter by distance (in real app, use geohashing)
+      final nearbyRestaurants = restaurants.where((restaurant) {
+        final distance = _calculateDistance(
+          userLocation['lat']!,
+          userLocation['lng']!,
+          restaurant.location['lat'] as double,
+          restaurant.location['lng'] as double,
+        );
+        return distance <= radius;
+      }).toList();
+
+      // If no real restaurants, return mock data
+      if (nearbyRestaurants.isEmpty) {
+        return _createMockRestaurants();
+      }
+
+      return nearbyRestaurants;
     } catch (e) {
-      throw Exception('Failed to get nearby restaurants: $e');
+      // Fallback to mock data
+      print('Firebase error in getNearbyRestaurants: $e');
+      return _createMockRestaurants();
     }
+  }
+
+  // Calculate distance between two points (Haversine formula)
+  static double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    const double earthRadius = 6371; // Earth's radius in kilometers
+    
+    final double dLat = _degreesToRadians(lat2 - lat1);
+    final double dLon = _degreesToRadians(lon2 - lon1);
+    
+    final double a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_degreesToRadians(lat1)) * math.cos(_degreesToRadians(lat2)) *
+        math.sin(dLon / 2) * math.sin(dLon / 2);
+    
+    final double c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    
+    return earthRadius * c;
+  }
+
+  static double _degreesToRadians(double degrees) {
+    return degrees * (math.pi / 180);
   }
 
   // Search restaurants

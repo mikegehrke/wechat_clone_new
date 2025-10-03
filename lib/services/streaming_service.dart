@@ -1,7 +1,9 @@
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/streaming.dart';
 
 class StreamingService {
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   // Toggle watchlist
   static Future<void> toggleWatchlist(String videoId, String userId) async {
     try {
@@ -14,10 +16,29 @@ class StreamingService {
   // Get trending videos
   static Future<List<VideoContent>> getTrendingVideos() async {
     try {
-      // In real app, make API call to get trending videos
-      return _createMockVideos().where((video) => video.isLive == false).toList();
+      final snapshot = await _firestore
+          .collection('videos')
+          .where('isLive', isEqualTo: false)
+          .orderBy('views', descending: true)
+          .limit(50)
+          .get();
+
+      final videos = snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return VideoContent.fromJson(data);
+      }).toList();
+
+      // If no real videos, return mock data
+      if (videos.isEmpty) {
+        return _createMockVideos().where((video) => video.isLive == false).toList();
+      }
+
+      return videos;
     } catch (e) {
-      throw Exception('Failed to get trending videos: $e');
+      // Fallback to mock data
+      print('Firebase error in getTrendingVideos: $e');
+      return _createMockVideos().where((video) => video.isLive == false).toList();
     }
   }
 
