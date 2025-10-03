@@ -1,12 +1,28 @@
-import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/professional.dart';
 
 class ProfessionalService {
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static const String _profilesCollection = 'professionalProfiles';
+  static const String _postsCollection = 'professionalPosts';
+  static const String _jobsCollection = 'jobPostings';
+  static const String _connectionsSubcollection = 'connections';
+  static const String _requestsSubcollection = 'connectionRequests';
+  static const String _usersCollection = 'users';
   // Toggle save job
   static Future<void> toggleSaveJob(String jobId, String userId) async {
     try {
-      // In real app, save to backend
-      await Future.delayed(const Duration(milliseconds: 300));
+      final savedRef = _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection('savedJobs')
+          .doc(jobId);
+      final snap = await savedRef.get();
+      if (snap.exists) {
+        await savedRef.delete();
+      } else {
+        await savedRef.set({'savedAt': DateTime.now().toIso8601String()});
+      }
     } catch (e) {
       throw Exception('Failed to toggle save job: $e');
     }
@@ -15,9 +31,16 @@ class ProfessionalService {
   // Get connection suggestions
   static Future<List<ProfessionalProfile>> getConnectionSuggestions(String userId) async {
     try {
-      // In real app, fetch from backend
-      await Future.delayed(const Duration(milliseconds: 500));
-      return List.generate(5, (i) => _createMockProfile('suggestion_$i'));
+      final snapshot = await _firestore
+          .collection(_profilesCollection)
+          .orderBy('createdAt', descending: true)
+          .limit(20)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return ProfessionalProfile.fromJson(data);
+      }).where((p) => p.userId != userId).toList();
     } catch (e) {
       throw Exception('Failed to get connection suggestions: $e');
     }
@@ -26,8 +49,16 @@ class ProfessionalService {
   // Toggle connection
   static Future<void> toggleConnect(String profileId, String userId) async {
     try {
-      // In real app, toggle connection in backend
-      await Future.delayed(const Duration(milliseconds: 300));
+      final meRef = _firestore.collection(_profilesCollection).doc(userId).collection(_connectionsSubcollection).doc(profileId);
+      final otherRef = _firestore.collection(_profilesCollection).doc(profileId).collection(_connectionsSubcollection).doc(userId);
+      final snap = await meRef.get();
+      if (snap.exists) {
+        await meRef.delete();
+        await otherRef.delete();
+      } else {
+        await meRef.set({'connectedAt': DateTime.now().toIso8601String()});
+        await otherRef.set({'connectedAt': DateTime.now().toIso8601String()});
+      }
     } catch (e) {
       throw Exception('Failed to toggle connection: $e');
     }
@@ -36,8 +67,11 @@ class ProfessionalService {
   // Get professional profile
   static Future<ProfessionalProfile?> getProfile(String userId) async {
     try {
-      // In real app, make API call to get profile
-      return _createMockProfile(userId);
+      final doc = await _firestore.collection(_profilesCollection).doc(userId).get();
+      if (!doc.exists) return null;
+      final data = Map<String, dynamic>.from(doc.data()!);
+      data['id'] = doc.id;
+      return ProfessionalProfile.fromJson(data);
     } catch (e) {
       throw Exception('Failed to get profile: $e');
     }
@@ -46,8 +80,7 @@ class ProfessionalService {
   // Update professional profile
   static Future<void> updateProfile(ProfessionalProfile profile) async {
     try {
-      // In real app, make API call to update profile
-      await Future.delayed(const Duration(milliseconds: 500));
+      await _firestore.collection(_profilesCollection).doc(profile.userId).set(profile.toJson(), SetOptions(merge: true));
     } catch (e) {
       throw Exception('Failed to update profile: $e');
     }
@@ -56,8 +89,16 @@ class ProfessionalService {
   // Get professional feed
   static Future<List<ProfessionalPost>> getFeed(String userId) async {
     try {
-      // In real app, make API call to get feed
-      return _createMockPosts();
+      final snapshot = await _firestore
+          .collection(_postsCollection)
+          .orderBy('createdAt', descending: true)
+          .limit(50)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return ProfessionalPost.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get feed: $e');
     }
@@ -72,23 +113,21 @@ class ProfessionalService {
     List<String> hashtags = const [],
   }) async {
     try {
+      final docRef = _firestore.collection(_postsCollection).doc();
       final post = ProfessionalPost(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: docRef.id,
         authorId: authorId,
-        authorName: 'John Doe', // In real app, get from profile
-        authorTitle: 'Software Engineer',
-        authorCompany: 'Tech Corp',
-        authorImageUrl: 'https://via.placeholder.com/50x50/4ECDC4/FFFFFF?text=JD',
+        authorName: '',
+        authorTitle: '',
+        authorCompany: '',
+        authorImageUrl: '',
         content: content,
         images: images,
         videos: videos,
         hashtags: hashtags,
         createdAt: DateTime.now(),
       );
-
-      // In real app, save post to database
-      await Future.delayed(const Duration(milliseconds: 500));
-
+      await docRef.set(post.toJson());
       return post;
     } catch (e) {
       throw Exception('Failed to create post: $e');
@@ -98,8 +137,18 @@ class ProfessionalService {
   // Like/unlike post
   static Future<void> toggleLike(String postId, String userId) async {
     try {
-      // In real app, make API call to toggle like
-      await Future.delayed(const Duration(milliseconds: 300));
+      final postRef = _firestore.collection(_postsCollection).doc(postId);
+      final likeRef = postRef.collection('likes').doc(userId);
+      await _firestore.runTransaction((tx) async {
+        final likeSnap = await tx.get(likeRef);
+        if (likeSnap.exists) {
+          tx.delete(likeRef);
+          tx.update(postRef, {'likesCount': FieldValue.increment(-1)});
+        } else {
+          tx.set(likeRef, {'userId': userId, 'createdAt': DateTime.now().toIso8601String()});
+          tx.update(postRef, {'likesCount': FieldValue.increment(1)});
+        }
+      });
     } catch (e) {
       throw Exception('Failed to toggle like: $e');
     }
@@ -108,8 +157,15 @@ class ProfessionalService {
   // Share post
   static Future<void> sharePost(String postId, String userId) async {
     try {
-      // In real app, make API call to share post
-      await Future.delayed(const Duration(milliseconds: 300));
+      final postRef = _firestore.collection(_postsCollection).doc(postId);
+      final shareRef = postRef.collection('shares').doc(userId);
+      await _firestore.runTransaction((tx) async {
+        final shareSnap = await tx.get(shareRef);
+        if (!shareSnap.exists) {
+          tx.set(shareRef, {'userId': userId, 'createdAt': DateTime.now().toIso8601String()});
+          tx.update(postRef, {'sharesCount': FieldValue.increment(1)});
+        }
+      });
     } catch (e) {
       throw Exception('Failed to share post: $e');
     }
@@ -123,8 +179,31 @@ class ProfessionalService {
     String? keyword,
   }) async {
     try {
-      // In real app, make API call to get job postings
-      return _createMockJobPostings();
+      Query<Map<String, dynamic>> q = _firestore.collection(_jobsCollection).orderBy('postedDate', descending: true).limit(50);
+      if (location != null && location.isNotEmpty) {
+        q = q.where('location', isEqualTo: location);
+      }
+      if (jobType != null && jobType.isNotEmpty) {
+        q = q.where('jobType', isEqualTo: jobType);
+      }
+      if (experienceLevel != null && experienceLevel.isNotEmpty) {
+        q = q.where('experienceLevel', isEqualTo: experienceLevel);
+      }
+      final snapshot = await q.get();
+      var jobs = snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return JobPosting.fromJson(data);
+      }).toList();
+      if (keyword != null && keyword.isNotEmpty) {
+        final norm = keyword.toLowerCase();
+        jobs = jobs.where((j) =>
+          j.title.toLowerCase().contains(norm) ||
+          j.companyName.toLowerCase().contains(norm) ||
+          j.description.toLowerCase().contains(norm)
+        ).toList();
+      }
+      return jobs;
     } catch (e) {
       throw Exception('Failed to get job postings: $e');
     }
@@ -133,8 +212,12 @@ class ProfessionalService {
   // Apply for job
   static Future<void> applyForJob(String jobId, String userId) async {
     try {
-      // In real app, make API call to apply for job
-      await Future.delayed(const Duration(milliseconds: 500));
+      final applicationRef = _firestore.collection(_jobsCollection).doc(jobId).collection('applications').doc(userId);
+      await applicationRef.set({
+        'userId': userId,
+        'appliedAt': DateTime.now().toIso8601String(),
+        'status': 'submitted',
+      });
     } catch (e) {
       throw Exception('Failed to apply for job: $e');
     }
@@ -143,8 +226,27 @@ class ProfessionalService {
   // Get connections
   static Future<List<ProfessionalProfile>> getConnections(String userId) async {
     try {
-      // In real app, make API call to get connections
-      return _createMockProfiles();
+      final snapshot = await _firestore
+          .collection(_profilesCollection)
+          .doc(userId)
+          .collection(_connectionsSubcollection)
+          .get();
+      final ids = snapshot.docs.map((d) => d.id).toList();
+      if (ids.isEmpty) return [];
+      final List<ProfessionalProfile> profiles = [];
+      for (var i = 0; i < ids.length; i += 10) {
+        final chunk = ids.sublist(i, i + 10 > ids.length ? ids.length : i + 10);
+        final snap = await _firestore
+            .collection(_profilesCollection)
+            .where(FieldPath.documentId, whereIn: chunk)
+            .get();
+        profiles.addAll(snap.docs.map((doc) {
+          final data = Map<String, dynamic>.from(doc.data());
+          data['id'] = doc.id;
+          return ProfessionalProfile.fromJson(data);
+        }));
+      }
+      return profiles;
     } catch (e) {
       throw Exception('Failed to get connections: $e');
     }
@@ -153,8 +255,17 @@ class ProfessionalService {
   // Send connection request
   static Future<void> sendConnectionRequest(String fromUserId, String toUserId) async {
     try {
-      // In real app, make API call to send connection request
-      await Future.delayed(const Duration(milliseconds: 500));
+      final requestRef = _firestore
+          .collection(_profilesCollection)
+          .doc(toUserId)
+          .collection(_requestsSubcollection)
+          .doc(fromUserId);
+      await requestRef.set({
+        'from': fromUserId,
+        'to': toUserId,
+        'status': 'pending',
+        'createdAt': DateTime.now().toIso8601String(),
+      });
     } catch (e) {
       throw Exception('Failed to send connection request: $e');
     }
@@ -163,8 +274,13 @@ class ProfessionalService {
   // Accept connection request
   static Future<void> acceptConnectionRequest(String requestId) async {
     try {
-      // In real app, make API call to accept connection request
-      await Future.delayed(const Duration(milliseconds: 500));
+      // requestId format: fromUserId->toUserId or simply fromUserId; here we just mark accepted globally
+      final q = await _firestore.collectionGroup(_requestsSubcollection)
+          .where(FieldPath.documentId, isEqualTo: requestId)
+          .get();
+      for (final doc in q.docs) {
+        await doc.reference.update({'status': 'accepted', 'acceptedAt': DateTime.now().toIso8601String()});
+      }
     } catch (e) {
       throw Exception('Failed to accept connection request: $e');
     }
@@ -173,8 +289,16 @@ class ProfessionalService {
   // Get network suggestions
   static Future<List<ProfessionalProfile>> getNetworkSuggestions(String userId) async {
     try {
-      // In real app, make API call to get network suggestions
-      return _createMockProfiles();
+      final snapshot = await _firestore
+          .collection(_profilesCollection)
+          .orderBy('connectionsCount', descending: true)
+          .limit(20)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return ProfessionalProfile.fromJson(data);
+      }).where((p) => p.userId != userId).toList();
     } catch (e) {
       throw Exception('Failed to get network suggestions: $e');
     }
@@ -183,12 +307,16 @@ class ProfessionalService {
   // Search professionals
   static Future<List<ProfessionalProfile>> searchProfessionals(String query) async {
     try {
-      // In real app, make API call to search professionals
-      final profiles = _createMockProfiles();
-      return profiles.where((profile) => 
-        profile.fullName.toLowerCase().contains(query.toLowerCase()) ||
-        profile.headline.toLowerCase().contains(query.toLowerCase()) ||
-        profile.currentCompany.toLowerCase().contains(query.toLowerCase())
+      final snapshot = await _firestore.collection(_profilesCollection).limit(100).get();
+      final normalized = query.toLowerCase();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return ProfessionalProfile.fromJson(data);
+      }).where((p) =>
+        p.fullName.toLowerCase().contains(normalized) ||
+        p.headline.toLowerCase().contains(normalized) ||
+        p.currentCompany.toLowerCase().contains(normalized)
       ).toList();
     } catch (e) {
       throw Exception('Failed to search professionals: $e');
@@ -225,7 +353,7 @@ class ProfessionalService {
     }
   }
 
-  // Mock data generators
+  // Mock data generators (kept for reference)
   static ProfessionalProfile _createMockProfile(String userId) {
     return ProfessionalProfile(
       id: 'profile_$userId',

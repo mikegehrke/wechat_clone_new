@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class PushNotification {
   final String id;
@@ -117,12 +118,18 @@ class PushNotificationsService {
   // Permission Management
   Future<bool> requestPermission() async {
     try {
-      // In real app, request actual push permission
-      await Future.delayed(const Duration(milliseconds: 500));
-      
-      // Mock permission granted
+      final settings = await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
+      );
+      _settings['permissionGranted'] = settings.authorizationStatus == AuthorizationStatus.authorized;
       await _saveSettingsToStorage();
-      return true;
+      return _settings['permissionGranted'] ?? false;
     } catch (e) {
       return false;
     }
@@ -130,10 +137,8 @@ class PushNotificationsService {
 
   Future<bool> checkPermission() async {
     try {
-      // In real app, check actual permission status
-      await Future.delayed(const Duration(milliseconds: 100));
-      
-      return _settings['permissionGranted'] ?? false;
+      final settings = await FirebaseMessaging.instance.getNotificationSettings();
+      return settings.authorizationStatus == AuthorizationStatus.authorized;
     } catch (e) {
       return false;
     }
@@ -142,14 +147,8 @@ class PushNotificationsService {
   // Token Management
   Future<String?> getPushToken() async {
     try {
-      // In real app, get actual push token from FCM/APNs
-      await Future.delayed(const Duration(milliseconds: 500));
-      
-      if (_pushToken == null) {
-        _pushToken = 'mock_token_${DateTime.now().millisecondsSinceEpoch}';
-        await _saveTokenToStorage();
-      }
-      
+      _pushToken = await FirebaseMessaging.instance.getToken();
+      await _saveTokenToStorage();
       return _pushToken;
     } catch (e) {
       return null;
@@ -158,10 +157,7 @@ class PushNotificationsService {
 
   Future<void> refreshToken() async {
     try {
-      // In real app, refresh actual push token
-      await Future.delayed(const Duration(milliseconds: 500));
-      
-      _pushToken = 'mock_token_${DateTime.now().millisecondsSinceEpoch}';
+      _pushToken = await FirebaseMessaging.instance.getToken(vapidKey: null);
       await _saveTokenToStorage();
     } catch (e) {
       throw Exception('Failed to refresh token: $e');

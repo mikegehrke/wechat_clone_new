@@ -1,12 +1,27 @@
-import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/game.dart';
 
 class GameService {
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static const String _gamesCollection = 'games';
+  static const String _reviewsCollection = 'gameReviews';
+  static const String _categoriesCollection = 'gameCategories';
+  static const String _leaderboardsCollection = 'gameLeaderboards';
+  static const String _usersCollection = 'users';
   // Get featured games
   static Future<List<Game>> getFeaturedGames() async {
     try {
-      // In real app, make API call to get featured games
-      return _createMockGames().where((game) => game.isFeatured).toList();
+      final snapshot = await _firestore
+          .collection(_gamesCollection)
+          .where('isFeatured', isEqualTo: true)
+          .orderBy('releaseDate', descending: true)
+          .limit(20)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return Game.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get featured games: $e');
     }
@@ -15,8 +30,17 @@ class GameService {
   // Get trending games
   static Future<List<Game>> getTrendingGames() async {
     try {
-      // In real app, make API call to get trending games
-      return _createMockGames().where((game) => game.isTrending).toList();
+      final snapshot = await _firestore
+          .collection(_gamesCollection)
+          .where('isTrending', isEqualTo: true)
+          .orderBy('releaseDate', descending: true)
+          .limit(20)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return Game.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get trending games: $e');
     }
@@ -25,8 +49,17 @@ class GameService {
   // Get games by category
   static Future<List<Game>> getGamesByCategory(String category) async {
     try {
-      // In real app, make API call to get games by category
-      return _createMockGames().where((game) => game.category == category).toList();
+      final snapshot = await _firestore
+          .collection(_gamesCollection)
+          .where('category', isEqualTo: category)
+          .orderBy('releaseDate', descending: true)
+          .limit(50)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return Game.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get games by category: $e');
     }
@@ -35,12 +68,19 @@ class GameService {
   // Search games
   static Future<List<Game>> searchGames(String query) async {
     try {
-      // In real app, make API call to search games
-      final allGames = _createMockGames();
-      return allGames.where((game) => 
-        game.title.toLowerCase().contains(query.toLowerCase()) ||
-        game.description.toLowerCase().contains(query.toLowerCase()) ||
-        game.tags.any((tag) => tag.toLowerCase().contains(query.toLowerCase()))
+      final snapshot = await _firestore
+          .collection(_gamesCollection)
+          .orderBy('releaseDate', descending: true)
+          .limit(100)
+          .get();
+      final normalized = query.toLowerCase();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return Game.fromJson(data);
+      }).where((g) => g.title.toLowerCase().contains(normalized)
+          || g.description.toLowerCase().contains(normalized)
+          || g.tags.any((t) => t.toLowerCase().contains(normalized))
       ).toList();
     } catch (e) {
       throw Exception('Failed to search games: $e');
@@ -50,9 +90,11 @@ class GameService {
   // Get game details
   static Future<Game?> getGameDetails(String gameId) async {
     try {
-      // In real app, make API call to get game details
-      final games = _createMockGames();
-      return games.firstWhere((game) => game.id == gameId);
+      final doc = await _firestore.collection(_gamesCollection).doc(gameId).get();
+      if (!doc.exists) return null;
+      final data = Map<String, dynamic>.from(doc.data()!);
+      data['id'] = doc.id;
+      return Game.fromJson(data);
     } catch (e) {
       throw Exception('Failed to get game details: $e');
     }
@@ -61,8 +103,17 @@ class GameService {
   // Get game reviews
   static Future<List<GameReview>> getGameReviews(String gameId) async {
     try {
-      // In real app, make API call to get game reviews
-      return _createMockReviews(gameId);
+      final snapshot = await _firestore
+          .collection(_reviewsCollection)
+          .where('gameId', isEqualTo: gameId)
+          .orderBy('createdAt', descending: true)
+          .limit(100)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return GameReview.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get game reviews: $e');
     }
@@ -77,8 +128,22 @@ class GameService {
     required String review,
   }) async {
     try {
-      // In real app, make API call to add review
-      await Future.delayed(const Duration(milliseconds: 500));
+      final docRef = _firestore.collection(_reviewsCollection).doc();
+      await docRef.set({
+        'id': docRef.id,
+        'gameId': gameId,
+        'userId': userId,
+        'username': username,
+        'rating': rating,
+        'review': review,
+        'createdAt': DateTime.now().toIso8601String(),
+        'helpfulCount': 0,
+        'isVerified': false,
+      });
+      // Optionally update aggregate rating on game document
+      await _firestore.collection(_gamesCollection).doc(gameId).set({
+        'reviewCount': FieldValue.increment(1),
+      }, SetOptions(merge: true));
     } catch (e) {
       throw Exception('Failed to add game review: $e');
     }
@@ -87,8 +152,12 @@ class GameService {
   // Get game categories
   static Future<List<GameCategory>> getGameCategories() async {
     try {
-      // In real app, make API call to get categories
-      return _createMockCategories();
+      final snapshot = await _firestore.collection(_categoriesCollection).orderBy('name').get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return GameCategory.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get game categories: $e');
     }
@@ -97,8 +166,18 @@ class GameService {
   // Get game achievements
   static Future<List<GameAchievement>> getGameAchievements(String gameId) async {
     try {
-      // In real app, make API call to get achievements
-      return _createMockAchievements(gameId);
+      final snapshot = await _firestore
+          .collection(_gamesCollection)
+          .doc(gameId)
+          .collection('achievements')
+          .orderBy('points', descending: true)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        data['gameId'] = gameId;
+        return GameAchievement.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get game achievements: $e');
     }
@@ -110,8 +189,23 @@ class GameService {
     required String leaderboardType,
   }) async {
     try {
-      // In real app, make API call to get leaderboard
-      return _createMockLeaderboard(gameId, leaderboardType);
+      final doc = await _firestore
+          .collection(_leaderboardsCollection)
+          .doc('${gameId}_$leaderboardType')
+          .get();
+      if (!doc.exists) {
+        return GameLeaderboard(
+          id: 'leaderboard_${gameId}_$leaderboardType',
+          gameId: gameId,
+          gameTitle: '',
+          leaderboardType: leaderboardType,
+          entries: const [],
+          lastUpdated: DateTime.now(),
+        );
+      }
+      final data = Map<String, dynamic>.from(doc.data()!);
+      data['id'] = doc.id;
+      return GameLeaderboard.fromJson(data);
     } catch (e) {
       throw Exception('Failed to get game leaderboard: $e');
     }
@@ -120,8 +214,11 @@ class GameService {
   // Download game
   static Future<void> downloadGame(String gameId) async {
     try {
-      // In real app, implement actual download logic
-      await Future.delayed(const Duration(seconds: 2));
+      await _firestore.collection(_usersCollection).doc('current').collection('downloads').doc(gameId).set({
+        'gameId': gameId,
+        'status': 'downloaded',
+        'updatedAt': DateTime.now().toIso8601String(),
+      }, SetOptions(merge: true));
     } catch (e) {
       throw Exception('Failed to download game: $e');
     }
@@ -130,8 +227,11 @@ class GameService {
   // Install game
   static Future<void> installGame(String gameId) async {
     try {
-      // In real app, implement actual installation logic
-      await Future.delayed(const Duration(seconds: 3));
+      await _firestore.collection(_usersCollection).doc('current').collection('installs').doc(gameId).set({
+        'gameId': gameId,
+        'status': 'installed',
+        'updatedAt': DateTime.now().toIso8601String(),
+      }, SetOptions(merge: true));
     } catch (e) {
       throw Exception('Failed to install game: $e');
     }
@@ -140,8 +240,10 @@ class GameService {
   // Launch game
   static Future<void> launchGame(String gameId) async {
     try {
-      // In real app, implement actual game launch logic
-      await Future.delayed(const Duration(milliseconds: 500));
+      await _firestore.collection(_usersCollection).doc('current').collection('launches').doc(gameId).set({
+        'gameId': gameId,
+        'launchedAt': DateTime.now().toIso8601String(),
+      }, SetOptions(merge: true));
     } catch (e) {
       throw Exception('Failed to launch game: $e');
     }
@@ -150,9 +252,27 @@ class GameService {
   // Get user's installed games
   static Future<List<Game>> getUserInstalledGames(String userId) async {
     try {
-      // In real app, make API call to get user's installed games
-      final allGames = _createMockGames();
-      return allGames.take(5).toList(); // Mock: return first 5 games
+      final snapshot = await _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection('installs')
+          .get();
+      final ids = snapshot.docs.map((d) => d.id).toList();
+      if (ids.isEmpty) return [];
+      final List<Game> games = [];
+      for (var i = 0; i < ids.length; i += 10) {
+        final chunk = ids.sublist(i, i + 10 > ids.length ? ids.length : i + 10);
+        final snap = await _firestore
+            .collection(_gamesCollection)
+            .where(FieldPath.documentId, whereIn: chunk)
+            .get();
+        games.addAll(snap.docs.map((doc) {
+          final data = Map<String, dynamic>.from(doc.data());
+          data['id'] = doc.id;
+          return Game.fromJson(data);
+        }));
+      }
+      return games;
     } catch (e) {
       throw Exception('Failed to get user installed games: $e');
     }
@@ -161,9 +281,27 @@ class GameService {
   // Get user's favorite games
   static Future<List<Game>> getUserFavoriteGames(String userId) async {
     try {
-      // In real app, make API call to get user's favorite games
-      final allGames = _createMockGames();
-      return allGames.where((game) => game.isFeatured).toList();
+      final snapshot = await _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection('favoriteGames')
+          .get();
+      final ids = snapshot.docs.map((d) => d.id).toList();
+      if (ids.isEmpty) return [];
+      final List<Game> games = [];
+      for (var i = 0; i < ids.length; i += 10) {
+        final chunk = ids.sublist(i, i + 10 > ids.length ? ids.length : i + 10);
+        final snap = await _firestore
+            .collection(_gamesCollection)
+            .where(FieldPath.documentId, whereIn: chunk)
+            .get();
+        games.addAll(snap.docs.map((doc) {
+          final data = Map<String, dynamic>.from(doc.data());
+          data['id'] = doc.id;
+          return Game.fromJson(data);
+        }));
+      }
+      return games;
     } catch (e) {
       throw Exception('Failed to get user favorite games: $e');
     }
@@ -172,8 +310,12 @@ class GameService {
   // Add game to favorites
   static Future<void> addGameToFavorites(String gameId, String userId) async {
     try {
-      // In real app, make API call to add to favorites
-      await Future.delayed(const Duration(milliseconds: 500));
+      await _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection('favoriteGames')
+          .doc(gameId)
+          .set({'addedAt': DateTime.now().toIso8601String()});
     } catch (e) {
       throw Exception('Failed to add game to favorites: $e');
     }
@@ -182,14 +324,18 @@ class GameService {
   // Remove game from favorites
   static Future<void> removeGameFromFavorites(String gameId, String userId) async {
     try {
-      // In real app, make API call to remove from favorites
-      await Future.delayed(const Duration(milliseconds: 500));
+      await _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection('favoriteGames')
+          .doc(gameId)
+          .delete();
     } catch (e) {
       throw Exception('Failed to remove game from favorites: $e');
     }
   }
-
-  // Mock data generators
+  
+  // Mock data generators (kept for reference)
   static List<Game> _createMockGames() {
     final categories = ['Action', 'Adventure', 'Puzzle', 'Racing', 'Sports', 'Strategy', 'RPG', 'Simulation'];
     final developers = ['Epic Games', 'Supercell', 'King', 'Niantic', 'Riot Games', 'Blizzard', 'Ubisoft', 'EA'];

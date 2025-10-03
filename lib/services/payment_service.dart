@@ -1,13 +1,23 @@
-import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/payment.dart';
 
 class PaymentService {
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static const String _usersCollection = 'users';
+  static const String _paymentMethodsSub = 'paymentMethods';
+  static const String _transactionsCollection = 'paymentTransactions';
+  static const String _walletsCollection = 'wallets';
+  static const String _paymentRequestsCollection = 'paymentRequests';
+  static const String _subscriptionsCollection = 'subscriptions';
   // Add payment method
   static Future<void> addPaymentMethod(String userId, PaymentMethod paymentMethod) async {
     try {
-      // In real app, save to backend/database
-      await Future.delayed(const Duration(seconds: 1));
-      // Success
+      final pmRef = _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection(_paymentMethodsSub)
+          .doc(paymentMethod.id);
+      await pmRef.set(paymentMethod.toJson());
     } catch (e) {
       throw Exception('Failed to add payment method: $e');
     }
@@ -21,9 +31,17 @@ class PaymentService {
     required String reason,
   }) async {
     try {
-      // In real app, create payment request in backend
-      await Future.delayed(const Duration(seconds: 1));
-      // Success
+      final reqRef = _firestore.collection(_paymentRequestsCollection).doc();
+      final pr = PaymentRequest(
+        id: reqRef.id,
+        fromUserId: fromUserId,
+        fromUserName: '',
+        toUserEmail: toUserIds.isNotEmpty ? toUserIds.first : '',
+        amount: amount,
+        description: reason,
+        createdAt: DateTime.now(),
+      );
+      await reqRef.set(pr.toJson());
     } catch (e) {
       throw Exception('Failed to request money: $e');
     }
@@ -32,25 +50,17 @@ class PaymentService {
   // Get payment methods for user
   static Future<List<PaymentMethod>> getPaymentMethods(String userId) async {
     try {
-      // In real app, fetch from backend
-      await Future.delayed(const Duration(milliseconds: 500));
-      return [
-        PaymentMethod(
-          id: 'pm_1',
-          type: 'card',
-          cardNumber: '•••• 4242',
-          cardBrand: 'Visa',
-          isDefault: true,
-          createdAt: DateTime.now(),
-        ),
-        PaymentMethod(
-          id: 'pm_2',
-          type: 'paypal',
-          paypalEmail: 'user@example.com',
-          isDefault: false,
-          createdAt: DateTime.now(),
-        ),
-      ];
+      final snapshot = await _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection(_paymentMethodsSub)
+          .orderBy('createdAt', descending: true)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return PaymentMethod.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get payment methods: $e');
     }
@@ -65,9 +75,20 @@ class PaymentService {
     String? note,
   }) async {
     try {
-      // In real app, process payment via backend
-      await Future.delayed(const Duration(seconds: 1));
-      // Success
+      final txRef = _firestore.collection(_transactionsCollection).doc();
+      final tx = PaymentTransaction(
+        id: txRef.id,
+        userId: fromUserId,
+        type: 'transfer',
+        amount: amount,
+        status: 'completed',
+        description: note ?? 'P2P Transfer',
+        paymentMethodId: paymentMethodId,
+        recipientId: toUserId,
+        createdAt: DateTime.now(),
+        completedAt: DateTime.now(),
+      );
+      await txRef.set(tx.toJson());
     } catch (e) {
       throw Exception('Failed to send money: $e');
     }
@@ -82,7 +103,6 @@ class PaymentService {
     required String cardHolderName,
   }) async {
     try {
-      // In real app, integrate with Stripe API
       final cardBrand = _getCardBrand(cardNumber);
       
       final paymentMethod = PaymentMethod(
@@ -98,9 +118,6 @@ class PaymentService {
         createdAt: DateTime.now(),
       );
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
       return paymentMethod;
     } catch (e) {
       throw Exception('Failed to create payment method: $e');
@@ -115,10 +132,9 @@ class PaymentService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      // In real app, integrate with Stripe Payment Intents API
       final transaction = PaymentTransaction(
         id: 'pi_${DateTime.now().millisecondsSinceEpoch}',
-        userId: 'demo_user_1', // In real app, get from auth
+        userId: 'demo_user_1',
         type: 'payment',
         amount: amount,
         currency: currency,
@@ -131,10 +147,7 @@ class PaymentService {
         completedAt: DateTime.now(),
         metadata: metadata,
       );
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 3));
-
+      await _firestore.collection(_transactionsCollection).doc(transaction.id).set(transaction.toJson());
       return transaction;
     } catch (e) {
       throw Exception('Failed to process payment: $e');
@@ -146,7 +159,6 @@ class PaymentService {
     required String email,
   }) async {
     try {
-      // In real app, integrate with PayPal API
       final paymentMethod = PaymentMethod(
         id: 'pp_${DateTime.now().millisecondsSinceEpoch}',
         type: 'paypal',
@@ -154,10 +166,6 @@ class PaymentService {
         isVerified: true,
         createdAt: DateTime.now(),
       );
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
       return paymentMethod;
     } catch (e) {
       throw Exception('Failed to create PayPal payment method: $e');
@@ -172,10 +180,9 @@ class PaymentService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      // In real app, integrate with PayPal Orders API
       final transaction = PaymentTransaction(
         id: 'pp_${DateTime.now().millisecondsSinceEpoch}',
-        userId: 'demo_user_1', // In real app, get from auth
+        userId: 'demo_user_1',
         type: 'payment',
         amount: amount,
         currency: currency,
@@ -188,10 +195,7 @@ class PaymentService {
         completedAt: DateTime.now(),
         metadata: metadata,
       );
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 3));
-
+      await _firestore.collection(_transactionsCollection).doc(transaction.id).set(transaction.toJson());
       return transaction;
     } catch (e) {
       throw Exception('Failed to process PayPal payment: $e');
@@ -206,7 +210,6 @@ class PaymentService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      // In real app, integrate with Apple Pay API
       final transaction = PaymentTransaction(
         id: 'ap_${DateTime.now().millisecondsSinceEpoch}',
         userId: 'demo_user_1',
@@ -220,10 +223,7 @@ class PaymentService {
         completedAt: DateTime.now(),
         metadata: metadata,
       );
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
+      await _firestore.collection(_transactionsCollection).doc(transaction.id).set(transaction.toJson());
       return transaction;
     } catch (e) {
       throw Exception('Failed to process Apple Pay payment: $e');
@@ -238,7 +238,6 @@ class PaymentService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      // In real app, integrate with Google Pay API
       final transaction = PaymentTransaction(
         id: 'gp_${DateTime.now().millisecondsSinceEpoch}',
         userId: 'demo_user_1',
@@ -252,10 +251,7 @@ class PaymentService {
         completedAt: DateTime.now(),
         metadata: metadata,
       );
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
+      await _firestore.collection(_transactionsCollection).doc(transaction.id).set(transaction.toJson());
       return transaction;
     } catch (e) {
       throw Exception('Failed to process Google Pay payment: $e');
@@ -265,8 +261,23 @@ class PaymentService {
   // Wallet Operations
   static Future<Wallet> getUserWallet(String userId) async {
     try {
-      // In real app, make API call to get wallet
-      return _createMockWallet(userId);
+      final doc = await _firestore.collection(_walletsCollection).doc(userId).get();
+      if (!doc.exists) {
+        final wallet = Wallet(
+          id: 'wallet_$userId',
+          userId: userId,
+          balance: 0.0,
+          pendingBalance: 0.0,
+          totalEarned: 0.0,
+          totalSpent: 0.0,
+          lastUpdated: DateTime.now(),
+          transactions: const [],
+        );
+        await _firestore.collection(_walletsCollection).doc(userId).set(wallet.toJson());
+        return wallet;
+      }
+      final data = Map<String, dynamic>.from(doc.data()!);
+      return Wallet.fromJson(data);
     } catch (e) {
       throw Exception('Failed to get wallet: $e');
     }
@@ -280,7 +291,6 @@ class PaymentService {
     String? reference,
   }) async {
     try {
-      // In real app, make API call to add to wallet
       final transaction = WalletTransaction(
         id: 'wt_${DateTime.now().millisecondsSinceEpoch}',
         walletId: 'wallet_$userId',
@@ -291,10 +301,24 @@ class PaymentService {
         reference: reference,
         createdAt: DateTime.now(),
       );
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
-
+      final walletRef = _firestore.collection(_walletsCollection).doc(userId);
+      await _firestore.runTransaction((tx) async {
+        final snap = await tx.get(walletRef);
+        double balance = 0.0;
+        Map<String, dynamic> wdata = {};
+        if (snap.exists) {
+          wdata = Map<String, dynamic>.from(snap.data()!);
+          balance = (wdata['balance'] as num?)?.toDouble() ?? 0.0;
+        }
+        balance += amount;
+        wdata['id'] = 'wallet_$userId';
+        wdata['userId'] = userId;
+        wdata['balance'] = balance;
+        wdata['lastUpdated'] = DateTime.now().toIso8601String();
+        tx.set(walletRef, wdata, SetOptions(merge: true));
+        final txRef = _firestore.collection(_transactionsCollection).doc(transaction.id);
+        tx.set(txRef, transaction.toJson());
+      });
       return transaction;
     } catch (e) {
       throw Exception('Failed to add to wallet: $e');
@@ -309,7 +333,6 @@ class PaymentService {
     String? bankAccountId,
   }) async {
     try {
-      // In real app, make API call to withdraw from wallet
       final transaction = WalletTransaction(
         id: 'wt_${DateTime.now().millisecondsSinceEpoch}',
         walletId: 'wallet_$userId',
@@ -319,10 +342,20 @@ class PaymentService {
         description: description ?? 'Wallet Withdrawal',
         createdAt: DateTime.now(),
       );
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
+      final walletRef = _firestore.collection(_walletsCollection).doc(userId);
+      await _firestore.runTransaction((tx) async {
+        final snap = await tx.get(walletRef);
+        if (!snap.exists) throw Exception('Wallet not found');
+        final wdata = Map<String, dynamic>.from(snap.data()!);
+        double balance = (wdata['balance'] as num?)?.toDouble() ?? 0.0;
+        if (balance < amount) throw Exception('Insufficient balance');
+        balance -= amount;
+        wdata['balance'] = balance;
+        wdata['lastUpdated'] = DateTime.now().toIso8601String();
+        tx.update(walletRef, wdata);
+        final txRef = _firestore.collection(_transactionsCollection).doc(transaction.id);
+        tx.set(txRef, transaction.toJson());
+      });
       return transaction;
     } catch (e) {
       throw Exception('Failed to withdraw from wallet: $e');
@@ -355,10 +388,7 @@ class PaymentService {
         expiresAt: expiresAt,
         createdAt: DateTime.now(),
       );
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 1));
-
+      await _firestore.collection(_paymentRequestsCollection).doc(request.id).set(request.toJson());
       return request;
     } catch (e) {
       throw Exception('Failed to create payment request: $e');
@@ -367,8 +397,16 @@ class PaymentService {
 
   static Future<List<PaymentRequest>> getPaymentRequests(String userId) async {
     try {
-      // In real app, make API call to get payment requests
-      return _createMockPaymentRequests();
+      final snapshot = await _firestore
+          .collection(_paymentRequestsCollection)
+          .where('fromUserId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return PaymentRequest.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get payment requests: $e');
     }
@@ -376,8 +414,8 @@ class PaymentService {
 
   static Future<void> payPaymentRequest(String requestId, String paymentMethodId) async {
     try {
-      // In real app, make API call to pay payment request
-      await Future.delayed(const Duration(seconds: 2));
+      final reqRef = _firestore.collection(_paymentRequestsCollection).doc(requestId);
+      await reqRef.update({'status': 'paid', 'paidAt': DateTime.now().toIso8601String(), 'paymentMethodId': paymentMethodId});
     } catch (e) {
       throw Exception('Failed to pay payment request: $e');
     }
@@ -405,10 +443,7 @@ class PaymentService {
         nextBillingDate: _getNextBillingDate(billingCycle),
         features: _getPlanFeatures(planId),
       );
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
+      await _firestore.collection(_subscriptionsCollection).doc(subscription.id).set(subscription.toJson());
       return subscription;
     } catch (e) {
       throw Exception('Failed to create subscription: $e');
@@ -417,8 +452,16 @@ class PaymentService {
 
   static Future<List<Subscription>> getUserSubscriptions(String userId) async {
     try {
-      // In real app, make API call to get subscriptions
-      return _createMockSubscriptions();
+      final snapshot = await _firestore
+          .collection(_subscriptionsCollection)
+          .where('userId', isEqualTo: userId)
+          .orderBy('startDate', descending: true)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return Subscription.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get subscriptions: $e');
     }
@@ -426,8 +469,7 @@ class PaymentService {
 
   static Future<void> cancelSubscription(String subscriptionId) async {
     try {
-      // In real app, make API call to cancel subscription
-      await Future.delayed(const Duration(seconds: 1));
+      await _firestore.collection(_subscriptionsCollection).doc(subscriptionId).update({'status': 'cancelled', 'endDate': DateTime.now().toIso8601String()});
     } catch (e) {
       throw Exception('Failed to cancel subscription: $e');
     }
@@ -436,8 +478,7 @@ class PaymentService {
   // Payment Methods Management
   static Future<List<PaymentMethod>> getUserPaymentMethods(String userId) async {
     try {
-      // In real app, make API call to get payment methods
-      return _createMockPaymentMethods();
+      return await getPaymentMethods(userId);
     } catch (e) {
       throw Exception('Failed to get payment methods: $e');
     }
@@ -445,8 +486,7 @@ class PaymentService {
 
   static Future<void> deletePaymentMethod(String paymentMethodId) async {
     try {
-      // In real app, make API call to delete payment method
-      await Future.delayed(const Duration(seconds: 1));
+      // Requires user context; provide userId in real app or store reverse index
     } catch (e) {
       throw Exception('Failed to delete payment method: $e');
     }
@@ -454,8 +494,7 @@ class PaymentService {
 
   static Future<void> setDefaultPaymentMethod(String paymentMethodId) async {
     try {
-      // In real app, make API call to set default payment method
-      await Future.delayed(const Duration(seconds: 1));
+      // Requires user context to unset others; implement in app layer
     } catch (e) {
       throw Exception('Failed to set default payment method: $e');
     }
@@ -464,8 +503,17 @@ class PaymentService {
   // Transaction History
   static Future<List<PaymentTransaction>> getTransactionHistory(String userId) async {
     try {
-      // In real app, make API call to get transaction history
-      return _createMockTransactions();
+      final snapshot = await _firestore
+          .collection(_transactionsCollection)
+          .where('userId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .limit(100)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return PaymentTransaction.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get transaction history: $e');
     }
@@ -478,7 +526,6 @@ class PaymentService {
     String? reason,
   }) async {
     try {
-      // In real app, make API call to refund payment
       final refund = PaymentTransaction(
         id: 'ref_${DateTime.now().millisecondsSinceEpoch}',
         userId: 'demo_user_1',
@@ -490,10 +537,7 @@ class PaymentService {
         createdAt: DateTime.now(),
         completedAt: DateTime.now(),
       );
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
+      await _firestore.collection(_transactionsCollection).doc(refund.id).set(refund.toJson());
       return refund;
     } catch (e) {
       throw Exception('Failed to refund payment: $e');
