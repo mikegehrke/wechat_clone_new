@@ -405,13 +405,15 @@ class EcommerceService {
 
   static List<product.Order> _createMockOrders() {
     final cartItems = _createMockCartItems();
-    return List.generate(5, (index) {
+    final orders = <product.Order>[];
+    
+    for (var index = 0; index < 5; index++) {
       final subtotal = cartItems.fold(0.0, (sum, item) => sum + item.totalPrice);
       final tax = subtotal * 0.08;
       final shipping = subtotal > 50 ? 0.0 : 9.99;
       final total = subtotal + tax + shipping;
 
-      return product.Order(
+      orders.add(product.Order(
         id: 'order_$index',
         userId: 'user_1',
         items: cartItems,
@@ -441,8 +443,10 @@ class EcommerceService {
         shippedAt: index > 0 ? DateTime.now().subtract(Duration(days: index * 7 - 2)) : null,
         deliveredAt: index > 2 ? DateTime.now().subtract(Duration(days: index * 7 - 5)) : null,
         trackingNumber: index > 0 ? '1Z999AA123456789$index' : null,
-      );
-    });
+      ));
+    }
+    
+    return orders;
   }
 
   static String _generateProductTitle(String category, String brand, int index) {
