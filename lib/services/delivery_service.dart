@@ -1,16 +1,42 @@
-import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/delivery.dart';
 
 class DeliveryService {
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static const String _restaurantsCollection = 'restaurants';
+  static const String _menuItemsCollection = 'menuItems';
+  static const String _ordersCollection = 'deliveryOrders';
+  static const String _usersCollection = 'users';
   // Get nearby restaurants
   static Future<List<Restaurant>> getNearbyRestaurants({
     required Map<String, double> userLocation,
     double radius = 10.0, // km
   }) async {
     try {
-      // In real app, make API call to get nearby restaurants
-      // For demo, return mock data
-      return _createMockRestaurants();
+      // Basic implementation: fetch all and filter by approximate distance
+      final snapshot = await _firestore
+          .collection(_restaurantsCollection)
+          .orderBy('rating', descending: true)
+          .limit(100)
+          .get();
+      final lat = userLocation['lat'];
+      final lng = userLocation['lng'];
+      final List<Restaurant> restaurants = snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return Restaurant.fromJson(data);
+      }).where((r) {
+        if (lat == null || lng == null) return true;
+        final rlat = (r.location['lat'] as num?)?.toDouble();
+        final rlng = (r.location['lng'] as num?)?.toDouble();
+        if (rlat == null || rlng == null) return false;
+        final dLat = (rlat - lat).abs();
+        final dLng = (rlng - lng).abs();
+        // Very rough filter (~111km per degree)
+        final approxKm = (dLat + dLng) * 111.0;
+        return approxKm <= radius;
+      }).toList();
+      return restaurants;
     } catch (e) {
       throw Exception('Failed to get nearby restaurants: $e');
     }
@@ -25,8 +51,31 @@ class DeliveryService {
     int? maxDeliveryTime,
   }) async {
     try {
-      // In real app, make API call to search restaurants
-      return _createMockRestaurants();
+      Query<Map<String, dynamic>> q = _firestore.collection(_restaurantsCollection).limit(100);
+      if (cuisine != null && cuisine.isNotEmpty) {
+        q = q.where('cuisine', isEqualTo: cuisine);
+      }
+      if (minRating != null) {
+        q = q.where('rating', isGreaterThanOrEqualTo: minRating);
+      }
+      final snapshot = await q.get();
+      var restaurants = snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return Restaurant.fromJson(data);
+      }).toList();
+      final normalized = query.toLowerCase();
+      restaurants = restaurants.where((r) =>
+          r.name.toLowerCase().contains(normalized) ||
+          r.description.toLowerCase().contains(normalized) ||
+          r.cuisine.toLowerCase().contains(normalized)).toList();
+      if (maxDeliveryFee != null) {
+        restaurants = restaurants.where((r) => r.deliveryFee <= maxDeliveryFee).toList();
+      }
+      if (maxDeliveryTime != null) {
+        restaurants = restaurants.where((r) => r.deliveryTime <= maxDeliveryTime).toList();
+      }
+      return restaurants;
     } catch (e) {
       throw Exception('Failed to search restaurants: $e');
     }
@@ -35,8 +84,16 @@ class DeliveryService {
   // Get restaurant menu
   static Future<List<FoodItem>> getRestaurantMenu(String restaurantId) async {
     try {
-      // In real app, make API call to get restaurant menu
-      return _createMockFoodItems(restaurantId);
+      final snapshot = await _firestore
+          .collection(_menuItemsCollection)
+          .where('restaurantId', isEqualTo: restaurantId)
+          .orderBy('category')
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return FoodItem.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get restaurant menu: $e');
     }
@@ -45,9 +102,11 @@ class DeliveryService {
   // Get food item details
   static Future<FoodItem?> getFoodItem(String itemId) async {
     try {
-      // In real app, make API call to get food item details
-      final items = _createMockFoodItems('restaurant_1');
-      return items.isNotEmpty ? items.first : null;
+      final doc = await _firestore.collection(_menuItemsCollection).doc(itemId).get();
+      if (!doc.exists) return null;
+      final data = Map<String, dynamic>.from(doc.data()!);
+      data['id'] = doc.id;
+      return FoodItem.fromJson(data);
     } catch (e) {
       throw Exception('Failed to get food item: $e');
     }
@@ -70,8 +129,9 @@ class DeliveryService {
       final tax = subtotal * 0.08; // 8% tax
       final total = subtotal + deliveryFee + tax + tip;
 
+      final orderRef = _firestore.collection(_ordersCollection).doc();
       final order = DeliveryOrder(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: orderRef.id,
         userId: userId,
         restaurantId: restaurantId,
         restaurantName: restaurantName,
@@ -86,10 +146,13 @@ class DeliveryService {
         createdAt: DateTime.now(),
         estimatedDelivery: DateTime.now().add(const Duration(minutes: 45)),
       );
-
-      // In real app, save order to database
-      await Future.delayed(const Duration(seconds: 1));
-
+      await orderRef.set(order.toJson());
+      await _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection('deliveryOrders')
+          .doc(order.id)
+          .set({'orderId': order.id, 'createdAt': order.createdAt.toIso8601String()});
       return order;
     } catch (e) {
       throw Exception('Failed to create order: $e');
@@ -99,8 +162,16 @@ class DeliveryService {
   // Get user's orders
   static Future<List<DeliveryOrder>> getUserOrders(String userId) async {
     try {
-      // In real app, make API call to get user orders
-      return _createMockOrders();
+      final snapshot = await _firestore
+          .collection(_ordersCollection)
+          .where('userId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return DeliveryOrder.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get user orders: $e');
     }
@@ -109,9 +180,11 @@ class DeliveryService {
   // Get order by ID
   static Future<DeliveryOrder?> getOrder(String orderId) async {
     try {
-      // In real app, make API call to get order
-      final orders = _createMockOrders();
-      return orders.isNotEmpty ? orders.first : null;
+      final doc = await _firestore.collection(_ordersCollection).doc(orderId).get();
+      if (!doc.exists) return null;
+      final data = Map<String, dynamic>.from(doc.data()!);
+      data['id'] = doc.id;
+      return DeliveryOrder.fromJson(data);
     } catch (e) {
       throw Exception('Failed to get order: $e');
     }
@@ -120,50 +193,18 @@ class DeliveryService {
   // Track order
   static Future<Map<String, dynamic>> trackOrder(String orderId) async {
     try {
-      // Mock tracking data
-      return {
-        'orderId': orderId,
-        'status': 'delivering',
-        'driverName': 'John Smith',
-        'driverPhone': '+1-555-0123',
-        'estimatedDelivery': DateTime.now().add(const Duration(minutes: 15)).toIso8601String(),
-        'location': {
-          'lat': 40.7128,
-          'lng': -74.0060,
-        },
-        'trackingHistory': [
-          {
-            'status': 'Order placed',
-            'timestamp': DateTime.now().subtract(const Duration(minutes: 30)).toIso8601String(),
-            'description': 'Your order has been placed',
-          },
-          {
-            'status': 'Confirmed',
-            'timestamp': DateTime.now().subtract(const Duration(minutes: 25)).toIso8601String(),
-            'description': 'Restaurant confirmed your order',
-          },
-          {
-            'status': 'Preparing',
-            'timestamp': DateTime.now().subtract(const Duration(minutes: 20)).toIso8601String(),
-            'description': 'Restaurant is preparing your food',
-          },
-          {
-            'status': 'Ready',
-            'timestamp': DateTime.now().subtract(const Duration(minutes: 10)).toIso8601String(),
-            'description': 'Your order is ready for pickup',
-          },
-          {
-            'status': 'Picked up',
-            'timestamp': DateTime.now().subtract(const Duration(minutes: 5)).toIso8601String(),
-            'description': 'Driver picked up your order',
-          },
-          {
-            'status': 'On the way',
-            'timestamp': DateTime.now().toIso8601String(),
-            'description': 'Driver is on the way to you',
-          },
-        ],
-      };
+      final doc = await _firestore.collection('deliveryTracking').doc(orderId).get();
+      if (!doc.exists) {
+        return {
+          'orderId': orderId,
+          'status': 'preparing',
+          'estimatedDelivery': DateTime.now().add(const Duration(minutes: 30)).toIso8601String(),
+          'trackingHistory': [],
+        };
+      }
+      final data = Map<String, dynamic>.from(doc.data()!);
+      data['orderId'] = orderId;
+      return data;
     } catch (e) {
       throw Exception('Failed to track order: $e');
     }
@@ -172,8 +213,8 @@ class DeliveryService {
   // Cancel order
   static Future<void> cancelOrder(String orderId) async {
     try {
-      // In real app, make API call to cancel order
-      await Future.delayed(const Duration(milliseconds: 500));
+      final orderRef = _firestore.collection(_ordersCollection).doc(orderId);
+      await orderRef.update({'status': 'cancelled'});
     } catch (e) {
       throw Exception('Failed to cancel order: $e');
     }
@@ -182,8 +223,12 @@ class DeliveryService {
   // Rate order
   static Future<void> rateOrder(String orderId, double rating, String? review) async {
     try {
-      // In real app, make API call to rate order
-      await Future.delayed(const Duration(milliseconds: 500));
+      final orderRef = _firestore.collection(_ordersCollection).doc(orderId);
+      await orderRef.set({
+        'rating': rating,
+        'review': review,
+        'ratedAt': DateTime.now().toIso8601String(),
+      }, SetOptions(merge: true));
     } catch (e) {
       throw Exception('Failed to rate order: $e');
     }
@@ -219,7 +264,7 @@ class DeliveryService {
     }
   }
 
-  // Mock data generators
+  // Mock data generators (kept for reference)
   static List<Restaurant> _createMockRestaurants() {
     final cuisines = ['American', 'Italian', 'Chinese', 'Mexican', 'Indian', 'Thai', 'Japanese'];
     final names = [
@@ -421,7 +466,7 @@ class DeliveryService {
     return colors[Random().nextInt(colors.length)];
   }
 
-  // Place order
+  // Place order (legacy path) — prefer createOrder
   static Future<DeliveryOrder> placeOrder({
     required String userId,
     required String restaurantId,
@@ -432,47 +477,32 @@ class DeliveryService {
     double tip = 0.0,
   }) async {
     try {
-      // In real app, send order to backend API
-      await Future.delayed(const Duration(seconds: 2)); // Simulate API call
-      
-      final subtotal = items.fold(0.0, (sum, item) => sum + (item.foodItem.price * item.quantity));
-      final deliveryFee = 2.99;
-      final tax = subtotal * 0.08;
-      final total = subtotal + deliveryFee + tax + tip;
-      
-      return DeliveryOrder(
-        id: 'order_${DateTime.now().millisecondsSinceEpoch}',
+      // Delegate to createOrder with minimal mapping
+      final address = DeliveryAddress(
+        id: 'addr_${DateTime.now().millisecondsSinceEpoch}',
+        fullName: '',
+        address: deliveryAddress,
+        city: '',
+        state: '',
+        zipCode: '',
+        country: '',
+        phoneNumber: '',
+      );
+      final pm = PaymentMethod(
+        id: 'pm_${DateTime.now().millisecondsSinceEpoch}',
+        type: paymentMethod,
+        lastFourDigits: '',
+        brand: '',
+        expiryDate: DateTime.now().add(const Duration(days: 365)),
+      );
+      return await createOrder(
         userId: userId,
         restaurantId: restaurantId,
-        restaurantName: 'Restaurant Name', // In real app, fetch from restaurant
+        restaurantName: 'Restaurant',
         items: items,
-        subtotal: subtotal,
-        deliveryFee: deliveryFee,
-        tax: tax,
+        deliveryAddress: address,
+        paymentMethod: pm,
         tip: tip,
-        total: total,
-        deliveryAddress: DeliveryAddress(
-          id: 'addr_1',
-          fullName: 'John Doe',
-          address: deliveryAddress,
-          city: 'City',
-          state: 'State',
-          zipCode: '12345',
-          country: 'Country',
-          phoneNumber: '+1234567890',
-          location: {'lat': 0.0, 'lng': 0.0},
-          isDefault: true,
-        ),
-        paymentMethod: PaymentMethod(
-          id: 'pm_1',
-          type: 'card',
-          lastFourDigits: '4242',
-          brand: 'visa',
-          isDefault: true,
-        ),
-        status: OrderStatus.pending,
-        createdAt: DateTime.now(),
-        estimatedDelivery: DateTime.now().add(const Duration(minutes: 30)),
       );
     } catch (e) {
       throw Exception('Failed to place order: $e');

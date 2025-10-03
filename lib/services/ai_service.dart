@@ -25,9 +25,8 @@ class AIService {
     required int targetDurationSeconds,
   }) async {
     try {
-      // In production: Send video to AI service for analysis
-      // For now, return mock intelligent segments
-      return _mockAutoTrim(targetDurationSeconds);
+      // TODO: Integrate real video analysis service
+      throw UnimplementedError('autoTrimVideo requires backend service');
     } catch (e) {
       throw Exception('Failed to auto-trim video: $e');
     }
@@ -38,8 +37,8 @@ class AIService {
     required String videoPath,
   }) async {
     try {
-      // AI analyzes video and detects scene changes
-      return _mockSceneDetection();
+      // TODO: Integrate real scene detection service
+      throw UnimplementedError('detectScenes requires backend service');
     } catch (e) {
       throw Exception('Failed to detect scenes: $e');
     }
@@ -51,10 +50,8 @@ class AIService {
     String? replacementBackground,
   }) async {
     try {
-      // In production: Use AI service like Runway ML or custom model
-      // Returns path to processed video
-      await Future.delayed(const Duration(seconds: 3)); // Simulate processing
-      return videoPath; // Mock - would return new video path
+      // TODO: Integrate background removal pipeline
+      throw UnimplementedError('removeVideoBackground requires backend service');
     } catch (e) {
       throw Exception('Failed to remove background: $e');
     }
@@ -65,7 +62,8 @@ class AIService {
     required List<String> videoPaths,
   }) async {
     try {
-      return _mockTransitionSuggestions(videoPaths.length);
+      // TODO: Integrate transition suggestion model
+      throw UnimplementedError('suggestTransitions requires backend service');
     } catch (e) {
       throw Exception('Failed to suggest transitions: $e');
     }
@@ -76,8 +74,8 @@ class AIService {
     required String audioPath,
   }) async {
     try {
-      // AI analyzes audio and finds beat markers
-      return _mockBeatDetection();
+      // TODO: Integrate beat detection
+      throw UnimplementedError('detectBeats requires backend service');
     } catch (e) {
       throw Exception('Failed to detect beats: $e');
     }
@@ -122,8 +120,7 @@ class AIService {
         throw Exception('Failed to generate image: ${response.statusCode}');
       }
     } catch (e) {
-      // Fallback to mock for demo
-      return _mockGenerateImage(prompt);
+      rethrow;
     }
   }
 
@@ -133,9 +130,8 @@ class AIService {
     int scale = 2,
   }) async {
     try {
-      // In production: Use AI upscaling service
-      await Future.delayed(const Duration(seconds: 2));
-      return imagePath; // Mock
+      // TODO: Integrate AI upscaling service
+      throw UnimplementedError('upscaleImage requires backend service');
     } catch (e) {
       throw Exception('Failed to upscale image: $e');
     }
@@ -146,9 +142,8 @@ class AIService {
     required String imagePath,
   }) async {
     try {
-      // In production: Use remove.bg API or custom model
-      await Future.delayed(const Duration(seconds: 1));
-      return imagePath; // Mock
+      // TODO: Integrate remove.bg or similar API
+      throw UnimplementedError('removeImageBackground requires backend service');
     } catch (e) {
       throw Exception('Failed to remove background: $e');
     }
@@ -159,9 +154,8 @@ class AIService {
     required String imagePath,
   }) async {
     try {
-      // AI improves lighting, colors, sharpness
-      await Future.delayed(const Duration(seconds: 2));
-      return imagePath; // Mock
+      // TODO: Integrate enhancement model
+      throw UnimplementedError('enhanceImage requires backend service');
     } catch (e) {
       throw Exception('Failed to enhance image: $e');
     }
@@ -200,8 +194,7 @@ class AIService {
         throw Exception('Failed to generate text: ${response.statusCode}');
       }
     } catch (e) {
-      // Fallback to mock
-      return _mockGenerateText(prompt);
+      rethrow;
     }
   }
 
@@ -235,8 +228,7 @@ class AIService {
         throw Exception('Failed to generate voice: ${response.statusCode}');
       }
     } catch (e) {
-      // Fallback to mock
-      return _mockGenerateVoice(text);
+      rethrow;
     }
   }
 
@@ -246,8 +238,8 @@ class AIService {
     String language = 'en',
   }) async {
     try {
-      // In production: Use Whisper API or similar
-      return _mockGenerateCaptions();
+      // TODO: Integrate speech-to-text for captions
+      throw UnimplementedError('generateCaptions requires backend service');
     } catch (e) {
       throw Exception('Failed to generate captions: $e');
     }
@@ -289,12 +281,7 @@ class AIService {
         throw Exception('Moderation failed: ${response.statusCode}');
       }
     } catch (e) {
-      // Fallback - allow content
-      return ModerationResult(
-        isFlagged: false,
-        categories: {},
-        categoryScores: {},
-      );
+      rethrow;
     }
   }
 
@@ -315,7 +302,7 @@ class AIService {
       
       return _parseReplies(response);
     } catch (e) {
-      return _mockSmartReplies();
+      rethrow;
     }
   }
 
@@ -352,10 +339,8 @@ class AIService {
         return data['choices'][0]['message']['content'];
       }
     } catch (e) {
-      // Fallback
+      rethrow;
     }
-    
-    return _mockChatAgent(userMessage);
   }
 
   // ============================================================================

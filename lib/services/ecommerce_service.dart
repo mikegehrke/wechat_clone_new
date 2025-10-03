@@ -1,10 +1,13 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/product.dart';
 
 class EcommerceService {
-  static const String _baseUrl = 'https://api.example.com'; // In real app, use real API
-  static const String _apiKey = 'your_api_key_here';
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static const String _productsCollection = 'products';
+  static const String _categoriesCollection = 'categories';
+  static const String _usersCollection = 'users';
+  static const String _ordersCollection = 'orders';
+  static const String _reviewsCollection = 'productReviews';
 
   // Search products
   static Future<List<Product>> searchProducts({
@@ -17,9 +20,58 @@ class EcommerceService {
     int limit = 20,
   }) async {
     try {
-      // In real app, make HTTP request to search API
-      // For demo, return mock data
-      return _createMockProducts();
+      // Firestore has limited full-text search; we fetch and filter client-side
+      Query<Map<String, dynamic>> q = _firestore
+          .collection(_productsCollection)
+          .orderBy('createdAt', descending: true)
+          .limit(limit);
+      if (category != null && category.isNotEmpty) {
+        q = _firestore
+            .collection(_productsCollection)
+            .where('category', isEqualTo: category)
+            .orderBy('createdAt', descending: true)
+            .limit(limit);
+      }
+      final snapshot = await q.get();
+      var products = snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return Product.fromJson(data);
+      }).toList();
+      final normalized = query.toLowerCase();
+      products = products.where((p) {
+        final hay = [
+          p.title,
+          p.description,
+          p.brand,
+          p.category,
+          ...p.tags,
+        ].join(' ').toLowerCase();
+        return hay.contains(normalized);
+      }).toList();
+      if (minPrice != null) {
+        products = products.where((p) => p.price >= minPrice).toList();
+      }
+      if (maxPrice != null) {
+        products = products.where((p) => p.price <= maxPrice).toList();
+      }
+      if (sortBy != null) {
+        switch (sortBy) {
+          case 'price_asc':
+            products.sort((a, b) => a.price.compareTo(b.price));
+            break;
+          case 'price_desc':
+            products.sort((a, b) => b.price.compareTo(a.price));
+            break;
+          case 'rating':
+            products.sort((a, b) => b.rating.compareTo(a.rating));
+            break;
+          case 'newest':
+          default:
+            products.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        }
+      }
+      return products;
     } catch (e) {
       throw Exception('Failed to search products: $e');
     }
@@ -28,10 +80,11 @@ class EcommerceService {
   // Get product by ID
   static Future<Product?> getProduct(String productId) async {
     try {
-      // In real app, make HTTP request to get product details
-      // For demo, return mock product
-      final products = _createMockProducts();
-      return products.isNotEmpty ? products.first : null;
+      final doc = await _firestore.collection(_productsCollection).doc(productId).get();
+      if (!doc.exists) return null;
+      final data = Map<String, dynamic>.from(doc.data()!);
+      data['id'] = doc.id;
+      return Product.fromJson(data);
     } catch (e) {
       throw Exception('Failed to get product: $e');
     }
@@ -44,8 +97,17 @@ class EcommerceService {
     int limit = 20,
   }) async {
     try {
-      // In real app, make HTTP request to category API
-      return _createMockProducts();
+      final snapshot = await _firestore
+          .collection(_productsCollection)
+          .where('category', isEqualTo: category)
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return Product.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get products by category: $e');
     }
@@ -54,7 +116,17 @@ class EcommerceService {
   // Get featured products
   static Future<List<Product>> getFeaturedProducts() async {
     try {
-      return _createMockProducts().take(10).toList();
+      final snapshot = await _firestore
+          .collection(_productsCollection)
+          .where('isFeatured', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .limit(10)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return Product.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get featured products: $e');
     }
@@ -63,7 +135,17 @@ class EcommerceService {
   // Get trending products
   static Future<List<Product>> getTrendingProducts() async {
     try {
-      return _createMockProducts().take(15).toList();
+      final snapshot = await _firestore
+          .collection(_productsCollection)
+          .where('isTrending', isEqualTo: true)
+          .orderBy('createdAt', descending: true)
+          .limit(15)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return Product.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get trending products: $e');
     }
@@ -72,39 +154,17 @@ class EcommerceService {
   // Get product reviews
   static Future<List<Map<String, dynamic>>> getProductReviews(String productId) async {
     try {
-      // Mock reviews
-      return [
-        {
-          'id': '1',
-          'userId': 'user1',
-          'username': 'John Doe',
-          'rating': 5,
-          'title': 'Great product!',
-          'comment': 'Really happy with this purchase. Quality is excellent.',
-          'date': DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
-          'verified': true,
-        },
-        {
-          'id': '2',
-          'userId': 'user2',
-          'username': 'Jane Smith',
-          'rating': 4,
-          'title': 'Good value',
-          'comment': 'Good quality for the price. Would recommend.',
-          'date': DateTime.now().subtract(const Duration(days: 5)).toIso8601String(),
-          'verified': true,
-        },
-        {
-          'id': '3',
-          'userId': 'user3',
-          'username': 'Mike Johnson',
-          'rating': 3,
-          'title': 'Average',
-          'comment': 'It\'s okay, nothing special but does the job.',
-          'date': DateTime.now().subtract(const Duration(days: 7)).toIso8601String(),
-          'verified': false,
-        },
-      ];
+      final snapshot = await _firestore
+          .collection(_reviewsCollection)
+          .where('productId', isEqualTo: productId)
+          .orderBy('date', descending: true)
+          .limit(100)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return data;
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get product reviews: $e');
     }
@@ -113,8 +173,22 @@ class EcommerceService {
   // Add product to cart
   static Future<void> addToCart(String userId, String productId, int quantity) async {
     try {
-      // In real app, make HTTP request to add to cart
-      await Future.delayed(const Duration(milliseconds: 500));
+      final productDoc = await _firestore.collection(_productsCollection).doc(productId).get();
+      if (!productDoc.exists) throw Exception('Product not found');
+      final productData = Map<String, dynamic>.from(productDoc.data()!);
+      productData['id'] = productDoc.id;
+      final product = Product.fromJson(productData);
+      final cartRef = _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection('cart')
+          .doc(productId);
+      await cartRef.set({
+        'id': 'cart_$productId',
+        'product': product.toJson(),
+        'quantity': quantity,
+        'addedAt': DateTime.now().toIso8601String(),
+      }, SetOptions(merge: true));
     } catch (e) {
       throw Exception('Failed to add to cart: $e');
     }
@@ -123,8 +197,17 @@ class EcommerceService {
   // Get user's cart
   static Future<List<CartItem>> getCart(String userId) async {
     try {
-      // In real app, make HTTP request to get cart
-      return _createMockCartItems();
+      final snapshot = await _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection('cart')
+          .orderBy('addedAt', descending: true)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return CartItem.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get cart: $e');
     }
@@ -133,8 +216,12 @@ class EcommerceService {
   // Update cart item quantity
   static Future<void> updateCartItem(String userId, String itemId, int quantity) async {
     try {
-      // In real app, make HTTP request to update cart
-      await Future.delayed(const Duration(milliseconds: 300));
+      final itemRef = _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection('cart')
+          .doc(itemId);
+      await itemRef.update({'quantity': quantity});
     } catch (e) {
       throw Exception('Failed to update cart item: $e');
     }
@@ -143,8 +230,12 @@ class EcommerceService {
   // Remove item from cart
   static Future<void> removeFromCart(String userId, String itemId) async {
     try {
-      // In real app, make HTTP request to remove from cart
-      await Future.delayed(const Duration(milliseconds: 300));
+      final itemRef = _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection('cart')
+          .doc(itemId);
+      await itemRef.delete();
     } catch (e) {
       throw Exception('Failed to remove from cart: $e');
     }
@@ -153,8 +244,16 @@ class EcommerceService {
   // Clear cart
   static Future<void> clearCart(String userId) async {
     try {
-      // In real app, make HTTP request to clear cart
-      await Future.delayed(const Duration(milliseconds: 300));
+      final cartCol = _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection('cart');
+      final snapshot = await cartCol.get();
+      final batch = _firestore.batch();
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
     } catch (e) {
       throw Exception('Failed to clear cart: $e');
     }
@@ -174,8 +273,9 @@ class EcommerceService {
       final shipping = subtotal > 50 ? 0.0 : 9.99; // Free shipping over $50
       final total = subtotal + tax + shipping;
 
+      final orderRef = _firestore.collection(_ordersCollection).doc();
       final order = Order(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        id: orderRef.id,
         userId: userId,
         items: items,
         subtotal: subtotal,
@@ -186,10 +286,16 @@ class EcommerceService {
         paymentMethod: paymentMethod,
         createdAt: DateTime.now(),
       );
-
-      // In real app, save order to database
-      await Future.delayed(const Duration(seconds: 1));
-
+      await orderRef.set(order.toJson());
+      // Optionally write a user-scoped reference
+      await _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection('orders')
+          .doc(order.id)
+          .set({'orderId': order.id, 'createdAt': order.createdAt.toIso8601String()});
+      // Clear cart after placing order
+      await clearCart(userId);
       return order;
     } catch (e) {
       throw Exception('Failed to create order: $e');
@@ -199,8 +305,17 @@ class EcommerceService {
   // Get user's orders
   static Future<List<Order>> getUserOrders(String userId) async {
     try {
-      // In real app, make HTTP request to get orders
-      return _createMockOrders();
+      final snapshot = await _firestore
+          .collection(_ordersCollection)
+          .where('userId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .limit(50)
+          .get();
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return Order.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get user orders: $e');
     }
@@ -209,9 +324,11 @@ class EcommerceService {
   // Get order by ID
   static Future<Order?> getOrder(String orderId) async {
     try {
-      // In real app, make HTTP request to get order
-      final orders = _createMockOrders();
-      return orders.isNotEmpty ? orders.first : null;
+      final doc = await _firestore.collection(_ordersCollection).doc(orderId).get();
+      if (!doc.exists) return null;
+      final data = Map<String, dynamic>.from(doc.data()!);
+      data['id'] = doc.id;
+      return Order.fromJson(data);
     } catch (e) {
       throw Exception('Failed to get order: $e');
     }
@@ -220,31 +337,18 @@ class EcommerceService {
   // Track order
   static Future<Map<String, dynamic>> trackOrder(String orderId) async {
     try {
-      // Mock tracking data
-      return {
-        'orderId': orderId,
-        'status': 'shipped',
-        'trackingNumber': '1Z999AA1234567890',
-        'carrier': 'UPS',
-        'estimatedDelivery': DateTime.now().add(const Duration(days: 3)).toIso8601String(),
-        'trackingHistory': [
-          {
-            'status': 'Order placed',
-            'date': DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
-            'location': 'Warehouse',
-          },
-          {
-            'status': 'Shipped',
-            'date': DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
-            'location': 'Distribution Center',
-          },
-          {
-            'status': 'In transit',
-            'date': DateTime.now().toIso8601String(),
-            'location': 'On the way',
-          },
-        ],
-      };
+      final doc = await _firestore.collection('orderTracking').doc(orderId).get();
+      if (!doc.exists) {
+        return {
+          'orderId': orderId,
+          'status': 'processing',
+          'estimatedDelivery': DateTime.now().add(const Duration(days: 3)).toIso8601String(),
+          'trackingHistory': [],
+        };
+      }
+      final data = Map<String, dynamic>.from(doc.data()!);
+      data['orderId'] = orderId;
+      return data;
     } catch (e) {
       throw Exception('Failed to track order: $e');
     }
@@ -253,24 +357,35 @@ class EcommerceService {
   // Get categories
   static Future<List<Map<String, dynamic>>> getCategories() async {
     try {
-      return [
-        {'id': 'electronics', 'name': 'Electronics', 'icon': '📱'},
-        {'id': 'clothing', 'name': 'Clothing', 'icon': '👕'},
-        {'id': 'home', 'name': 'Home & Garden', 'icon': '🏠'},
-        {'id': 'sports', 'name': 'Sports & Outdoors', 'icon': '⚽'},
-        {'id': 'books', 'name': 'Books', 'icon': '📚'},
-        {'id': 'beauty', 'name': 'Beauty & Health', 'icon': '💄'},
-        {'id': 'toys', 'name': 'Toys & Games', 'icon': '🧸'},
-        {'id': 'automotive', 'name': 'Automotive', 'icon': '🚗'},
-        {'id': 'food', 'name': 'Food & Grocery', 'icon': '🍎'},
-        {'id': 'jewelry', 'name': 'Jewelry', 'icon': '💍'},
-      ];
+      final snapshot = await _firestore
+          .collection(_categoriesCollection)
+          .orderBy('name')
+          .get();
+      if (snapshot.docs.isEmpty) {
+        return [
+          {'id': 'electronics', 'name': 'Electronics', 'icon': '📱'},
+          {'id': 'clothing', 'name': 'Clothing', 'icon': '👕'},
+          {'id': 'home', 'name': 'Home & Garden', 'icon': '🏠'},
+          {'id': 'sports', 'name': 'Sports & Outdoors', 'icon': '⚽'},
+          {'id': 'books', 'name': 'Books', 'icon': '📚'},
+          {'id': 'beauty', 'name': 'Beauty & Health', 'icon': '💄'},
+          {'id': 'toys', 'name': 'Toys & Games', 'icon': '🧸'},
+          {'id': 'automotive', 'name': 'Automotive', 'icon': '🚗'},
+          {'id': 'food', 'name': 'Food & Grocery', 'icon': '🍎'},
+          {'id': 'jewelry', 'name': 'Jewelry', 'icon': '💍'},
+        ];
+      }
+      return snapshot.docs.map((doc) {
+        final data = Map<String, dynamic>.from(doc.data());
+        data['id'] = doc.id;
+        return data;
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get categories: $e');
     }
   }
 
-  // Mock data generators
+  // Mock data generators (unused with real backend, kept for reference only)
   static List<Product> _createMockProducts() {
     final categories = ['Electronics', 'Clothing', 'Home', 'Sports', 'Books'];
     final brands = ['Apple', 'Samsung', 'Nike', 'Adidas', 'Sony', 'LG', 'Dell', 'HP'];
