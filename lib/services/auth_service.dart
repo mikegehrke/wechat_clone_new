@@ -3,6 +3,9 @@ import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'dart:io' show Platform;
 import '../models/app_foundations.dart';
 
 class AuthService {
@@ -13,6 +16,9 @@ class AuthService {
   // Firebase instances
   static final auth.FirebaseAuth _auth = auth.FirebaseAuth.instance;
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+  );
   
   // Singleton
   static final AuthService _instance = AuthService._internal();
@@ -87,6 +93,98 @@ class AuthService {
     }
   }
 
+  // Google Sign-In
+  Future<UserAccount> loginWithGoogle() async {
+    try {
+      // Trigger Google Sign-In flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      
+      if (googleUser == null) {
+        throw Exception('Google Sign-In aborted');
+      }
+
+      // Obtain auth details
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // Create Firebase credential
+      final credential = auth.GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase
+      final userCredential = await _auth.signInWithCredential(credential);
+      
+      // Create or get user account
+      final user = await _getOrCreateUserBySocial(
+        provider: 'google',
+        providerId: userCredential.user!.uid,
+        email: googleUser.email,
+        name: googleUser.displayName,
+        avatarUrl: googleUser.photoUrl,
+      );
+      
+      // Save to storage
+      await _saveUserToStorage(user);
+      _currentUser = user;
+      
+      return user;
+    } catch (e) {
+      throw Exception('Google Sign-In failed: $e');
+    }
+  }
+
+  // Apple Sign-In
+  Future<UserAccount> loginWithApple() async {
+    try {
+      // Check if Apple Sign-In is available (iOS 13+, macOS 10.15+)
+      if (!Platform.isIOS && !Platform.isMacOS) {
+        throw Exception('Apple Sign-In only available on iOS and macOS');
+      }
+
+      // Request Apple Sign-In
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      // Create OAuth credential for Firebase
+      final oauthCredential = auth.OAuthProvider('apple.com').credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
+
+      // Sign in to Firebase
+      final userCredential = await _auth.signInWithCredential(oauthCredential);
+      
+      // Get display name from Apple credential
+      String? displayName;
+      if (appleCredential.givenName != null || appleCredential.familyName != null) {
+        displayName = '${appleCredential.givenName ?? ''} ${appleCredential.familyName ?? ''}'.trim();
+      }
+      
+      // Create or get user account
+      final user = await _getOrCreateUserBySocial(
+        provider: 'apple',
+        providerId: userCredential.user!.uid,
+        email: appleCredential.email ?? userCredential.user!.email,
+        name: displayName ?? userCredential.user!.displayName,
+        avatarUrl: userCredential.user!.photoURL,
+      );
+      
+      // Save to storage
+      await _saveUserToStorage(user);
+      _currentUser = user;
+      
+      return user;
+    } catch (e) {
+      throw Exception('Apple Sign-In failed: $e');
+    }
+  }
+
+  // Generic Social Login (for backwards compatibility)
   Future<UserAccount> loginWithSocial({
     required String provider,
     required String providerId,
@@ -95,10 +193,14 @@ class AuthService {
     String? avatarUrl,
   }) async {
     try {
-      // Firebase social login handled by specific providers
-      // For now, create custom token or use existing Firebase methods
+      // Route to specific provider
+      if (provider.toLowerCase() == 'google') {
+        return await loginWithGoogle();
+      } else if (provider.toLowerCase() == 'apple') {
+        return await loginWithApple();
+      }
       
-      // Create or get user account from Firestore
+      // Fallback for other providers
       final user = await _getOrCreateUserBySocial(
         provider: provider,
         providerId: providerId,
@@ -107,7 +209,6 @@ class AuthService {
         avatarUrl: avatarUrl,
       );
       
-      // Save to storage
       await _saveUserToStorage(user);
       _currentUser = user;
       
@@ -121,6 +222,11 @@ class AuthService {
     try {
       // Sign out from Firebase
       await _auth.signOut();
+      
+      // Sign out from Google if signed in
+      if (await _googleSignIn.isSignedIn()) {
+        await _googleSignIn.signOut();
+      }
       
       // Clear local storage
       final prefs = await SharedPreferences.getInstance();
