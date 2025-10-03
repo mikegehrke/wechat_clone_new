@@ -45,5 +45,48 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	
+	<!-- Google Sign-In Configuration -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- TODO: Ersetze mit deiner REVERSED_CLIENT_ID aus GoogleService-Info.plist -->
+				<!-- Beispiel: com.googleusercontent.apps.123456789012-abc123def456ghi789jkl012mno345pq -->
+				<string>DEINE-REVERSED-CLIENT-ID-HIER</string>
+			</array>
+		</dict>
+	</array>
+	
+	<!-- Camera Permission für Video/Photo Features -->
+	<key>NSCameraUsageDescription</key>
+	<string>Diese App benötigt Zugriff auf die Kamera für Videos, Fotos und Stories.</string>
+	
+	<!-- Photo Library Permission -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Diese App benötigt Zugriff auf deine Fotos für das Teilen von Bildern.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Diese App möchte Fotos in deiner Bibliothek speichern.</string>
+	
+	<!-- Microphone Permission für Voice Messages -->
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Diese App benötigt Zugriff auf das Mikrofon für Sprachnachrichten und Anrufe.</string>
+	
+	<!-- Location Permission für Dating & Delivery -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Diese App benötigt deinen Standort für Dating-Matches und Essenslieferungen in deiner Nähe.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Diese App benötigt deinen Standort für Echtzeit-Lieferungs-Tracking.</string>
+	
+	<!-- Contacts Permission -->
+	<key>NSContactsUsageDescription</key>
+	<string>Diese App möchte auf deine Kontakte zugreifen, um Freunde zu finden.</string>
+	
+	<!-- Face ID / Touch ID Permission -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>Diese App nutzt Face ID für sichere Anmeldung.</string>
 </dict>
 </plist>
