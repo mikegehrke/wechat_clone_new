@@ -1,12 +1,23 @@
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/game.dart';
 
 class GameService {
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   // Get featured games
   static Future<List<Game>> getFeaturedGames() async {
     try {
-      // In real app, make API call to get featured games
-      return _createMockGames().where((game) => game.isFeatured).toList();
+      final snapshot = await _firestore
+          .collection('games')
+          .where('isFeatured', isEqualTo: true)
+          .limit(10)
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return Game.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get featured games: $e');
     }
@@ -15,8 +26,18 @@ class GameService {
   // Get trending games
   static Future<List<Game>> getTrendingGames() async {
     try {
-      // In real app, make API call to get trending games
-      return _createMockGames().where((game) => game.isTrending).toList();
+      final snapshot = await _firestore
+          .collection('games')
+          .where('isTrending', isEqualTo: true)
+          .orderBy('downloads', descending: true)
+          .limit(15)
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return Game.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get trending games: $e');
     }
@@ -25,8 +46,17 @@ class GameService {
   // Get games by category
   static Future<List<Game>> getGamesByCategory(String category) async {
     try {
-      // In real app, make API call to get games by category
-      return _createMockGames().where((game) => game.category == category).toList();
+      final snapshot = await _firestore
+          .collection('games')
+          .where('category', isEqualTo: category)
+          .orderBy('rating', descending: true)
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return Game.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get games by category: $e');
     }
@@ -61,8 +91,19 @@ class GameService {
   // Get game reviews
   static Future<List<GameReview>> getGameReviews(String gameId) async {
     try {
-      // In real app, make API call to get game reviews
-      return _createMockReviews(gameId);
+      final snapshot = await _firestore
+          .collection('games')
+          .doc(gameId)
+          .collection('reviews')
+          .orderBy('createdAt', descending: true)
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        data['gameId'] = gameId;
+        return GameReview.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get game reviews: $e');
     }
@@ -77,8 +118,28 @@ class GameService {
     required String review,
   }) async {
     try {
-      // In real app, make API call to add review
-      await Future.delayed(const Duration(milliseconds: 500));
+      await _firestore
+          .collection('games')
+          .doc(gameId)
+          .collection('reviews')
+          .add({
+        'userId': userId,
+        'username': username,
+        'rating': rating,
+        'review': review,
+        'createdAt': FieldValue.serverTimestamp(),
+        'helpfulCount': 0,
+        'isVerified': false,
+      });
+      
+      // Update game rating
+      final reviews = await getGameReviews(gameId);
+      final avgRating = reviews.fold(0.0, (sum, r) => sum + r.rating) / reviews.length;
+      
+      await _firestore.collection('games').doc(gameId).update({
+        'rating': avgRating,
+        'reviewCount': reviews.length,
+      });
     } catch (e) {
       throw Exception('Failed to add game review: $e');
     }

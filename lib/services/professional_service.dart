@@ -1,7 +1,9 @@
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/professional.dart';
 
 class ProfessionalService {
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   // Toggle save job
   static Future<void> toggleSaveJob(String jobId, String userId) async {
     try {
@@ -56,8 +58,17 @@ class ProfessionalService {
   // Get professional feed
   static Future<List<ProfessionalPost>> getFeed(String userId) async {
     try {
-      // In real app, make API call to get feed
-      return _createMockPosts();
+      final postsSnapshot = await _firestore
+          .collection('professionalPosts')
+          .orderBy('createdAt', descending: true)
+          .limit(50)
+          .get();
+      
+      return postsSnapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return ProfessionalPost.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get feed: $e');
     }
@@ -98,8 +109,18 @@ class ProfessionalService {
   // Like/unlike post
   static Future<void> toggleLike(String postId, String userId) async {
     try {
-      // In real app, make API call to toggle like
-      await Future.delayed(const Duration(milliseconds: 300));
+      final postRef = _firestore.collection('professionalPosts').doc(postId);
+      final likeRef = postRef.collection('likes').doc(userId);
+      
+      final likeDoc = await likeRef.get();
+      
+      if (likeDoc.exists) {
+        await likeRef.delete();
+        await postRef.update({'likesCount': FieldValue.increment(-1)});
+      } else {
+        await likeRef.set({'userId': userId, 'createdAt': FieldValue.serverTimestamp()});
+        await postRef.update({'likesCount': FieldValue.increment(1)});
+      }
     } catch (e) {
       throw Exception('Failed to toggle like: $e');
     }

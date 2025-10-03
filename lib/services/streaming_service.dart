@@ -1,7 +1,9 @@
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/streaming.dart';
 
 class StreamingService {
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   // Toggle watchlist
   static Future<void> toggleWatchlist(String videoId, String userId) async {
     try {
@@ -14,8 +16,18 @@ class StreamingService {
   // Get trending videos
   static Future<List<VideoContent>> getTrendingVideos() async {
     try {
-      // In real app, make API call to get trending videos
-      return _createMockVideos().where((video) => video.isLive == false).toList();
+      final snapshot = await _firestore
+          .collection('videos')
+          .where('isLive', isEqualTo: false)
+          .orderBy('views', descending: true)
+          .limit(20)
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return VideoContent.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get trending videos: $e');
     }
@@ -34,8 +46,18 @@ class StreamingService {
   // Get videos by category
   static Future<List<VideoContent>> getVideosByCategory(String category) async {
     try {
-      // In real app, make API call to get videos by category
-      return _createMockVideos().where((video) => video.category == category).toList();
+      final snapshot = await _firestore
+          .collection('videos')
+          .where('category', isEqualTo: category)
+          .orderBy('publishedAt', descending: true)
+          .limit(50)
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return VideoContent.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get videos by category: $e');
     }
@@ -125,8 +147,28 @@ class StreamingService {
     bool? isTrending,
   }) async {
     try {
-      // In real app, make API call to get movies
-      return _createMockMovies();
+      Query query = _firestore.collection('movies');
+      
+      if (genre != null) {
+        query = query.where('genres', arrayContains: genre);
+      }
+      if (year != null) {
+        query = query.where('year', isEqualTo: int.parse(year));
+      }
+      if (isNewRelease == true) {
+        query = query.where('isNewRelease', isEqualTo: true);
+      }
+      if (isTrending == true) {
+        query = query.where('isTrending', isEqualTo: true);
+      }
+      
+      final snapshot = await query.limit(50).get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return Movie.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get movies: $e');
     }
@@ -140,8 +182,28 @@ class StreamingService {
     bool? isTrending,
   }) async {
     try {
-      // In real app, make API call to get series
-      return _createMockSeries();
+      Query query = _firestore.collection('series');
+      
+      if (genre != null) {
+        query = query.where('genres', arrayContains: genre);
+      }
+      if (year != null) {
+        query = query.where('year', isEqualTo: int.parse(year));
+      }
+      if (isNewRelease == true) {
+        query = query.where('isNewRelease', isEqualTo: true);
+      }
+      if (isTrending == true) {
+        query = query.where('isTrending', isEqualTo: true);
+      }
+      
+      final snapshot = await query.limit(50).get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return Series.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get series: $e');
     }

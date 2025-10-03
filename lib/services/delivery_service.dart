@@ -1,16 +1,25 @@
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/delivery.dart';
 
 class DeliveryService {
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   // Get nearby restaurants
   static Future<List<Restaurant>> getNearbyRestaurants({
     required Map<String, double> userLocation,
     double radius = 10.0, // km
   }) async {
     try {
-      // In real app, make API call to get nearby restaurants
-      // For demo, return mock data
-      return _createMockRestaurants();
+      final snapshot = await _firestore
+          .collection('restaurants')
+          .where('isOpen', isEqualTo: true)
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return Restaurant.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get nearby restaurants: $e');
     }
@@ -35,8 +44,19 @@ class DeliveryService {
   // Get restaurant menu
   static Future<List<FoodItem>> getRestaurantMenu(String restaurantId) async {
     try {
-      // In real app, make API call to get restaurant menu
-      return _createMockFoodItems(restaurantId);
+      final snapshot = await _firestore
+          .collection('restaurants')
+          .doc(restaurantId)
+          .collection('menuItems')
+          .where('isAvailable', isEqualTo: true)
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        data['restaurantId'] = restaurantId;
+        return FoodItem.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get restaurant menu: $e');
     }
@@ -66,31 +86,34 @@ class DeliveryService {
     try {
       // Calculate totals
       final subtotal = items.fold(0.0, (sum, item) => sum + item.totalPrice);
-      final deliveryFee = subtotal > 25 ? 0.0 : 2.99; // Free delivery over $25
-      final tax = subtotal * 0.08; // 8% tax
+      final deliveryFee = subtotal > 25 ? 0.0 : 2.99;
+      final tax = subtotal * 0.08;
       final total = subtotal + deliveryFee + tax + tip;
 
-      final order = DeliveryOrder(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        userId: userId,
-        restaurantId: restaurantId,
-        restaurantName: restaurantName,
-        items: items,
-        subtotal: subtotal,
-        deliveryFee: deliveryFee,
-        tax: tax,
-        tip: tip,
-        total: total,
-        deliveryAddress: deliveryAddress,
-        paymentMethod: paymentMethod,
-        createdAt: DateTime.now(),
-        estimatedDelivery: DateTime.now().add(const Duration(minutes: 45)),
-      );
+      final orderData = {
+        'userId': userId,
+        'restaurantId': restaurantId,
+        'restaurantName': restaurantName,
+        'items': items.map((item) => item.toJson()).toList(),
+        'subtotal': subtotal,
+        'deliveryFee': deliveryFee,
+        'tax': tax,
+        'tip': tip,
+        'total': total,
+        'deliveryAddress': deliveryAddress.toJson(),
+        'paymentMethod': paymentMethod.toJson(),
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+        'estimatedDelivery': Timestamp.fromDate(DateTime.now().add(const Duration(minutes: 45))),
+      };
 
-      // In real app, save order to database
-      await Future.delayed(const Duration(seconds: 1));
+      final docRef = await _firestore.collection('deliveryOrders').add(orderData);
+      
+      orderData['id'] = docRef.id;
+      orderData['createdAt'] = DateTime.now().toIso8601String();
+      orderData['estimatedDelivery'] = DateTime.now().add(const Duration(minutes: 45)).toIso8601String();
 
-      return order;
+      return DeliveryOrder.fromJson(orderData);
     } catch (e) {
       throw Exception('Failed to create order: $e');
     }
@@ -99,8 +122,17 @@ class DeliveryService {
   // Get user's orders
   static Future<List<DeliveryOrder>> getUserOrders(String userId) async {
     try {
-      // In real app, make API call to get user orders
-      return _createMockOrders();
+      final snapshot = await _firestore
+          .collection('deliveryOrders')
+          .where('userId', isEqualTo: userId)
+          .orderBy('createdAt', descending: true)
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return DeliveryOrder.fromJson(data);
+      }).toList();
     } catch (e) {
       throw Exception('Failed to get user orders: $e');
     }

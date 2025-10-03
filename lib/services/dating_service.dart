@@ -12,9 +12,42 @@ class DatingService {
     int limit = 10,
   }) async {
     try {
-      // In real app, implement complex matching algorithm
-      // For demo, return mock data
-      return _createMockProfiles();
+      // Get user's already swiped profiles
+      final swipesSnapshot = await _firestore
+          .collection('swipes')
+          .where('userId', isEqualTo: userId)
+          .get();
+      
+      final swipedIds = swipesSnapshot.docs
+          .map((doc) => doc.data()['targetUserId'] as String)
+          .toList();
+      
+      // Get profiles from Firestore, excluding already swiped
+      Query query = _firestore.collection('datingProfiles');
+      
+      // Filter by preferences
+      if (preferences.minAge != null) {
+        query = query.where('age', isGreaterThanOrEqualTo: preferences.minAge);
+      }
+      if (preferences.maxAge != null) {
+        query = query.where('age', isLessThanOrEqualTo: preferences.maxAge);
+      }
+      if (preferences.gender != null) {
+        query = query.where('gender', isEqualTo: preferences.gender);
+      }
+      
+      final snapshot = await query.limit(limit * 2).get();
+      
+      final profiles = snapshot.docs
+          .where((doc) => !swipedIds.contains(doc.id) && doc.id != userId)
+          .take(limit)
+          .map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        data['id'] = doc.id;
+        return DatingProfile.fromJson(data);
+      }).toList();
+      
+      return profiles;
     } catch (e) {
       throw Exception('Failed to get potential matches: $e');
     }
@@ -236,7 +269,16 @@ class DatingService {
     }
   }
 
-  // Mock data for demo
+  // Create sample profile for demo/testing
+  static Future<void> createSampleProfile(DatingProfile profile) async {
+    try {
+      await _firestore.collection('datingProfiles').doc(profile.id).set(profile.toJson());
+    } catch (e) {
+      throw Exception('Failed to create profile: $e');
+    }
+  }
+
+  // Legacy mock for fallback only
   static List<DatingProfile> _createMockProfiles() {
     final random = Random();
     final names = [
