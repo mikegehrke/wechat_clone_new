@@ -32,9 +32,7 @@ class DatingService {
       if (preferences.maxAge != null) {
         query = query.where('age', isLessThanOrEqualTo: preferences.maxAge);
       }
-      if (preferences.gender != null) {
-        query = query.where('gender', isEqualTo: preferences.gender);
-      }
+      // Note: gender filter removed as DatingPreferences doesn't have gender field
       
       final snapshot = await query.limit(limit * 2).get();
       

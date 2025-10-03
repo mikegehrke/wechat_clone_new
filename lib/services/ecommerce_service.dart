@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/product.dart';
+import '../models/product.dart' hide Order;
+import '../models/product.dart' as product;
 
 class EcommerceService {
   static const String _baseUrl = 'https://api.example.com'; // In real app, use real API
@@ -253,7 +254,7 @@ class EcommerceService {
       final shipping = subtotal > 50 ? 0.0 : 9.99; // Free shipping over $50
       final total = subtotal + tax + shipping;
 
-      final order = Order(
+      final order = product.Order(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         userId: userId,
         items: items,
@@ -410,7 +411,7 @@ class EcommerceService {
       final shipping = subtotal > 50 ? 0.0 : 9.99;
       final total = subtotal + tax + shipping;
 
-      return Order(
+      return product.Order(
         id: 'order_$index',
         userId: 'user_1',
         items: cartItems,

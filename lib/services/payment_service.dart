@@ -118,25 +118,14 @@ class PaymentService {
     required String cardHolderName,
   }) async {
     try {
-      // Create Stripe card params
-      final billingDetails = stripe.BillingDetails(
-        name: cardHolderName,
-      );
-      
-      final cardParams = stripe.CardParams(
-        number: cardNumber,
-        expMonth: int.parse(expiryMonth),
-        expYear: int.parse(expiryYear),
-        cvc: cvv,
-      );
-      
-      // Create payment method with Stripe
+      // Create payment method with Stripe SDK
       final paymentMethod = await stripe.Stripe.instance.createPaymentMethod(
         params: stripe.PaymentMethodParams.card(
           paymentMethodData: stripe.PaymentMethodData(
-            billingDetails: billingDetails,
+            billingDetails: stripe.BillingDetails(
+              name: cardHolderName,
+            ),
           ),
-          card: cardParams,
         ),
       );
       
