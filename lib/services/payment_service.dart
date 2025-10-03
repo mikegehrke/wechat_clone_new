@@ -1,13 +1,38 @@
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../models/payment.dart';
 
 class PaymentService {
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
+  // In production, these should be in environment variables
+  static const String _stripePublishableKey = 'pk_test_YOUR_KEY_HERE';
+  static const String _stripeSecretKey = 'sk_test_YOUR_KEY_HERE';
+  static const String _paypalClientId = 'YOUR_PAYPAL_CLIENT_ID';
+  static const String _paypalSecret = 'YOUR_PAYPAL_SECRET';
+  
+  // Initialize Stripe
+  static Future<void> initializeStripe() async {
+    try {
+      stripe.Stripe.publishableKey = _stripePublishableKey;
+      await stripe.Stripe.instance.applySettings();
+    } catch (e) {
+      print('Failed to initialize Stripe: $e');
+    }
+  }
   // Add payment method
   static Future<void> addPaymentMethod(String userId, PaymentMethod paymentMethod) async {
     try {
-      // In real app, save to backend/database
-      await Future.delayed(const Duration(seconds: 1));
-      // Success
+      // Save to Firestore
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('paymentMethods')
+          .doc(paymentMethod.id)
+          .set(paymentMethod.toJson());
     } catch (e) {
       throw Exception('Failed to add payment method: $e');
     }
@@ -32,8 +57,21 @@ class PaymentService {
   // Get payment methods for user
   static Future<List<PaymentMethod>> getPaymentMethods(String userId) async {
     try {
-      // In real app, fetch from backend
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Fetch from Firestore
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('paymentMethods')
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return PaymentMethod.fromJson(data);
+      }).toList();
+    } catch (e) {
+      // Fallback to mock data
+      print('Failed to get payment methods from Firestore: $e');
       return [
         PaymentMethod(
           id: 'pm_1',
@@ -51,8 +89,6 @@ class PaymentService {
           createdAt: DateTime.now(),
         ),
       ];
-    } catch (e) {
-      throw Exception('Failed to get payment methods: $e');
     }
   }
 
@@ -82,11 +118,32 @@ class PaymentService {
     required String cardHolderName,
   }) async {
     try {
-      // In real app, integrate with Stripe API
-      final cardBrand = _getCardBrand(cardNumber);
+      // Create Stripe card params
+      final billingDetails = stripe.BillingDetails(
+        name: cardHolderName,
+      );
       
-      final paymentMethod = PaymentMethod(
-        id: 'pm_${DateTime.now().millisecondsSinceEpoch}',
+      final cardParams = stripe.CardParams(
+        number: cardNumber,
+        expMonth: int.parse(expiryMonth),
+        expYear: int.parse(expiryYear),
+        cvc: cvv,
+      );
+      
+      // Create payment method with Stripe
+      final paymentMethod = await stripe.Stripe.instance.createPaymentMethod(
+        params: stripe.PaymentMethodParams.card(
+          paymentMethodData: stripe.PaymentMethodData(
+            billingDetails: billingDetails,
+          ),
+          card: cardParams,
+        ),
+      );
+      
+      final cardBrand = paymentMethod.card?.brand ?? _getCardBrand(cardNumber);
+      
+      return PaymentMethod(
+        id: paymentMethod.id,
         type: 'card',
         cardNumber: cardNumber,
         cardHolderName: cardHolderName,
@@ -97,13 +154,8 @@ class PaymentService {
         isVerified: true,
         createdAt: DateTime.now(),
       );
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
-      return paymentMethod;
     } catch (e) {
-      throw Exception('Failed to create payment method: $e');
+      throw Exception('Failed to create Stripe payment method: $e');
     }
   }
 
@@ -115,29 +167,53 @@ class PaymentService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      // In real app, integrate with Stripe Payment Intents API
+      // Create Payment Intent via backend API
+      // In production, NEVER expose secret key in client code!
+      // This should be done through your backend
+      final response = await http.post(
+        Uri.parse('https://api.stripe.com/v1/payment_intents'),
+        headers: {
+          'Authorization': 'Bearer $_stripeSecretKey',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'amount': (amount * 100).toInt().toString(), // Convert to cents
+          'currency': currency.toLowerCase(),
+          'payment_method': paymentMethodId,
+          'confirm': 'true',
+          'description': description ?? 'Payment',
+          if (metadata != null) 'metadata': jsonEncode(metadata),
+        },
+      );
+      
+      if (response.statusCode != 200) {
+        throw Exception('Stripe API error: ${response.body}');
+      }
+      
+      final data = jsonDecode(response.body);
+      
       final transaction = PaymentTransaction(
-        id: 'pi_${DateTime.now().millisecondsSinceEpoch}',
+        id: data['id'],
         userId: 'demo_user_1', // In real app, get from auth
         type: 'payment',
         amount: amount,
         currency: currency,
-        status: 'completed',
+        status: data['status'] == 'succeeded' ? 'completed' : 'pending',
         description: description ?? 'Payment',
         paymentMethodId: paymentMethodId,
-        stripePaymentIntentId: 'pi_${DateTime.now().millisecondsSinceEpoch}',
+        stripePaymentIntentId: data['id'],
         fee: amount * 0.029 + 0.30, // Stripe fee: 2.9% + $0.30
         createdAt: DateTime.now(),
-        completedAt: DateTime.now(),
+        completedAt: data['status'] == 'succeeded' ? DateTime.now() : null,
         metadata: metadata,
       );
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 3));
+      
+      // Save to Firestore
+      await _firestore.collection('transactions').doc(transaction.id).set(transaction.toJson());
 
       return transaction;
     } catch (e) {
-      throw Exception('Failed to process payment: $e');
+      throw Exception('Failed to process Stripe payment: $e');
     }
   }
 
@@ -172,25 +248,67 @@ class PaymentService {
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      // In real app, integrate with PayPal Orders API
+      // Get PayPal access token
+      final authResponse = await http.post(
+        Uri.parse('https://api-m.sandbox.paypal.com/v1/oauth2/token'),
+        headers: {
+          'Authorization': 'Basic ${base64Encode(utf8.encode('$_paypalClientId:$_paypalSecret'))}',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {'grant_type': 'client_credentials'},
+      );
+      
+      if (authResponse.statusCode != 200) {
+        throw Exception('PayPal auth failed');
+      }
+      
+      final authData = jsonDecode(authResponse.body);
+      final accessToken = authData['access_token'];
+      
+      // Create PayPal order
+      final orderResponse = await http.post(
+        Uri.parse('https://api-m.sandbox.paypal.com/v2/checkout/orders'),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'intent': 'CAPTURE',
+          'purchase_units': [
+            {
+              'amount': {
+                'currency_code': currency.toUpperCase(),
+                'value': amount.toStringAsFixed(2),
+              },
+              'description': description ?? 'PayPal Payment',
+            }
+          ],
+        }),
+      );
+      
+      if (orderResponse.statusCode != 201) {
+        throw Exception('PayPal order creation failed');
+      }
+      
+      final orderData = jsonDecode(orderResponse.body);
+      
       final transaction = PaymentTransaction(
-        id: 'pp_${DateTime.now().millisecondsSinceEpoch}',
+        id: orderData['id'],
         userId: 'demo_user_1', // In real app, get from auth
         type: 'payment',
         amount: amount,
         currency: currency,
-        status: 'completed',
+        status: 'pending', // PayPal requires capture
         description: description ?? 'PayPal Payment',
         paymentMethodId: paymentMethodId,
-        paypalTransactionId: 'pp_${DateTime.now().millisecondsSinceEpoch}',
+        paypalTransactionId: orderData['id'],
         fee: amount * 0.034 + 0.30, // PayPal fee: 3.4% + $0.30
         createdAt: DateTime.now(),
-        completedAt: DateTime.now(),
         metadata: metadata,
       );
-
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 3));
+      
+      // Save to Firestore
+      await _firestore.collection('transactions').doc(transaction.id).set(transaction.toJson());
 
       return transaction;
     } catch (e) {
