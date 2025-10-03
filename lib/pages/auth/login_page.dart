@@ -49,6 +49,96 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _loginWithGoogle() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final success = await authProvider.loginWithGoogle();
+
+    if (success && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const MainNavigation()),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.error ?? 'Google login failed'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _loginWithApple() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final success = await authProvider.loginWithApple();
+
+    if (success && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const MainNavigation()),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.error ?? 'Apple login failed'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _loginWithPhone() async {
+    // Navigate to phone login page
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const PhoneLoginPage()),
+    );
+  }
+
+  Future<void> _loginAnonymously() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final success = await authProvider.loginAnonymously();
+
+    if (success && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const MainNavigation()),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.error ?? 'Anonymous login failed'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Widget _buildSocialButton({
+    required IconData icon,
+    required String text,
+    required Color color,
+    required VoidCallback? onPressed,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, color: color),
+        label: Text(
+          text,
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: color.withOpacity(0.3)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,7 +240,76 @@ class _LoginPageState extends State<LoginPage> {
                     );
                   },
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 24),
+                
+                // Divider
+                Row(
+                  children: [
+                    Expanded(child: Divider(color: Colors.grey[300])),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Or continue with',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    Expanded(child: Divider(color: Colors.grey[300])),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                
+                // Social Login Buttons
+                Consumer<AuthProvider>(
+                  builder: (context, authProvider, child) {
+                    return Column(
+                      children: [
+                        // Google Sign-In
+                        _buildSocialButton(
+                          icon: Icons.g_mobiledata,
+                          text: 'Continue with Google',
+                          color: const Color(0xFF4285F4),
+                          onPressed: authProvider.isLoading ? null : () => _loginWithGoogle(),
+                        ),
+                        const SizedBox(height: 12),
+                        
+                        // Apple Sign-In (nur auf iOS anzeigen)
+                        if (Theme.of(context).platform == TargetPlatform.iOS)
+                          Column(
+                            children: [
+                              _buildSocialButton(
+                                icon: Icons.apple,
+                                text: 'Continue with Apple',
+                                color: Colors.black,
+                                onPressed: authProvider.isLoading ? null : () => _loginWithApple(),
+                              ),
+                              const SizedBox(height: 12),
+                            ],
+                          ),
+                        
+                        // Phone Sign-In
+                        _buildSocialButton(
+                          icon: Icons.phone,
+                          text: 'Continue with Phone',
+                          color: const Color(0xFF07C160),
+                          onPressed: authProvider.isLoading ? null : () => _loginWithPhone(),
+                        ),
+                        const SizedBox(height: 12),
+                        
+                        // Anonymous Sign-In
+                        _buildSocialButton(
+                          icon: Icons.person_outline,
+                          text: 'Continue as Guest',
+                          color: Colors.grey[600]!,
+                          onPressed: authProvider.isLoading ? null : () => _loginAnonymously(),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
                 
                 // Forgot Password
                 TextButton(

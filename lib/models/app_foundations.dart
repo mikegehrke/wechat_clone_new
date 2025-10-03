@@ -14,6 +14,7 @@ class UserAccount {
   final DateTime? lastActiveAt;
   final bool isVerified;
   final bool isActive;
+  final bool isAnonymous;
   final List<ConnectedDevice> devices;
   final List<SocialLogin> socialLogins;
   final PrivacySettings privacy;
@@ -33,6 +34,7 @@ class UserAccount {
     this.lastActiveAt,
     this.isVerified = false,
     this.isActive = true,
+    this.isAnonymous = false,
     this.devices = const [],
     this.socialLogins = const [],
     required this.privacy,
@@ -54,6 +56,7 @@ class UserAccount {
       lastActiveAt: json['lastActiveAt'] != null ? DateTime.parse(json['lastActiveAt']) : null,
       isVerified: json['isVerified'] ?? false,
       isActive: json['isActive'] ?? true,
+      isAnonymous: json['isAnonymous'] ?? false,
       devices: (json['devices'] as List?)
           ?.map((device) => ConnectedDevice.fromJson(device))
           .toList() ?? [],
@@ -80,6 +83,7 @@ class UserAccount {
       'lastActiveAt': lastActiveAt?.toIso8601String(),
       'isVerified': isVerified,
       'isActive': isActive,
+      'isAnonymous': isAnonymous,
       'devices': devices.map((device) => device.toJson()).toList(),
       'socialLogins': socialLogins.map((login) => login.toJson()).toList(),
       'privacy': privacy.toJson(),

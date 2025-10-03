@@ -1,9 +1,17 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:crypto/crypto.dart';
 import '../models/app_foundations.dart';
 
 class AuthService {
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  static final GoogleSignIn _googleSignIn = GoogleSignIn();
   static const String _userKey = 'current_user';
   static const String _settingsKey = 'app_settings';
   static const String _complianceKey = 'compliance_settings';
@@ -36,13 +44,21 @@ class AuthService {
     required String otpCode,
   }) async {
     try {
-      // In real app, verify OTP with backend
-      await Future.delayed(const Duration(seconds: 1));
+      // Verify OTP with Firebase
+      final credential = PhoneAuthProvider.credential(
+        verificationId: _verificationId ?? '',
+        smsCode: otpCode,
+      );
+      
+      final userCredential = await _auth.signInWithCredential(credential);
+      final firebaseUser = userCredential.user;
+      
+      if (firebaseUser == null) {
+        throw Exception('Authentication failed');
+      }
       
       // Create or get user account
-      final user = await _getOrCreateUser(phoneNumber);
-      
-      // Update last active (can't modify final field)
+      final user = await _getOrCreateUser(phoneNumber, firebaseUser.uid);
       
       // Save to storage
       await _saveUserToStorage(user);
@@ -59,13 +75,20 @@ class AuthService {
     required String password,
   }) async {
     try {
-      // In real app, verify credentials with backend
-      await Future.delayed(const Duration(seconds: 1));
+      // Sign in with Firebase
+      final userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      
+      final firebaseUser = userCredential.user;
+      
+      if (firebaseUser == null) {
+        throw Exception('Authentication failed');
+      }
       
       // Create or get user account
-      final user = await _getOrCreateUserByEmail(email);
-      
-      // Update last active (can't modify final field)
+      final user = await _getOrCreateUserByEmail(email, firebaseUser.uid);
       
       // Save to storage
       await _saveUserToStorage(user);
@@ -77,6 +100,188 @@ class AuthService {
     }
   }
 
+  // Google Sign-In
+  Future<UserAccount> loginWithGoogle() async {
+    try {
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      
+      if (googleUser == null) {
+        throw Exception('Google Sign-In was cancelled');
+      }
+
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase with the Google credential
+      final userCredential = await _auth.signInWithCredential(credential);
+      final firebaseUser = userCredential.user;
+
+      if (firebaseUser == null) {
+        throw Exception('Google authentication failed');
+      }
+
+      // Create or get user account
+      final user = await _getOrCreateUserBySocial(
+        provider: 'google',
+        providerId: firebaseUser.uid,
+        email: firebaseUser.email,
+        name: firebaseUser.displayName,
+        avatarUrl: firebaseUser.photoURL,
+        firebaseUid: firebaseUser.uid,
+      );
+
+      // Save to storage
+      await _saveUserToStorage(user);
+      _currentUser = user;
+
+      return user;
+    } catch (e) {
+      throw Exception('Google login failed: $e');
+    }
+  }
+
+  // Apple Sign-In
+  Future<UserAccount> loginWithApple() async {
+    try {
+      // Generate nonce for security
+      final rawNonce = _generateNonce();
+      final nonce = _sha256ofString(rawNonce);
+
+      // Request credential for the currently signed in Apple account
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: nonce,
+      );
+
+      // Create an `OAuthCredential` from the credential returned by Apple
+      final oauthCredential = OAuthProvider("apple.com").credential(
+        idToken: appleCredential.identityToken,
+        rawNonce: rawNonce,
+      );
+
+      // Sign in to Firebase with the Apple credential
+      final userCredential = await _auth.signInWithCredential(oauthCredential);
+      final firebaseUser = userCredential.user;
+
+      if (firebaseUser == null) {
+        throw Exception('Apple authentication failed');
+      }
+
+      // Create display name from Apple credential
+      String? displayName;
+      if (appleCredential.givenName != null || appleCredential.familyName != null) {
+        displayName = '${appleCredential.givenName ?? ''} ${appleCredential.familyName ?? ''}'.trim();
+      }
+
+      // Create or get user account
+      final user = await _getOrCreateUserBySocial(
+        provider: 'apple',
+        providerId: firebaseUser.uid,
+        email: firebaseUser.email ?? appleCredential.email,
+        name: displayName ?? firebaseUser.displayName,
+        avatarUrl: firebaseUser.photoURL,
+        firebaseUid: firebaseUser.uid,
+      );
+
+      // Save to storage
+      await _saveUserToStorage(user);
+      _currentUser = user;
+
+      return user;
+    } catch (e) {
+      throw Exception('Apple login failed: $e');
+    }
+  }
+
+  // Anonymous Sign-In
+  Future<UserAccount> loginAnonymously() async {
+    try {
+      final userCredential = await _auth.signInAnonymously();
+      final firebaseUser = userCredential.user;
+
+      if (firebaseUser == null) {
+        throw Exception('Anonymous authentication failed');
+      }
+
+      // Create anonymous user account
+      final user = UserAccount(
+        id: firebaseUser.uid,
+        phoneNumber: '',
+        email: '',
+        username: 'guest_${firebaseUser.uid.substring(0, 8)}',
+        displayName: 'Guest User',
+        isAnonymous: true,
+        createdAt: DateTime.now(),
+        privacy: PrivacySettings(),
+        security: SecuritySettings(),
+      );
+
+      // Save to storage
+      await _saveUserToStorage(user);
+      _currentUser = user;
+
+      return user;
+    } catch (e) {
+      throw Exception('Anonymous login failed: $e');
+    }
+  }
+
+  // Convert Anonymous to Permanent Account
+  Future<UserAccount> linkAnonymousAccount({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null || !user.isAnonymous) {
+        throw Exception('No anonymous user to link');
+      }
+
+      // Create email credential
+      final credential = EmailAuthProvider.credential(email: email, password: password);
+
+      // Link the anonymous account with email/password
+      final userCredential = await user.linkWithCredential(credential);
+      final firebaseUser = userCredential.user;
+
+      if (firebaseUser == null) {
+        throw Exception('Account linking failed');
+      }
+
+      // Update user account
+      final updatedUser = UserAccount(
+        id: firebaseUser.uid,
+        phoneNumber: _currentUser?.phoneNumber ?? '',
+        email: email,
+        username: email.split('@')[0],
+        displayName: _currentUser?.displayName ?? email.split('@')[0],
+        isAnonymous: false,
+        createdAt: _currentUser?.createdAt ?? DateTime.now(),
+        privacy: _currentUser?.privacy ?? PrivacySettings(),
+        security: _currentUser?.security ?? SecuritySettings(),
+      );
+
+      // Save to Firestore and storage
+      await _firestore.collection('users').doc(firebaseUser.uid).set(updatedUser.toJson());
+      await _saveUserToStorage(updatedUser);
+      _currentUser = updatedUser;
+
+      return updatedUser;
+    } catch (e) {
+      throw Exception('Account linking failed: $e');
+    }
+  }
+
   Future<UserAccount> loginWithSocial({
     required String provider,
     required String providerId,
@@ -85,25 +290,16 @@ class AuthService {
     String? avatarUrl,
   }) async {
     try {
-      // In real app, verify social login with provider
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // Create or get user account
-      final user = await _getOrCreateUserBySocial(
-        provider: provider,
-        providerId: providerId,
-        email: email,
-        name: name,
-        avatarUrl: avatarUrl,
-      );
-      
-      // Update last active (can't modify final field)
-      
-      // Save to storage
-      await _saveUserToStorage(user);
-      _currentUser = user;
-      
-      return user;
+      // This method is now deprecated in favor of specific social login methods
+      // Redirect to appropriate method based on provider
+      switch (provider.toLowerCase()) {
+        case 'google':
+          return await loginWithGoogle();
+        case 'apple':
+          return await loginWithApple();
+        default:
+          throw Exception('Unsupported social provider: $provider');
+      }
     } catch (e) {
       throw Exception('Social login failed: $e');
     }
@@ -111,8 +307,8 @@ class AuthService {
 
   Future<void> logout() async {
     try {
-      // In real app, invalidate session on backend
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Sign out from Firebase
+      await _auth.signOut();
       
       // Clear local storage
       final prefs = await SharedPreferences.getInstance();
@@ -129,14 +325,28 @@ class AuthService {
     required String email,
     required String username,
     required String displayName,
+    String? password,
   }) async {
     try {
-      // In real app, create account on backend
-      await Future.delayed(const Duration(seconds: 1));
+      UserCredential? userCredential;
+      
+      if (password != null && email.isNotEmpty) {
+        // Register with email and password
+        userCredential = await _auth.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+      }
+      
+      final firebaseUser = userCredential?.user ?? _auth.currentUser;
+      
+      if (firebaseUser == null) {
+        throw Exception('Registration failed');
+      }
       
       // Create new user account
       final user = UserAccount(
-        id: 'user_${DateTime.now().millisecondsSinceEpoch}',
+        id: firebaseUser.uid,
         phoneNumber: phoneNumber,
         email: email,
         username: username,
@@ -145,6 +355,9 @@ class AuthService {
         privacy: PrivacySettings(),
         security: SecuritySettings(),
       );
+      
+      // Save user data to Firestore
+      await _firestore.collection('users').doc(firebaseUser.uid).set(user.toJson());
       
       // Save to storage
       await _saveUserToStorage(user);
@@ -155,14 +368,27 @@ class AuthService {
   }
 
   // OTP Methods
+  String? _verificationId;
+  
   Future<void> sendOTP(String phoneNumber) async {
     try {
-      // In real app, send OTP via SMS
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // Mock OTP generation
-      final otp = _generateOTP();
-      print('OTP for $phoneNumber: $otp'); // In real app, send via SMS
+      await _auth.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          // Auto-verification completed
+          await _auth.signInWithCredential(credential);
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          throw Exception('Verification failed: ${e.message}');
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          _verificationId = verificationId;
+        },
+        codeAutoRetrievalTimeout: (String verificationId) {
+          _verificationId = verificationId;
+        },
+        timeout: const Duration(seconds: 60),
+      );
     } catch (e) {
       throw Exception('Failed to send OTP: $e');
     }
@@ -170,10 +396,16 @@ class AuthService {
 
   Future<bool> verifyOTP(String phoneNumber, String otpCode) async {
     try {
-      // In real app, verify OTP with backend
-      await Future.delayed(const Duration(milliseconds: 500));
+      if (_verificationId == null) {
+        throw Exception('No verification ID available');
+      }
       
-      // Mock verification (always true for demo)
+      final credential = PhoneAuthProvider.credential(
+        verificationId: _verificationId!,
+        smsCode: otpCode,
+      );
+      
+      await _auth.signInWithCredential(credential);
       return true;
     } catch (e) {
       throw Exception('OTP verification failed: $e');
@@ -443,35 +675,65 @@ class AuthService {
   }
 
   // Private Methods
-  Future<UserAccount> _getOrCreateUser(String phoneNumber) async {
-    // In real app, check if user exists in database
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    return UserAccount(
-      id: 'user_${phoneNumber.hashCode}',
-      phoneNumber: phoneNumber,
-      username: 'user_${phoneNumber.substring(phoneNumber.length - 4)}',
-      displayName: 'User ${phoneNumber.substring(phoneNumber.length - 4)}',
-      createdAt: DateTime.now(),
-      privacy: PrivacySettings(),
-      security: SecuritySettings(),
-    );
+  Future<UserAccount> _getOrCreateUser(String phoneNumber, String firebaseUid) async {
+    try {
+      // Check if user exists in Firestore
+      final userDoc = await _firestore.collection('users').doc(firebaseUid).get();
+      
+      if (userDoc.exists) {
+        final userData = userDoc.data()!;
+        return UserAccount.fromJson(userData);
+      } else {
+        // Create new user
+        final user = UserAccount(
+          id: firebaseUid,
+          phoneNumber: phoneNumber,
+          username: 'user_${phoneNumber.substring(phoneNumber.length - 4)}',
+          displayName: 'User ${phoneNumber.substring(phoneNumber.length - 4)}',
+          createdAt: DateTime.now(),
+          privacy: PrivacySettings(),
+          security: SecuritySettings(),
+        );
+        
+        // Save to Firestore
+        await _firestore.collection('users').doc(firebaseUid).set(user.toJson());
+        
+        return user;
+      }
+    } catch (e) {
+      throw Exception('Failed to get or create user: $e');
+    }
   }
 
-  Future<UserAccount> _getOrCreateUserByEmail(String email) async {
-    // In real app, check if user exists in database
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    return UserAccount(
-      id: 'user_${email.hashCode}',
-      phoneNumber: '+1234567890', // Mock phone
-      email: email,
-      username: email.split('@')[0],
-      displayName: email.split('@')[0],
-      createdAt: DateTime.now(),
-      privacy: PrivacySettings(),
-      security: SecuritySettings(),
-    );
+  Future<UserAccount> _getOrCreateUserByEmail(String email, String firebaseUid) async {
+    try {
+      // Check if user exists in Firestore
+      final userDoc = await _firestore.collection('users').doc(firebaseUid).get();
+      
+      if (userDoc.exists) {
+        final userData = userDoc.data()!;
+        return UserAccount.fromJson(userData);
+      } else {
+        // Create new user
+        final user = UserAccount(
+          id: firebaseUid,
+          phoneNumber: '+1234567890', // Mock phone
+          email: email,
+          username: email.split('@')[0],
+          displayName: email.split('@')[0],
+          createdAt: DateTime.now(),
+          privacy: PrivacySettings(),
+          security: SecuritySettings(),
+        );
+        
+        // Save to Firestore
+        await _firestore.collection('users').doc(firebaseUid).set(user.toJson());
+        
+        return user;
+      }
+    } catch (e) {
+      throw Exception('Failed to get or create user by email: $e');
+    }
   }
 
   Future<UserAccount> _getOrCreateUserBySocial({
@@ -480,31 +742,60 @@ class AuthService {
     String? email,
     String? name,
     String? avatarUrl,
+    required String firebaseUid,
   }) async {
-    // In real app, check if user exists in database
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    final socialLogin = SocialLogin(
-      provider: provider,
-      providerId: providerId,
-      email: email,
-      name: name,
-      avatarUrl: avatarUrl,
-      connectedAt: DateTime.now(),
-    );
-    
-    return UserAccount(
-      id: 'user_${providerId.hashCode}',
-      phoneNumber: '+1234567890', // Mock phone
-      email: email,
-      username: name?.toLowerCase().replaceAll(' ', '_') ?? 'user_${providerId.substring(0, 4)}',
-      displayName: name ?? 'User ${providerId.substring(0, 4)}',
-      avatarUrl: avatarUrl,
-      createdAt: DateTime.now(),
-      socialLogins: [socialLogin],
-      privacy: PrivacySettings(),
-      security: SecuritySettings(),
-    );
+    try {
+      // Check if user exists in Firestore
+      final userDoc = await _firestore.collection('users').doc(firebaseUid).get();
+      
+      if (userDoc.exists) {
+        final userData = userDoc.data()!;
+        return UserAccount.fromJson(userData);
+      } else {
+        // Create new user
+        final socialLogin = SocialLogin(
+          provider: provider,
+          providerId: providerId,
+          email: email,
+          name: name,
+          avatarUrl: avatarUrl,
+          connectedAt: DateTime.now(),
+        );
+        
+        final user = UserAccount(
+          id: firebaseUid,
+          phoneNumber: '+1234567890', // Mock phone - can be updated later
+          email: email ?? '',
+          username: name?.toLowerCase().replaceAll(' ', '_') ?? 'user_${firebaseUid.substring(0, 8)}',
+          displayName: name ?? 'User ${firebaseUid.substring(0, 8)}',
+          avatarUrl: avatarUrl,
+          createdAt: DateTime.now(),
+          socialLogins: [socialLogin],
+          privacy: PrivacySettings(),
+          security: SecuritySettings(),
+        );
+        
+        // Save to Firestore
+        await _firestore.collection('users').doc(firebaseUid).set(user.toJson());
+        
+        return user;
+      }
+    } catch (e) {
+      throw Exception('Failed to get or create social user: $e');
+    }
+  }
+
+  // Helper methods for Apple Sign-In
+  String _generateNonce([int length = 32]) {
+    const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)]).join();
+  }
+
+  String _sha256ofString(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
   }
 
   String _generateOTP() {

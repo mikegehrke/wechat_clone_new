@@ -1,11 +1,42 @@
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/social.dart';
 
 class SocialService {
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   // Toggle like on post
   static Future<void> toggleLikePost(String postId, String userId) async {
     try {
-      await Future.delayed(const Duration(milliseconds: 300));
+      final postRef = _firestore.collection('socialPosts').doc(postId);
+      final likesRef = postRef.collection('likes').doc(userId);
+      
+      await _firestore.runTransaction((transaction) async {
+        final likeDoc = await transaction.get(likesRef);
+        final postDoc = await transaction.get(postRef);
+        
+        if (!postDoc.exists) {
+          throw Exception('Post not found');
+        }
+        
+        final currentLikesCount = postDoc.data()?['likesCount'] ?? 0;
+        
+        if (likeDoc.exists) {
+          // Unlike the post
+          transaction.delete(likesRef);
+          transaction.update(postRef, {
+            'likesCount': currentLikesCount - 1,
+          });
+        } else {
+          // Like the post
+          transaction.set(likesRef, {
+            'userId': userId,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+          transaction.update(postRef, {
+            'likesCount': currentLikesCount + 1,
+          });
+        }
+      });
     } catch (e) {
       throw Exception('Failed to toggle like: $e');
     }
@@ -60,10 +91,38 @@ class SocialService {
   // Posts
   static Future<List<SocialPost>> getFeed(String userId) async {
     try {
-      // In real app, make API call to get social feed
-      return _createMockPosts();
+      // Get user's following list
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      final userData = userDoc.data();
+      final following = userData?['following'] as List<dynamic>? ?? [];
+      
+      // Include user's own posts
+      final feedUserIds = [...following, userId];
+      
+      // Get posts from followed users and self
+      final postsSnapshot = await _firestore
+          .collection('socialPosts')
+          .where('authorId', whereIn: feedUserIds.isNotEmpty ? feedUserIds : [userId])
+          .orderBy('createdAt', descending: true)
+          .limit(50)
+          .get();
+      
+      final posts = postsSnapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return SocialPost.fromJson(data);
+      }).toList();
+      
+      // If no real posts, supplement with mock data
+      if (posts.isEmpty) {
+        return _createMockPosts();
+      }
+      
+      return posts;
     } catch (e) {
-      throw Exception('Failed to get feed: $e');
+      // Fallback to mock data if Firebase fails
+      print('Firebase error in getFeed: $e');
+      return _createMockPosts();
     }
   }
 
@@ -81,8 +140,31 @@ class SocialService {
     PostPrivacy privacy = PostPrivacy.public,
   }) async {
     try {
+      final postData = {
+        'authorId': authorId,
+        'authorName': authorName,
+        'authorAvatar': authorAvatar,
+        'content': content,
+        'images': images,
+        'videos': videos,
+        'location': location,
+        'tags': tags,
+        'mentions': mentions,
+        'type': type.toString().split('.').last,
+        'privacy': privacy.toString().split('.').last,
+        'createdAt': FieldValue.serverTimestamp(),
+        'likesCount': 0,
+        'commentsCount': 0,
+        'sharesCount': 0,
+        'isLiked': false,
+        'isShared': false,
+        'isBookmarked': false,
+      };
+
+      final docRef = await _firestore.collection('socialPosts').add(postData);
+      
       final post = SocialPost(
-        id: 'post_${DateTime.now().millisecondsSinceEpoch}',
+        id: docRef.id,
         authorId: authorId,
         authorName: authorName,
         authorAvatar: authorAvatar,
@@ -96,9 +178,6 @@ class SocialService {
         privacy: privacy,
         createdAt: DateTime.now(),
       );
-
-      // In real app, save post to database
-      await Future.delayed(const Duration(milliseconds: 500));
 
       return post;
     } catch (e) {

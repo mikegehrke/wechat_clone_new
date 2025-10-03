@@ -4,28 +4,40 @@ import '../services/storage_service.dart';
 
 class AuthProvider with ChangeNotifier {
   User? _currentUser;
+  UserAccount? _userAccount;
   String? _token;
   bool _isLoading = false;
   String? _error;
+  final AuthService _authService = AuthService();
 
   User? get currentUser => _currentUser;
+  UserAccount? get userAccount => _userAccount;
   String? get token => _token;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  bool get isAuthenticated => _currentUser != null && _token != null;
+  bool get isAuthenticated => _userAccount != null;
 
   Future<void> initialize() async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      _token = await StorageService.getToken();
-      _currentUser = await StorageService.getUser();
-
-      if (_token != null && _currentUser != null) {
-        // For demo purposes, we'll simulate a valid session
-        // In a real app, you would verify the token with your backend
-        print('User authenticated: ${_currentUser!.username}');
+      await _authService.initialize();
+      _userAccount = _authService.currentUser;
+      
+      if (_userAccount != null) {
+        // Convert UserAccount to User for backward compatibility
+        _currentUser = User(
+          id: _userAccount!.id,
+          username: _userAccount!.username ?? 'user',
+          email: _userAccount!.email ?? '',
+          avatarUrl: _userAccount!.avatarUrl,
+          status: _userAccount!.status ?? 'Online',
+          lastSeen: _userAccount!.lastActiveAt ?? DateTime.now(),
+          isOnline: _userAccount!.isActive,
+        );
+        
+        print('User authenticated: ${_userAccount!.displayName}');
       }
     } catch (e) {
       _error = e.toString();
@@ -41,34 +53,25 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Simulate API call delay
-      await Future.delayed(const Duration(seconds: 2));
+      _userAccount = await _authService.loginWithEmail(
+        email: email,
+        password: password,
+      );
+      
+      // Convert UserAccount to User for backward compatibility
+      _currentUser = User(
+        id: _userAccount!.id,
+        username: _userAccount!.username ?? 'user',
+        email: _userAccount!.email ?? '',
+        avatarUrl: _userAccount!.avatarUrl,
+        status: _userAccount!.status ?? 'Online',
+        lastSeen: _userAccount!.lastActiveAt ?? DateTime.now(),
+        isOnline: _userAccount!.isActive,
+      );
 
-      // For demo purposes, accept any email/password combination
-      if (email.isNotEmpty && password.isNotEmpty) {
-        _token = 'demo_token_${DateTime.now().millisecondsSinceEpoch}';
-        _currentUser = User(
-          id: 'demo_user_1',
-          username: email.split('@')[0],
-          email: email,
-          status: 'Online',
-          lastSeen: DateTime.now(),
-          isOnline: true,
-        );
-
-        // Save to storage
-        await StorageService.saveToken(_token!);
-        await StorageService.saveUser(_currentUser!);
-
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      } else {
-        _error = 'Please enter email and password';
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
+      _isLoading = false;
+      notifyListeners();
+      return true;
     } catch (e) {
       _error = e.toString();
       _isLoading = false;
@@ -77,40 +80,181 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> register(String username, String email, String password) async {
+  // Google Sign-In
+  Future<bool> loginWithGoogle() async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
-      // Simulate API call delay
-      await Future.delayed(const Duration(seconds: 2));
+      _userAccount = await _authService.loginWithGoogle();
+      
+      // Convert UserAccount to User for backward compatibility
+      _currentUser = User(
+        id: _userAccount!.id,
+        username: _userAccount!.username ?? 'user',
+        email: _userAccount!.email ?? '',
+        avatarUrl: _userAccount!.avatarUrl,
+        status: _userAccount!.status ?? 'Online',
+        lastSeen: _userAccount!.lastActiveAt ?? DateTime.now(),
+        isOnline: _userAccount!.isActive,
+      );
 
-      // For demo purposes, accept any registration
-      if (username.isNotEmpty && email.isNotEmpty && password.isNotEmpty) {
-        _token = 'demo_token_${DateTime.now().millisecondsSinceEpoch}';
-        _currentUser = User(
-          id: 'demo_user_${DateTime.now().millisecondsSinceEpoch}',
-          username: username,
-          email: email,
-          status: 'New user',
-          lastSeen: DateTime.now(),
-          isOnline: true,
-        );
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
 
-        // Save to storage
-        await StorageService.saveToken(_token!);
-        await StorageService.saveUser(_currentUser!);
+  // Apple Sign-In
+  Future<bool> loginWithApple() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
 
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      } else {
-        _error = 'Please fill in all fields';
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
+    try {
+      _userAccount = await _authService.loginWithApple();
+      
+      // Convert UserAccount to User for backward compatibility
+      _currentUser = User(
+        id: _userAccount!.id,
+        username: _userAccount!.username ?? 'user',
+        email: _userAccount!.email ?? '',
+        avatarUrl: _userAccount!.avatarUrl,
+        status: _userAccount!.status ?? 'Online',
+        lastSeen: _userAccount!.lastActiveAt ?? DateTime.now(),
+        isOnline: _userAccount!.isActive,
+      );
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Anonymous Sign-In
+  Future<bool> loginAnonymously() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _userAccount = await _authService.loginAnonymously();
+      
+      // Convert UserAccount to User for backward compatibility
+      _currentUser = User(
+        id: _userAccount!.id,
+        username: _userAccount!.username ?? 'guest',
+        email: _userAccount!.email ?? '',
+        avatarUrl: _userAccount!.avatarUrl,
+        status: 'Guest',
+        lastSeen: DateTime.now(),
+        isOnline: true,
+      );
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Phone Authentication
+  Future<bool> sendOTP(String phoneNumber) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _authService.sendOTP(phoneNumber);
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> verifyOTP(String phoneNumber, String otpCode) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _userAccount = await _authService.loginWithPhone(
+        phoneNumber: phoneNumber,
+        otpCode: otpCode,
+      );
+      
+      // Convert UserAccount to User for backward compatibility
+      _currentUser = User(
+        id: _userAccount!.id,
+        username: _userAccount!.username ?? 'user',
+        email: _userAccount!.email ?? '',
+        avatarUrl: _userAccount!.avatarUrl,
+        status: _userAccount!.status ?? 'Online',
+        lastSeen: _userAccount!.lastActiveAt ?? DateTime.now(),
+        isOnline: _userAccount!.isActive,
+      );
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> register(String username, String email, String password, {String? phoneNumber}) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _authService.register(
+        phoneNumber: phoneNumber ?? '+49123456789',
+        email: email,
+        username: username,
+        displayName: username,
+        password: password,
+      );
+      
+      _userAccount = _authService.currentUser;
+      
+      // Convert UserAccount to User for backward compatibility
+      _currentUser = User(
+        id: _userAccount!.id,
+        username: _userAccount!.username ?? username,
+        email: _userAccount!.email ?? email,
+        avatarUrl: _userAccount!.avatarUrl,
+        status: 'New user',
+        lastSeen: DateTime.now(),
+        isOnline: true,
+      );
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
     } catch (e) {
       _error = e.toString();
       _isLoading = false;
@@ -124,11 +268,11 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Clear storage
-      await StorageService.clearAll();
-
+      await _authService.logout();
+      
       // Clear state
       _currentUser = null;
+      _userAccount = null;
       _token = null;
       _error = null;
     } catch (e) {
