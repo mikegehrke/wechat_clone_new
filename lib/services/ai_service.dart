@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 /// Integrates multiple AI providers for different capabilities
 class AIService {
   // API Keys - In production, store in secure environment variables
-  static const String _openAIKey = 'YOUR_OPENAI_API_KEY';
+  static const String _openAIKey = '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';
   static const String _stabilityAIKey = 'YOUR_STABILITY_AI_KEY';
   static const String _elevenLabsKey = 'YOUR_ELEVENLABS_API_KEY';
   
