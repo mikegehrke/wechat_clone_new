@@ -7,7 +7,7 @@ enum AIProvider { openai, gemini }
 class AIChatService {
   // API Keys
   static const String _openAIKey = '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';
-  static String _geminiKey = ''; // User sets this
+  static String _geminiKey = 'AIzaSyD9hJuD7Tw3NI0wssQkC9PUqdTZ0yymGwo'; // Gemini API Key
   
   static const String _openAIBaseUrl = 'https://api.openai.com/v1';
   static const String _geminiBaseUrl = 'https://generativelanguage.googleapis.com/v1beta';
