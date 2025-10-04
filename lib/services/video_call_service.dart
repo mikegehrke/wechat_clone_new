@@ -5,7 +5,7 @@ class VideoCallService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   
   // Agora Configuration
-  static const String _agoraAppId = 'YOUR_AGORA_APP_ID'; // User will provide
+  static const String _agoraAppId = '03923d8fbe6e4fde9017276bdf4ab841';
   static RtcEngine? _engine;
 
   // ============================================================================
