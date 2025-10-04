@@ -186,14 +186,15 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Spacer(),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 24),
                 
                 // Logo/Title
                 const Icon(
@@ -339,26 +340,7 @@ class _LoginPageState extends State<LoginPage> {
                     side: const BorderSide(color: Colors.grey),
                   ),
                 ),
-                const SizedBox(height: 16),
-                
-                // Forgot Password
-                TextButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Forgot password feature coming soon!'),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    'Forgot Password?',
-                    style: TextStyle(
-                      color: Color(0xFF07C160),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                const Spacer(),
+                const SizedBox(height: 24),
                 
                 // Register Link
                 Row(
@@ -386,6 +368,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 24),
               ],
             ),
           ),
