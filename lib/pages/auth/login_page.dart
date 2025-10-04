@@ -194,36 +194,26 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
                 
                 // Logo/Title
                 const Icon(
                   Icons.chat_bubble_outline,
-                  size: 80,
+                  size: 60,
                   color: Color(0xFF07C160),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
                 
                 const Text(
                   'Welcome Back',
                   style: TextStyle(
-                    fontSize: 32,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8),
-                
-                const Text(
-                  'Sign in to continue',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 24),
                 
                 // Email Field
                 CustomTextField(
