@@ -306,7 +306,7 @@ class _LoginPageState extends State<LoginPage> {
                     height: 24,
                     errorBuilder: (context, error, stackTrace) => const Icon(Icons.g_mobiledata, size: 24),
                   ),
-                  label: const Text('Continue with Google'),
+                  label: const Text('Google'),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     side: const BorderSide(color: Colors.grey),
@@ -319,7 +319,7 @@ class _LoginPageState extends State<LoginPage> {
                   OutlinedButton.icon(
                     onPressed: _loginWithApple,
                     icon: const Icon(Icons.apple, size: 24),
-                    label: const Text('Continue with Apple'),
+                    label: const Text('Apple'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       side: const BorderSide(color: Colors.grey),
@@ -333,7 +333,7 @@ class _LoginPageState extends State<LoginPage> {
                 OutlinedButton.icon(
                   onPressed: _loginWithPhone,
                   icon: const Icon(Icons.phone, size: 24),
-                  label: const Text('Continue with Phone'),
+                  label: const Text('Phone'),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     side: const BorderSide(color: Colors.grey),
