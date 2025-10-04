@@ -53,20 +53,35 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _loginWithGoogle() async {
     try {
+      // Show loading
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Signing in with Google...')),
+        );
+      }
+
       final authService = AuthService();
-      await authService.loginWithGoogle();
+      final user = await authService.loginWithGoogle();
       
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MainNavigation()),
+        );
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Welcome ${user.name ?? "User"}!'),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Google Sign-In failed: $e'),
+            content: Text('Google Sign-In failed: ${e.toString()}'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
       }
@@ -75,20 +90,35 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _loginWithApple() async {
     try {
+      // Show loading
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Signing in with Apple...')),
+        );
+      }
+
       final authService = AuthService();
-      await authService.loginWithApple();
+      final user = await authService.loginWithApple();
       
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MainNavigation()),
+        );
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Welcome ${user.name ?? "User"}!'),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Apple Sign-In failed: $e'),
+            content: Text('Apple Sign-In failed: ${e.toString()}'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
       }
@@ -104,21 +134,41 @@ class _LoginPageState extends State<LoginPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Phone Login'),
-        content: TextField(
-          controller: phoneController,
-          decoration: const InputDecoration(
-            labelText: 'Phone Number',
-            hintText: '+49123456789',
-          ),
-          keyboardType: TextInputType.phone,
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: phoneController,
+              decoration: const InputDecoration(
+                labelText: 'Phone Number',
+                hintText: '+49123456789',
+                prefixIcon: Icon(Icons.phone),
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.phone,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Enter your phone number with country code',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, phoneController.text),
+          ElevatedButton(
+            onPressed: () {
+              if (phoneController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter phone number')),
+                );
+                return;
+              }
+              Navigator.pop(context, phoneController.text.trim());
+            },
             child: const Text('Send OTP'),
           ),
         ],
@@ -128,6 +178,13 @@ class _LoginPageState extends State<LoginPage> {
     if (phone == null || phone.isEmpty) return;
     
     try {
+      // Show loading
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Sending OTP...')),
+        );
+      }
+
       final authService = AuthService();
       final verificationId = await authService.sendOTP(phone);
       
@@ -138,22 +195,42 @@ class _LoginPageState extends State<LoginPage> {
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Enter OTP'),
-          content: TextField(
-            controller: otpController,
-            decoration: const InputDecoration(
-              labelText: 'OTP Code',
-              hintText: '123456',
-            ),
-            keyboardType: TextInputType.number,
-            maxLength: 6,
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: otpController,
+                decoration: const InputDecoration(
+                  labelText: 'OTP Code',
+                  hintText: '123456',
+                  prefixIcon: Icon(Icons.security),
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Enter the 6-digit code sent to your phone',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, otpController.text),
+            ElevatedButton(
+              onPressed: () {
+                if (otpController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please enter OTP')),
+                  );
+                  return;
+                }
+                Navigator.pop(context, otpController.text.trim());
+              },
               child: const Text('Verify'),
             ),
           ],
@@ -162,19 +239,34 @@ class _LoginPageState extends State<LoginPage> {
       
       if (otp == null || otp.isEmpty) return;
       
+      // Show verifying
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Verifying OTP...')),
+        );
+      }
+
       await authService.verifyOTP(verificationId, otp);
       
       if (mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MainNavigation()),
         );
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Phone login successful!'),
+            backgroundColor: Colors.green,
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Phone login failed: $e'),
+            content: Text('Phone login failed: ${e.toString()}'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
       }
