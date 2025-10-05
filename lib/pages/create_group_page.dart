@@ -190,7 +190,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                 // Filter by search
                 if (_searchController.text.isNotEmpty) {
                   users = users.where((u) {
-                    return u.username.toLowerCase().contains(
+                    return (u.username ?? '').toLowerCase().contains(
                       _searchController.text.toLowerCase(),
                     );
                   }).toList();
