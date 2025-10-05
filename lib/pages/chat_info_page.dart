@@ -32,8 +32,8 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final currentUserId = authProvider.user?.id ?? '';
-    final isGroup = widget.chat.type == 'group';
+    final currentUserId = authProvider.currentUser?.id ?? '';
+    final isGroup = widget.chat.type == ChatType.group;
 
     return Scaffold(
       backgroundColor: Colors.white,

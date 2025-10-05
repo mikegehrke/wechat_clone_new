@@ -26,7 +26,7 @@ class _ChatListPageState extends State<ChatListPage> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final currentUserId = authProvider.user?.id ?? '';
+    final currentUserId = authProvider.currentUser?.id ?? '';
 
     return Scaffold(
       backgroundColor: Colors.white,

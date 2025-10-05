@@ -20,8 +20,8 @@ class _StatusPageState extends State<StatusPage> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final currentUserId = authProvider.user?.id ?? '';
-    final currentUserName = authProvider.user?.username ?? 'You';
+    final currentUserId = authProvider.currentUser?.id ?? '';
+    final currentUserName = authProvider.currentUser?.username ?? 'You';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -88,11 +88,11 @@ class _StatusPageState extends State<StatusPage> {
                       children: [
                         CircleAvatar(
                           radius: 28,
-                          backgroundImage: authProvider.user?.avatarUrl != null
-                              ? NetworkImage(authProvider.user!.avatarUrl!)
+                          backgroundImage: authProvider.currentUser?.avatarUrl != null
+                              ? NetworkImage(authProvider.currentUser!.avatarUrl!)
                               : null,
                           backgroundColor: Colors.grey[300],
-                          child: authProvider.user?.avatarUrl == null
+                          child: authProvider.currentUser?.avatarUrl == null
                               ? Text(
                                   currentUserName[0].toUpperCase(),
                                   style: const TextStyle(
@@ -213,7 +213,7 @@ class _StatusPageState extends State<StatusPage> {
 
   Widget _buildStatusItem(StatusGroup group) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final currentUserId = authProvider.user?.id ?? '';
+    final currentUserId = authProvider.currentUser?.id ?? '';
     
     return ListTile(
       onTap: () {

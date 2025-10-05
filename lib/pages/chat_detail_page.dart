@@ -34,7 +34,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-    final currentUserId = authProvider.user?.id ?? '';
+    final currentUserId = authProvider.currentUser?.id ?? '';
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -673,8 +673,10 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
 
       // Upload to Firebase Storage
       final imageUrl = await ChatService.uploadFile(
-        File(image.path),
-        'images',
+        chatId: widget.chat.id,
+        userId: currentUserId,
+        file: File(image.path),
+        fileName: 'image_${DateTime.now().millisecondsSinceEpoch}.jpg',
       );
 
       // Send message
@@ -699,7 +701,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       if (video == null) return;
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final currentUserId = authProvider.user?.id ?? '';
+      final currentUserId = authProvider.currentUser?.id ?? '';
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -708,8 +710,10 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       }
 
       final videoUrl = await ChatService.uploadFile(
-        File(video.path),
-        'videos',
+        chatId: widget.chat.id,
+        userId: currentUserId,
+        file: File(video.path),
+        fileName: 'video_${DateTime.now().millisecondsSinceEpoch}.mp4',
       );
 
       await ChatService.sendMessage(
@@ -816,9 +820,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   Future<void> _deleteMessage(Message message, {required bool forEveryone}) async {
     try {
       await ChatService.deleteMessage(
-        widget.chat.id,
-        message.id,
-        deleteForEveryone: forEveryone,
+        chatId: widget.chat.id,
+        messageId: message.id,
       );
     } catch (e) {
       if (mounted) {
