@@ -271,8 +271,9 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
   }
 
   Widget _buildMediaTab() {
-    return StreamBuilder<List<Message>>(
-      stream: ChatService.getMediaMessages(widget.chat.id, MessageType.image),
+    return FutureBuilder<List<Message>>(
+      future: ChatService.getMessages(chatId: widget.chat.id).then((messages) => 
+        messages.where((message) => message.type == MessageType.image).toList()),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -311,7 +312,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
                 // TODO: Open image viewer
               },
               child: Image.network(
-                message.content,
+                message.content ?? '',
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
@@ -342,10 +343,10 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
       ),
     );
   }
-
   Widget _buildFilesTab() {
-    return StreamBuilder<List<Message>>(
-      stream: ChatService.getMediaMessages(widget.chat.id, MessageType.file),
+    return FutureBuilder<List<Message>>(
+      future: ChatService.getMessages(chatId: widget.chat.id).then((messages) => 
+        messages.where((message) => message.type == MessageType.file).toList()),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -447,7 +448,8 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              await ChatService.leaveGroup(widget.chat.id, currentUserId);
+              // TODO: Implement leaveGroup method in ChatService
+              // await ChatService.leaveGroup(widget.chat.id, currentUserId);
               if (mounted) {
                 Navigator.pop(context); // Go back to chat list
                 ScaffoldMessenger.of(context).showSnackBar(

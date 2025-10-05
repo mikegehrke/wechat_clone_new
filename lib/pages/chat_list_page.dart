@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:wechat_clone_new/models/message.dart';
 import '../providers/auth_provider.dart';
 import '../services/chat_service.dart';
 import '../models/chat.dart';
@@ -109,7 +110,7 @@ class _ChatListPageState extends State<ChatListPage> {
         ],
       ),
       body: StreamBuilder<List<Chat>>(
-        stream: ChatService.getUserChatsStream(currentUserId),
+        stream: ChatService().getUserChatsStream(currentUserId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -171,8 +172,8 @@ class _ChatListPageState extends State<ChatListPage> {
             itemCount: filteredChats.length,
             itemBuilder: (context, index) {
               final chat = filteredChats[index];
-              final hasUnread = (chat.unreadCount?[currentUserId] ?? 0) > 0;
-              final unreadCount = chat.unreadCount?[currentUserId] ?? 0;
+              final hasUnread = (chat.unreadCount ?? 0) > 0;
+              final unreadCount = chat.unreadCount ?? 0;
               
               return Dismissible(
                 key: Key(chat.id),
@@ -203,7 +204,7 @@ class _ChatListPageState extends State<ChatListPage> {
                   );
                 },
                 onDismissed: (direction) async {
-                  await ChatService.deleteChat(chat.id, currentUserId);
+                  await ChatService.deleteChat(chat.id);
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Chat deleted')),
@@ -381,10 +382,8 @@ class _ChatListPageState extends State<ChatListPage> {
         return '📎 File';
       case MessageType.location:
         return '📍 Location';
-      case MessageType.contact:
-        return '👤 Contact';
       default:
-        return message.content;
+        return message.content ?? 'Message';
     }
   }
 }

@@ -215,7 +215,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
 
                 // Mark messages as read
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  ChatService.markMessagesAsRead(widget.chat.id, currentUserId);
+                  ChatService.markMessagesAsRead(chatId: widget.chat.id, userId: currentUserId);
                 });
 
                 return ListView.builder(
@@ -431,7 +431,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
-                message.content,
+                message.content ?? '',
                 width: 200,
                 height: 200,
                 fit: BoxFit.cover,
@@ -555,7 +555,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
         );
       default:
         return Text(
-          message.content,
+          message.content ?? '',
           style: TextStyle(
             color: isMe ? Colors.white : Colors.black87,
             fontSize: 15,
@@ -662,7 +662,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
       if (image == null) return;
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final currentUserId = authProvider.user?.id ?? '';
+      final currentUserId = authProvider.currentUser?.id ?? '';
 
       // Show loading
       if (mounted) {
@@ -847,7 +847,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
             onPressed: () async {
               Navigator.pop(context);
               final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              await ChatService.clearChat(widget.chat.id, authProvider.user?.id ?? '');
+              await ChatService.clearChat(chatId: widget.chat.id, userId: authProvider.currentUser?.id ?? '');
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Chat cleared')),
