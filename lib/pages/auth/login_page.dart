@@ -70,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
         
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Welcome ${user.name ?? "User"}!'),
+            content: Text('Welcome ${user.displayName ?? user.username ?? "User"}!'),
             backgroundColor: Colors.green,
           ),
         );
@@ -107,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
         
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Welcome ${user.name ?? "User"}!'),
+            content: Text('Welcome ${user.displayName ?? user.username ?? "User"}!'),
             backgroundColor: Colors.green,
           ),
         );

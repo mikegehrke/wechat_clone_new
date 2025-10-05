@@ -58,6 +58,7 @@ class Chat {
       'unreadCount': unreadCount,
       'lastActivity': lastActivity.toIso8601String(),
       'avatar': avatar,
+      'isOnline': isOnline,
       'metadata': metadata,
     };
   }
