@@ -5,7 +5,7 @@ import 'dart:io';
 import '../providers/auth_provider.dart';
 import '../services/chat_service.dart';
 import '../services/user_service.dart';
-import '../models/user_account.dart';
+import '../models/app_foundations.dart';
 
 class CreateGroupPage extends StatefulWidget {
   const CreateGroupPage({super.key});
@@ -491,7 +491,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
       }
 
       // Create group
-      final participants = [..._selectedMembers, currentUserId];
+      final participants = [..._selectedMembers, currentUserId!];
       await ChatService.createGroupChat(
         groupName: groupName,
         participants: participants,
@@ -516,6 +516,10 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
       setState(() {
         _isCreating = false;
       });
+    }
+  }
+}
+;
     }
   }
 }
