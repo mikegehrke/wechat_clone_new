@@ -110,7 +110,7 @@ class _ChatListPageState extends State<ChatListPage> {
         ],
       ),
       body: StreamBuilder<List<Chat>>(
-        stream: ChatService().getUserChatsStream(currentUserId),
+        stream: ChatService.getUserChatsStream(currentUserId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
