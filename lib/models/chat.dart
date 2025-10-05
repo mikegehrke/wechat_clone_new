@@ -15,6 +15,7 @@ class Chat {
   final int unreadCount;
   final DateTime lastActivity;
   final String? avatar;
+  final bool isOnline;
   final Map<String, dynamic>? metadata;
 
   Chat({
@@ -26,6 +27,7 @@ class Chat {
     this.unreadCount = 0,
     required this.lastActivity,
     this.avatar,
+    this.isOnline = false,
     this.metadata,
   });
 
@@ -44,6 +46,7 @@ class Chat {
       unreadCount: json['unreadCount'] ?? 0,
       lastActivity: DateTime.parse(json['lastActivity']),
       avatar: json['avatar'],
+      isOnline: json['isOnline'] ?? false,
       metadata: json['metadata'],
     );
   }
@@ -72,6 +75,7 @@ class Chat {
     int? unreadCount,
     DateTime? lastActivity,
     String? avatar,
+    bool? isOnline,
     Map<String, dynamic>? metadata,
   }) {
     return Chat(
@@ -83,6 +87,7 @@ class Chat {
       unreadCount: unreadCount ?? this.unreadCount,
       lastActivity: lastActivity ?? this.lastActivity,
       avatar: avatar ?? this.avatar,
+      isOnline: isOnline ?? this.isOnline,
       metadata: metadata ?? this.metadata,
     );
   }
