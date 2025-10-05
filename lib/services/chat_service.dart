@@ -635,4 +635,63 @@ class ChatService {
       throw Exception('Failed to search messages: $e');
     }
   }
+
+  // ============================================================================
+  // STREAM METHODS
+  // ============================================================================
+
+  /// Get messages stream for a chat
+  static Stream<List<Message>> getMessagesStream(String chatId) {
+    return _firestore
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        data['timestamp'] = (data['timestamp'] as Timestamp?)?.toDate().toIso8601String() 
+            ?? DateTime.now().toIso8601String();
+        return Message.fromJson(data);
+      }).toList();
+    });
+  }
+
+  /// Upload file to storage
+  static Future<String> uploadFile({
+    required String chatId,
+    required String userId,
+    required File file,
+    required String fileName,
+  }) async {
+    try {
+      final ref = _storage.ref().child('chats/$chatId/$userId/${DateTime.now().millisecondsSinceEpoch}_$fileName');
+      final uploadTask = await ref.putFile(file);
+      return await uploadTask.ref.getDownloadURL();
+    } catch (e) {
+      throw Exception('Failed to upload file: $e');
+    }
+  }
+
+  /// Clear chat for current user
+  static Future<void> clearChat({
+    required String chatId,
+    required String userId,
+  }) async {
+    try {
+      final snapshot = await _firestore
+          .collection('chats')
+          .doc(chatId)
+          .collection('messages')
+          .get();
+
+      for (var doc in snapshot.docs) {
+        await doc.reference.delete();
+      }
+    } catch (e) {
+      throw Exception('Failed to clear chat: $e');
+    }
+  }
 }

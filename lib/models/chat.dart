@@ -16,6 +16,7 @@ class Chat {
   final DateTime lastActivity;
   final String? avatar;
   final bool isOnline;
+  final DateTime? lastSeen;
   final Map<String, dynamic>? metadata;
 
   Chat({
@@ -28,6 +29,7 @@ class Chat {
     required this.lastActivity,
     this.avatar,
     this.isOnline = false,
+    this.lastSeen,
     this.metadata,
   });
 
@@ -47,6 +49,7 @@ class Chat {
       lastActivity: DateTime.parse(json['lastActivity']),
       avatar: json['avatar'],
       isOnline: json['isOnline'] ?? false,
+      lastSeen: json['lastSeen'] != null ? DateTime.parse(json['lastSeen']) : null,
       metadata: json['metadata'],
     );
   }
@@ -62,6 +65,7 @@ class Chat {
       'lastActivity': lastActivity.toIso8601String(),
       'avatar': avatar,
       'isOnline': isOnline,
+      'lastSeen': lastSeen?.toIso8601String(),
       'metadata': metadata,
     };
   }
@@ -76,6 +80,7 @@ class Chat {
     DateTime? lastActivity,
     String? avatar,
     bool? isOnline,
+    DateTime? lastSeen,
     Map<String, dynamic>? metadata,
   }) {
     return Chat(
@@ -88,6 +93,7 @@ class Chat {
       lastActivity: lastActivity ?? this.lastActivity,
       avatar: avatar ?? this.avatar,
       isOnline: isOnline ?? this.isOnline,
+      lastSeen: lastSeen ?? this.lastSeen,
       metadata: metadata ?? this.metadata,
     );
   }
