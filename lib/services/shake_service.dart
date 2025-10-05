@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'dart:async';
+import 'dart:math';
 
 class ShakeService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -81,10 +82,11 @@ class ShakeService {
   }
 
   static double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
-    const p = 0.017453292519943295;
+    const p = 0.017453292519943295; // Math.PI / 180
     final a = 0.5 - 
-        (lat2 - lat1) * p / 2 + 
-        (1 - (lat2 - lat1) * p) * (1 - (lon2 - lon1) * p) / 4;
-    return 12742 * 1000 * (a < 0 ? 0 : (a > 1 ? 1 : a)); // in meters
+        cos((lat2 - lat1) * p) / 2 + 
+        cos(lat1 * p) * cos(lat2 * p) * 
+        (1 - cos((lon2 - lon1) * p)) / 2;
+    return 12742 * 1000 * asin(sqrt(a)); // 2 * R * asin(sqrt(a)) in meters
   }
 }

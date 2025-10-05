@@ -172,7 +172,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
           // Contacts list
           Expanded(
             child: FutureBuilder<List<UserAccount>>(
-              future: UserService.getAllUsers(),
+              future: UserService.getUsers(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -226,7 +226,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                         backgroundColor: Colors.grey[300],
                         child: user.avatarUrl == null
                             ? Text(
-                                user.username[0].toUpperCase(),
+                                (user.username ?? 'U')[0].toUpperCase(),
                                 style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
@@ -234,7 +234,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                               )
                             : null,
                       ),
-                      title: Text(user.username),
+                      title: Text(user.username ?? 'Unknown'),
                       subtitle: user.bio != null ? Text(user.bio!) : null,
                       trailing: Checkbox(
                         value: isSelected,
@@ -427,7 +427,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                               backgroundColor: Colors.grey[300],
                               child: user.avatarUrl == null
                                   ? Text(
-                                      user.username[0].toUpperCase(),
+                                      (user.username ?? 'U')[0].toUpperCase(),
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,
@@ -435,7 +435,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                                     )
                                   : null,
                             ),
-                            title: Text(user.username),
+                            title: Text(user.username ?? 'Unknown'),
                             contentPadding: EdgeInsets.zero,
                           );
                         },
@@ -487,11 +487,16 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
       
       // Upload group image if selected
       if (_groupImage != null) {
-        groupAvatarUrl = await ChatService.uploadFile(_groupImage!, 'group_avatars');
+        groupAvatarUrl = await ChatService.uploadFile(
+          chatId: 'group_avatars',
+          userId: currentUserId,
+          file: _groupImage!,
+          fileName: 'group_avatar_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        );
       }
 
       // Create group
-      final participants = [..._selectedMembers, currentUserId!];
+      final participants = [..._selectedMembers, currentUserId];
       await ChatService.createGroupChat(
         groupName: groupName,
         participants: participants,
@@ -516,10 +521,6 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
       setState(() {
         _isCreating = false;
       });
-    }
-  }
-}
-;
     }
   }
 }

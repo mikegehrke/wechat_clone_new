@@ -9,6 +9,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.59"
+  agora_rtc_engine:
+    dependency: "direct main"
+    description:
+      name: agora_rtc_engine
+      sha256: "6559294d18ce4445420e19dbdba10fb58cac955cd8f22dbceae26716e194d70e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.5.3"
   archive:
     dependency: transitive
     description:
@@ -265,6 +273,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
+  dart_webrtc:
+    dependency: transitive
+    description:
+      name: dart_webrtc
+      sha256: "51bcda4ba5d7dd9e65a309244ce3ac0b58025e6e1f6d7442cee4cd02134ef65f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.6.0"
   dbus:
     dependency: transitive
     description:
@@ -313,8 +329,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
-<<<<<<< Updated upstream
-=======
   file_picker:
     dependency: "direct main"
     description:
@@ -323,7 +337,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.2.1"
->>>>>>> Stashed changes
   file_selector_linux:
     dependency: transitive
     description:
@@ -505,33 +518,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.0"
-<<<<<<< Updated upstream
-=======
-  flutter_local_notifications:
-    dependency: "direct main"
-    description:
-      name: flutter_local_notifications
-      sha256: "55b9b229307a10974b26296ff29f2e132256ba4bd74266939118eaefa941cb00"
-      url: "https://pub.dev"
-    source: hosted
-    version: "16.3.3"
-  flutter_local_notifications_linux:
-    dependency: transitive
-    description:
-      name: flutter_local_notifications_linux
-      sha256: c49bd06165cad9beeb79090b18cd1eb0296f4bf4b23b84426e37dd7c027fc3af
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.1"
-  flutter_local_notifications_platform_interface:
-    dependency: transitive
-    description:
-      name: flutter_local_notifications_platform_interface
-      sha256: "85f8d07fe708c1bdcf45037f2c0109753b26ae077e9d9e899d55971711a4ea66"
-      url: "https://pub.dev"
-    source: hosted
-    version: "7.2.0"
->>>>>>> Stashed changes
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -582,6 +568,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_webrtc:
+    dependency: "direct main"
+    description:
+      name: flutter_webrtc
+      sha256: f6800cc2af79018c12e955ddf8ad007891fdfbb8199b0ce3dccd0977ed2add9c
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.11.7"
   freezed_annotation:
     dependency: transitive
     description:
@@ -638,7 +632,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.5"
-<<<<<<< Updated upstream
   google_identity_services_web:
     dependency: transitive
     description:
@@ -687,8 +680,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.12.4+4"
-=======
->>>>>>> Stashed changes
   html:
     dependency: transitive
     description:
@@ -801,6 +792,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.19.0"
+  iris_method_channel:
+    dependency: transitive
+    description:
+      name: iris_method_channel
+      sha256: bfb5cfc6c6eae42da8cd1b35977a72d8b8881848a5dfc3d672e4760a907d11a0
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.4"
   js:
     dependency: transitive
     description:
@@ -1073,6 +1072,62 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.5+1"
+  record:
+    dependency: "direct main"
+    description:
+      name: record
+      sha256: "2e3d56d196abcd69f1046339b75e5f3855b2406fc087e5991f6703f188aa03a6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.2.1"
+  record_android:
+    dependency: transitive
+    description:
+      name: record_android
+      sha256: f05677eeed074898327f890f232f9eb49cd99d1c20d0daaf22b5612f4b2301bb
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.3"
+  record_darwin:
+    dependency: transitive
+    description:
+      name: record_darwin
+      sha256: e487eccb19d82a9a39cd0126945cfc47b9986e0df211734e2788c95e3f63c82c
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.2"
+  record_linux:
+    dependency: transitive
+    description:
+      name: record_linux
+      sha256: "74d41a9ebb1eb498a38e9a813dd524e8f0b4fdd627270bda9756f437b110a3e3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.7.2"
+  record_platform_interface:
+    dependency: transitive
+    description:
+      name: record_platform_interface
+      sha256: b0065fdf1ec28f5a634d676724d388a77e43ce7646fb049949f58c69f3fcb4ed
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.4.0"
+  record_web:
+    dependency: transitive
+    description:
+      name: record_web
+      sha256: "4f0adf20c9ccafcc02d71111fd91fba1ca7b17a7453902593e5a9b25b74a5c56"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
+  record_windows:
+    dependency: transitive
+    description:
+      name: record_windows
+      sha256: "223258060a1d25c62bae18282c16783f28581ec19401d17e56b5205b9f039d78"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.7"
   rxdart:
     dependency: transitive
     description:
@@ -1081,6 +1136,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  sensors_plus:
+    dependency: "direct main"
+    description:
+      name: sensors_plus
+      sha256: "6898cd4490ffc27fea4de5976585e92fae55355175d46c6c3b3d719d42f9e230"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.1"
+  sensors_plus_platform_interface:
+    dependency: transitive
+    description:
+      name: sensors_plus_platform_interface
+      sha256: bc472d6cfd622acb4f020e726433ee31788b038056691ba433fec80e448a094f
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
   share_plus:
     dependency: "direct main"
     description:
@@ -1161,7 +1232,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
-<<<<<<< Updated upstream
   sign_in_with_apple:
     dependency: "direct main"
     description:
@@ -1186,8 +1256,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
-=======
->>>>>>> Stashed changes
   sky_engine:
     dependency: transitive
     description: flutter
@@ -1361,17 +1429,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.6"
-<<<<<<< Updated upstream
-=======
-  timezone:
-    dependency: transitive
-    description:
-      name: timezone
-      sha256: "2236ec079a174ce07434e89fcd3fcda430025eb7692244139a9cf54fdcf1fc7d"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.9.4"
->>>>>>> Stashed changes
   typed_data:
     dependency: transitive
     description:
@@ -1508,6 +1565,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.1"
+  webrtc_interface:
+    dependency: transitive
+    description:
+      name: webrtc_interface
+      sha256: "2e604a31703ad26781782fb14fa8a4ee621154ee2c513d2b9938e486fa695233"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.0"
   win32:
     dependency: transitive
     description:

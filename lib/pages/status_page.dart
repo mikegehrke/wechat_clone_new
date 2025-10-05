@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import '../providers/auth_provider.dart';
 import '../services/status_service.dart';
+import '../models/status.dart';
 import 'create_status_page.dart';
 import 'view_status_page.dart';
 
@@ -70,13 +70,20 @@ class _StatusPageState extends State<StatusPage> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => ViewStatusPage(
-                              statusGroup: StatusGroup(
-                                userId: currentUserId,
-                                userName: currentUserName,
-                                statuses: myStatuses,
-                                isViewed: true,
-                              ),
-                              isMyStatus: true,
+                              statuses: myStatuses.map((status) => {
+                                'id': status.id,
+                                'userId': status.userId,
+                                'userName': status.userName,
+                                'type': status.type.toString().split('.').last,
+                                'content': status.content,
+                                'mediaUrl': status.mediaUrl,
+                                'caption': status.caption,
+                                'backgroundColor': status.backgroundColor,
+                                'textColor': status.textColor,
+                                'timestamp': status.timestamp.toIso8601String(),
+                                'expiresAt': status.expiresAt.toIso8601String(),
+                                'views': status.views,
+                              }).toList(),
                             ),
                           ),
                         );
@@ -88,13 +95,13 @@ class _StatusPageState extends State<StatusPage> {
                       children: [
                         CircleAvatar(
                           radius: 28,
-                          backgroundImage: authProvider.currentUser?.avatarUrl != null
-                              ? NetworkImage(authProvider.currentUser!.avatarUrl!)
+                          backgroundImage: authProvider.currentUser?.avatar != null
+                              ? NetworkImage(authProvider.currentUser!.avatar!)
                               : null,
                           backgroundColor: Colors.grey[300],
-                          child: authProvider.currentUser?.avatarUrl == null
+                          child: authProvider.currentUser?.avatar == null
                               ? Text(
-                                  currentUserName[0].toUpperCase(),
+                                  (currentUserName.isNotEmpty ? currentUserName[0] : 'U').toUpperCase(),
                                   style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
@@ -193,7 +200,7 @@ class _StatusPageState extends State<StatusPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const CreateStatusPage(type: StatusType.text),
+                  builder: (context) => const CreateStatusPage(),
                 ),
               );
             },
@@ -212,17 +219,26 @@ class _StatusPageState extends State<StatusPage> {
   }
 
   Widget _buildStatusItem(StatusGroup group) {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final currentUserId = authProvider.currentUser?.id ?? '';
-    
     return ListTile(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ViewStatusPage(
-              statusGroup: group,
-              isMyStatus: group.userId == currentUserId,
+              statuses: group.statuses.map((status) => {
+                'id': status.id,
+                'userId': status.userId,
+                'userName': status.userName,
+                'type': status.type.toString().split('.').last,
+                'content': status.content,
+                'mediaUrl': status.mediaUrl,
+                'caption': status.caption,
+                'backgroundColor': status.backgroundColor,
+                'textColor': status.textColor,
+                'timestamp': status.timestamp.toIso8601String(),
+                'expiresAt': status.expiresAt.toIso8601String(),
+                'views': status.views,
+              }).toList(),
             ),
           ),
         );
@@ -298,7 +314,7 @@ class _StatusPageState extends State<StatusPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const CreateStatusPage(type: StatusType.text),
+                    builder: (context) => const CreateStatusPage(),
                   ),
                 );
               },
@@ -319,10 +335,7 @@ class _StatusPageState extends State<StatusPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => CreateStatusPage(
-              type: isVideo ? StatusType.video : StatusType.image,
-              mediaFile: File(file.path),
-            ),
+            builder: (context) => const CreateStatusPage(),
           ),
         );
       }

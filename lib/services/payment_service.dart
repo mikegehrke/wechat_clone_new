@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
 import 'package:http/http.dart' as http;
@@ -23,6 +22,55 @@ class PaymentService {
       print('Failed to initialize Stripe: $e');
     }
   }
+
+  // Process payment with Stripe
+  static Future<Map<String, dynamic>> processPayment({
+    required double amount,
+    required String currency,
+    required String description,
+  }) async {
+    try {
+      // Create payment intent on backend (in real app, this should be done server-side)
+      final response = await http.post(
+        Uri.parse('https://api.stripe.com/v1/payment_intents'),
+        headers: {
+          'Authorization': 'Bearer $_stripeSecretKey',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'amount': (amount * 100).toInt().toString(), // Convert to cents
+          'currency': currency,
+          'description': description,
+          'payment_method_types[]': 'card',
+        },
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Payment intent creation failed: ${response.body}');
+      }
+
+      final paymentIntent = json.decode(response.body);
+      
+      // Present payment sheet to user
+      await stripe.Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: stripe.SetupPaymentSheetParameters(
+          paymentIntentClientSecret: paymentIntent['client_secret'],
+          merchantDisplayName: 'WeChat Clone',
+        ),
+      );
+
+      await stripe.Stripe.instance.presentPaymentSheet();
+
+      return {
+        'success': true,
+        'paymentIntentId': paymentIntent['id'],
+      };
+    } catch (e) {
+      print('Payment processing failed: $e');
+      throw Exception('Failed to process payment: $e');
+    }
+  }
+  
   // Add payment method
   static Future<void> addPaymentMethod(String userId, PaymentMethod paymentMethod) async {
     try {
@@ -129,7 +177,7 @@ class PaymentService {
         ),
       );
       
-      final cardBrand = paymentMethod.card?.brand ?? _getCardBrand(cardNumber);
+      final cardBrand = paymentMethod.card.brand;
       
       return PaymentMethod(
         id: paymentMethod.id,

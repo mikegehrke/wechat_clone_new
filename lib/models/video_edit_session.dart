@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 /// Represents a video editing session with timeline, effects, and export settings
 class VideoEditSession {
   final String id;

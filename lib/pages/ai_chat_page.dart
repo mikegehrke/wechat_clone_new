@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
 import '../services/ai_chat_service.dart';
 import 'ai_settings_page.dart';
 
@@ -270,6 +268,7 @@ class _AIChatPageState extends State<AIChatPage> {
           ),
           boxShadow: [
             BoxShadow(
+              // ignore: deprecated_member_use
               color: Colors.black.withOpacity(0.05),
               blurRadius: 5,
               offset: const Offset(0, 2),

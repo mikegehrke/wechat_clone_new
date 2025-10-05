@@ -124,6 +124,54 @@ class ChatService {
     }
   }
 
+  /// Get user's chats as a stream for real-time updates
+  static Stream<List<Chat>> getUserChatsStream(String userId) {
+    return _firestore
+        .collection('chats')
+        .where('participants', arrayContains: userId)
+        .orderBy('lastActivity', descending: true)
+        .snapshots()
+        .asyncMap((snapshot) async {
+      final chats = <Chat>[];
+      
+      for (var doc in snapshot.docs) {
+        final data = doc.data();
+        
+        // Get last message
+        final lastMessageSnapshot = await _firestore
+            .collection('chats')
+            .doc(doc.id)
+            .collection('messages')
+            .orderBy('timestamp', descending: true)
+            .limit(1)
+            .get();
+
+        Message? lastMessage;
+        if (lastMessageSnapshot.docs.isNotEmpty) {
+          final msgData = lastMessageSnapshot.docs.first.data();
+          msgData['id'] = lastMessageSnapshot.docs.first.id;
+          lastMessage = Message.fromJson(msgData);
+        }
+
+        final unreadCount = (data['unreadCount'] as Map<String, dynamic>?)?[userId] ?? 0;
+
+        chats.add(Chat(
+          id: doc.id,
+          name: data['name'] ?? '',
+          type: data['type'] == 'group' ? ChatType.group : ChatType.direct,
+          participants: List<String>.from(data['participants']),
+          lastMessage: lastMessage,
+          unreadCount: unreadCount,
+          lastActivity: (data['lastActivity'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          avatar: data['avatar'],
+          metadata: data['metadata'],
+        ));
+      }
+
+      return chats;
+    });
+  }
+
   /// Get chat by ID
   static Future<Chat?> getChatById(String chatId) async {
     try {

@@ -128,4 +128,22 @@ class UserService {
       throw Exception('Failed to get contacts: $e');
     }
   }
+
+  /// Get all users (for development/demo purposes)
+  static Future<List<UserAccount>> getUsers() async {
+    try {
+      final snapshot = await _firestore
+          .collection('users')
+          .limit(100) // Limit to prevent large data loads
+          .get();
+      
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return UserAccount.fromJson(data);
+      }).toList();
+    } catch (e) {
+      throw Exception('Failed to get users: $e');
+    }
+  }
 }

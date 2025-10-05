@@ -48,6 +48,7 @@ dependencies:
   video_player: ^2.8.1
   # Social Features
   camera: ^0.10.5
+  sensors_plus: ^5.0.1
   # Dating Features
   geolocator: ^10.1.0
   # E-commerce

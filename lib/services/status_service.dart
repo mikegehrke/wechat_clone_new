@@ -47,9 +47,10 @@ class StatusService {
   /// Upload status media (image/video)
   static Future<String> uploadStatusMedia(File file, String type) async {
     try {
-      final filename = '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
+      final filename =
+          '${DateTime.now().millisecondsSinceEpoch}_${file.path.split('/').last}';
       final ref = _storage.ref().child('status/$type/$filename');
-      
+
       await ref.putFile(file);
       return await ref.getDownloadURL();
     } catch (e) {
@@ -66,56 +67,60 @@ class StatusService {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .asyncMap((snapshot) async {
-      // Group statuses by user
-      final Map<String, List<Status>> groupedStatuses = {};
-      
-      for (var doc in snapshot.docs) {
-        final data = doc.data();
-        final status = Status(
-          id: doc.id,
-          userId: data['userId'],
-          userName: data['userName'],
-          type: _parseStatusType(data['type']),
-          content: data['content'],
-          mediaUrl: data['mediaUrl'],
-          caption: data['caption'],
-          backgroundColor: data['backgroundColor'],
-          textColor: data['textColor'],
-          timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
-          expiresAt: (data['expiresAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-          views: List<String>.from(data['views'] ?? []),
-        );
+          // Group statuses by user
+          final Map<String, List<Status>> groupedStatuses = {};
 
-        if (groupedStatuses.containsKey(status.userId)) {
-          groupedStatuses[status.userId]!.add(status);
-        } else {
-          groupedStatuses[status.userId] = [status];
-        }
-      }
+          for (var doc in snapshot.docs) {
+            final data = doc.data();
+            final status = Status(
+              id: doc.id,
+              userId: data['userId'],
+              userName: data['userName'],
+              type: _parseStatusType(data['type']),
+              content: data['content'],
+              mediaUrl: data['mediaUrl'],
+              caption: data['caption'],
+              backgroundColor: data['backgroundColor'],
+              textColor: data['textColor'],
+              timestamp:
+                  (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+              expiresAt:
+                  (data['expiresAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+              views: List<String>.from(data['views'] ?? []),
+            );
 
-      // Convert to StatusGroup list
-      final groups = groupedStatuses.entries.map((entry) {
-        final statuses = entry.value;
-        statuses.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-        
-        return StatusGroup(
-          userId: entry.key,
-          userName: statuses.first.userName,
-          statuses: statuses,
-          isViewed: statuses.every((s) => s.views.contains(userId)),
-        );
-      }).toList();
+            if (groupedStatuses.containsKey(status.userId)) {
+              groupedStatuses[status.userId]!.add(status);
+            } else {
+              groupedStatuses[status.userId] = [status];
+            }
+          }
 
-      // Sort: unviewed first, then by latest status
-      groups.sort((a, b) {
-        if (a.isViewed != b.isViewed) {
-          return a.isViewed ? 1 : -1;
-        }
-        return b.statuses.first.timestamp.compareTo(a.statuses.first.timestamp);
-      });
+          // Convert to StatusGroup list
+          final groups = groupedStatuses.entries.map((entry) {
+            final statuses = entry.value;
+            statuses.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
-      return groups;
-    });
+            return StatusGroup(
+              userId: entry.key,
+              userName: statuses.first.userName,
+              statuses: statuses,
+              isViewed: statuses.every((s) => s.views.contains(userId)),
+            );
+          }).toList();
+
+          // Sort: unviewed first, then by latest status
+          groups.sort((a, b) {
+            if (a.isViewed != b.isViewed) {
+              return a.isViewed ? 1 : -1;
+            }
+            return b.statuses.first.timestamp.compareTo(
+              a.statuses.first.timestamp,
+            );
+          });
+
+          return groups;
+        });
   }
 
   /// Mark status as viewed
@@ -148,24 +153,26 @@ class StatusService {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        return Status(
-          id: doc.id,
-          userId: data['userId'],
-          userName: data['userName'],
-          type: _parseStatusType(data['type']),
-          content: data['content'],
-          mediaUrl: data['mediaUrl'],
-          caption: data['caption'],
-          backgroundColor: data['backgroundColor'],
-          textColor: data['textColor'],
-          timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
-          expiresAt: (data['expiresAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-          views: List<String>.from(data['views'] ?? []),
-        );
-      }).toList();
-    });
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+            return Status(
+              id: doc.id,
+              userId: data['userId'],
+              userName: data['userName'],
+              type: _parseStatusType(data['type']),
+              content: data['content'],
+              mediaUrl: data['mediaUrl'],
+              caption: data['caption'],
+              backgroundColor: data['backgroundColor'],
+              textColor: data['textColor'],
+              timestamp:
+                  (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+              expiresAt:
+                  (data['expiresAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+              views: List<String>.from(data['views'] ?? []),
+            );
+          }).toList();
+        });
   }
 
   /// Auto-delete expired statuses (call periodically)
@@ -196,54 +203,264 @@ class StatusService {
         return StatusType.text;
     }
   }
-}
 
-// ============================================================================
-// MODELS
-// ============================================================================
+  // ============================================================================
+  // ADDITIONAL STATUS FEATURES
+  // ============================================================================
 
-enum StatusType { image, video, text }
+  /// Post text-only status with custom styling
+  static Future<String> postTextStatus({
+    required String userId,
+    required String userName,
+    required String content,
+    String? backgroundColor,
+    String? textColor,
+    String? fontStyle,
+  }) async {
+    try {
+      final statusData = {
+        'userId': userId,
+        'userName': userName,
+        'type': 'text',
+        'content': content,
+        'backgroundColor': backgroundColor ?? '#4CAF50',
+        'textColor': textColor ?? '#FFFFFF',
+        'fontStyle': fontStyle ?? 'normal',
+        'timestamp': FieldValue.serverTimestamp(),
+        'expiresAt': DateTime.now().add(const Duration(hours: 24)),
+        'views': [],
+      };
 
-class Status {
-  final String id;
-  final String userId;
-  final String userName;
-  final StatusType type;
-  final String? content;
-  final String? mediaUrl;
-  final String? caption;
-  final String? backgroundColor;
-  final String? textColor;
-  final DateTime timestamp;
-  final DateTime expiresAt;
-  final List<String> views;
+      final docRef = await _firestore.collection('statuses').add(statusData);
+      return docRef.id;
+    } catch (e) {
+      throw Exception('Failed to post text status: $e');
+    }
+  }
 
-  Status({
-    required this.id,
-    required this.userId,
-    required this.userName,
-    required this.type,
-    this.content,
-    this.mediaUrl,
-    this.caption,
-    this.backgroundColor,
-    this.textColor,
-    required this.timestamp,
-    required this.expiresAt,
-    required this.views,
-  });
-}
+  /// Get status views/viewers
+  static Future<List<Map<String, dynamic>>> getStatusViewers(String statusId) async {
+    try {
+      final statusDoc = await _firestore.collection('statuses').doc(statusId).get();
+      
+      if (!statusDoc.exists) {
+        throw Exception('Status not found');
+      }
 
-class StatusGroup {
-  final String userId;
-  final String userName;
-  final List<Status> statuses;
-  final bool isViewed;
+      final views = List<String>.from(statusDoc.data()?['views'] ?? []);
+      final viewers = <Map<String, dynamic>>[];
 
-  StatusGroup({
-    required this.userId,
-    required this.userName,
-    required this.statuses,
-    required this.isViewed,
-  });
+      // Get viewer details (in batches of 10 due to Firestore limit)
+      for (var i = 0; i < views.length; i += 10) {
+        final batch = views.skip(i).take(10).toList();
+        final usersSnapshot = await _firestore
+            .collection('users')
+            .where(FieldPath.documentId, whereIn: batch)
+            .get();
+
+        for (var userDoc in usersSnapshot.docs) {
+          final userData = userDoc.data();
+          viewers.add({
+            'userId': userDoc.id,
+            'userName': userData['username'] ?? 'Unknown',
+            'avatarUrl': userData['avatarUrl'],
+          });
+        }
+      }
+
+      return viewers;
+    } catch (e) {
+      throw Exception('Failed to get status viewers: $e');
+    }
+  }
+
+  /// Get status by ID
+  static Future<Status?> getStatusById(String statusId) async {
+    try {
+      final doc = await _firestore.collection('statuses').doc(statusId).get();
+      
+      if (!doc.exists) return null;
+
+      final data = doc.data()!;
+      return Status(
+        id: doc.id,
+        userId: data['userId'],
+        userName: data['userName'],
+        type: _parseStatusType(data['type']),
+        content: data['content'],
+        mediaUrl: data['mediaUrl'],
+        caption: data['caption'],
+        backgroundColor: data['backgroundColor'],
+        textColor: data['textColor'],
+        timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        expiresAt: (data['expiresAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        views: List<String>.from(data['views'] ?? []),
+      );
+    } catch (e) {
+      throw Exception('Failed to get status: $e');
+    }
+  }
+
+  /// Update status privacy
+  static Future<void> updateStatusPrivacy(String statusId, List<String> allowedViewers) async {
+    try {
+      await _firestore.collection('statuses').doc(statusId).update({
+        'allowedViewers': allowedViewers,
+        'privacy': 'custom',
+      });
+    } catch (e) {
+      throw Exception('Failed to update status privacy: $e');
+    }
+  }
+
+  /// Get statuses with privacy filter
+  static Stream<List<StatusGroup>> getFilteredStatusesStream(String userId, {String privacy = 'all'}) {
+    Query query = _firestore
+        .collection('statuses')
+        .where('expiresAt', isGreaterThan: DateTime.now());
+
+    // Apply privacy filter
+    switch (privacy) {
+      case 'contacts':
+        // This would need to be implemented with user's contact list
+        break;
+      case 'close_friends':
+        query = query.where('privacy', isEqualTo: 'close_friends');
+        break;
+      case 'public':
+        query = query.where('privacy', isEqualTo: 'public');
+        break;
+    }
+
+    return query
+        .orderBy('expiresAt', descending: true)
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .asyncMap((snapshot) async {
+      final Map<String, List<Status>> groupedStatuses = {};
+      
+      for (var doc in snapshot.docs) {
+        final data = doc.data() as Map<String, dynamic>;
+        
+        // Check if user is allowed to view this status
+        final allowedViewers = List<String>.from(data['allowedViewers'] ?? []);
+        if (allowedViewers.isNotEmpty && !allowedViewers.contains(userId)) {
+          continue; // Skip this status
+        }
+
+        final status = Status(
+          id: doc.id,
+          userId: data['userId'],
+          userName: data['userName'],
+          type: _parseStatusType(data['type']),
+          content: data['content'],
+          mediaUrl: data['mediaUrl'],
+          caption: data['caption'],
+          backgroundColor: data['backgroundColor'],
+          textColor: data['textColor'],
+          timestamp: (data['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          expiresAt: (data['expiresAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          views: List<String>.from(data['views'] ?? []),
+        );
+
+        if (groupedStatuses.containsKey(status.userId)) {
+          groupedStatuses[status.userId]!.add(status);
+        } else {
+          groupedStatuses[status.userId] = [status];
+        }
+      }
+
+      final groups = groupedStatuses.entries.map((entry) {
+        final statuses = entry.value;
+        statuses.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+        
+        return StatusGroup(
+          userId: entry.key,
+          userName: statuses.first.userName,
+          statuses: statuses,
+          isViewed: statuses.every((s) => s.views.contains(userId)),
+        );
+      }).toList();
+
+      groups.sort((a, b) {
+        if (a.isViewed != b.isViewed) {
+          return a.isViewed ? 1 : -1;
+        }
+        return b.statuses.first.timestamp.compareTo(a.statuses.first.timestamp);
+      });
+
+      return groups;
+    });
+  }
+
+  /// Reply to status (like a comment)
+  static Future<void> replyToStatus(String statusId, String userId, String userName, String reply) async {
+    try {
+      await _firestore
+          .collection('statuses')
+          .doc(statusId)
+          .collection('replies')
+          .add({
+        'userId': userId,
+        'userName': userName,
+        'reply': reply,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Failed to reply to status: $e');
+    }
+  }
+
+  /// Get status replies
+  static Stream<List<Map<String, dynamic>>> getStatusReplies(String statusId) {
+    return _firestore
+        .collection('statuses')
+        .doc(statusId)
+        .collection('replies')
+        .orderBy('timestamp')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        final data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
+    });
+  }
+
+  /// Get status analytics (for business accounts)
+  static Future<Map<String, dynamic>> getStatusAnalytics(String userId, {int days = 7}) async {
+    try {
+      final startDate = DateTime.now().subtract(Duration(days: days));
+      
+      final statusesSnapshot = await _firestore
+          .collection('statuses')
+          .where('userId', isEqualTo: userId)
+          .where('timestamp', isGreaterThan: Timestamp.fromDate(startDate))
+          .get();
+
+      int totalViews = 0;
+      int totalStatuses = statusesSnapshot.docs.length;
+      Map<String, int> typeBreakdown = {'image': 0, 'video': 0, 'text': 0};
+      
+      for (var doc in statusesSnapshot.docs) {
+        final data = doc.data();
+        final views = List<String>.from(data['views'] ?? []);
+        totalViews += views.length;
+        
+        final type = data['type'] ?? 'text';
+        typeBreakdown[type] = (typeBreakdown[type] ?? 0) + 1;
+      }
+
+      return {
+        'totalStatuses': totalStatuses,
+        'totalViews': totalViews,
+        'averageViews': totalStatuses > 0 ? (totalViews / totalStatuses).round() : 0,
+        'typeBreakdown': typeBreakdown,
+        'period': '$days days',
+      };
+    } catch (e) {
+      throw Exception('Failed to get status analytics: $e');
+    }
+  }
 }
