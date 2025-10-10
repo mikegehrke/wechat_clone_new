@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>467507284871-14bapb1m3t35hvds1lelminkuqn9jcd8.apps.googleusercontent.com</string>
+	<string>467507284871-jc2sc45tvk4qbi4qnkd51727h5urpfag.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.467507284871-14bapb1m3t35hvds1lelminkuqn9jcd8</string>
+	<string>com.googleusercontent.apps.467507284871-jc2sc45tvk4qbi4qnkd51727h5urpfag</string>
 	<key>API_KEY</key>
 	<string>AIzaSyCGVufF8GJwbnArC381syqomqt9IM9RDK0</string>
 	<key>GCM_SENDER_ID</key>
@@ -13,7 +13,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.wechat-super-app-2024</string>
+	<string>com.example.wechatCloneNew</string>
 	<key>PROJECT_ID</key>
 	<string>wechat-super-app-2024</string>
 	<key>STORAGE_BUCKET</key>
@@ -29,6 +29,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:467507284871:ios:d3282cd4cc3049f486a122</string>
+	<string>1:467507284871:ios:6d75861935e52efb86a122</string>
 </dict>
 </plist>

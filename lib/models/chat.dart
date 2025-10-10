@@ -18,6 +18,18 @@ class Chat {
   final bool isOnline;
   final DateTime? lastSeen;
   final Map<String, dynamic>? metadata;
+  
+  // WhatsApp-like features
+  final bool isPinned;
+  final bool isMuted;
+  final bool isArchived;
+  final String? category;
+  final String? draftMessage;
+  final bool hasDisappearingMessages;
+  final bool isVerified;
+  final bool isTyping;
+  final DateTime? pinnedAt;
+  final DateTime? mutedUntil;
 
   Chat({
     required this.id,
@@ -31,6 +43,16 @@ class Chat {
     this.isOnline = false,
     this.lastSeen,
     this.metadata,
+    this.isPinned = false,
+    this.isMuted = false,
+    this.isArchived = false,
+    this.category,
+    this.draftMessage,
+    this.hasDisappearingMessages = false,
+    this.isVerified = false,
+    this.isTyping = false,
+    this.pinnedAt,
+    this.mutedUntil,
   });
 
   factory Chat.fromJson(Map<String, dynamic> json) {
@@ -51,6 +73,16 @@ class Chat {
       isOnline: json['isOnline'] ?? false,
       lastSeen: json['lastSeen'] != null ? DateTime.parse(json['lastSeen']) : null,
       metadata: json['metadata'],
+      isPinned: json['isPinned'] ?? false,
+      isMuted: json['isMuted'] ?? false,
+      isArchived: json['isArchived'] ?? false,
+      category: json['category'],
+      draftMessage: json['draftMessage'],
+      hasDisappearingMessages: json['hasDisappearingMessages'] ?? false,
+      isVerified: json['isVerified'] ?? false,
+      isTyping: json['isTyping'] ?? false,
+      pinnedAt: json['pinnedAt'] != null ? DateTime.parse(json['pinnedAt']) : null,
+      mutedUntil: json['mutedUntil'] != null ? DateTime.parse(json['mutedUntil']) : null,
     );
   }
 
@@ -67,6 +99,16 @@ class Chat {
       'isOnline': isOnline,
       'lastSeen': lastSeen?.toIso8601String(),
       'metadata': metadata,
+      'isPinned': isPinned,
+      'isMuted': isMuted,
+      'isArchived': isArchived,
+      'category': category,
+      'draftMessage': draftMessage,
+      'hasDisappearingMessages': hasDisappearingMessages,
+      'isVerified': isVerified,
+      'isTyping': isTyping,
+      'pinnedAt': pinnedAt?.toIso8601String(),
+      'mutedUntil': mutedUntil?.toIso8601String(),
     };
   }
 
@@ -82,6 +124,16 @@ class Chat {
     bool? isOnline,
     DateTime? lastSeen,
     Map<String, dynamic>? metadata,
+    bool? isPinned,
+    bool? isMuted,
+    bool? isArchived,
+    String? category,
+    String? draftMessage,
+    bool? hasDisappearingMessages,
+    bool? isVerified,
+    bool? isTyping,
+    DateTime? pinnedAt,
+    DateTime? mutedUntil,
   }) {
     return Chat(
       id: id ?? this.id,
@@ -95,6 +147,16 @@ class Chat {
       isOnline: isOnline ?? this.isOnline,
       lastSeen: lastSeen ?? this.lastSeen,
       metadata: metadata ?? this.metadata,
+      isPinned: isPinned ?? this.isPinned,
+      isMuted: isMuted ?? this.isMuted,
+      isArchived: isArchived ?? this.isArchived,
+      category: category ?? this.category,
+      draftMessage: draftMessage ?? this.draftMessage,
+      hasDisappearingMessages: hasDisappearingMessages ?? this.hasDisappearingMessages,
+      isVerified: isVerified ?? this.isVerified,
+      isTyping: isTyping ?? this.isTyping,
+      pinnedAt: pinnedAt ?? this.pinnedAt,
+      mutedUntil: mutedUntil ?? this.mutedUntil,
     );
   }
 

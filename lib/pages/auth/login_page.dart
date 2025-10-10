@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'dart:io' show Platform;
 import '../../providers/auth_provider.dart';
@@ -398,7 +399,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 12),
                 
                 // Apple Sign-In Button (nur iOS/macOS)
-                if (Platform.isIOS || Platform.isMacOS)
+                if (!kIsWeb && (Platform.isIOS || Platform.isMacOS))
                   OutlinedButton.icon(
                     onPressed: _loginWithApple,
                     icon: const Icon(Icons.apple, size: 24),
@@ -409,7 +410,7 @@ class _LoginPageState extends State<LoginPage> {
                       foregroundColor: Colors.black,
                     ),
                   ),
-                if (Platform.isIOS || Platform.isMacOS)
+                if (!kIsWeb && (Platform.isIOS || Platform.isMacOS))
                   const SizedBox(height: 12),
                 
                 // Phone Login Button

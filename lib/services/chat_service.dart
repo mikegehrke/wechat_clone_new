@@ -234,6 +234,43 @@ class ChatService {
     }
   }
 
+  /// Toggle pin status of a chat
+  static Future<void> togglePin(String chatId, bool currentIsPinned) async {
+    try {
+      await _firestore.collection('chats').doc(chatId).update({
+        'isPinned': !currentIsPinned,
+        'pinnedAt': !currentIsPinned ? FieldValue.serverTimestamp() : null,
+      });
+    } catch (e) {
+      throw Exception('Failed to toggle pin: $e');
+    }
+  }
+
+  /// Toggle mute status of a chat
+  static Future<void> toggleMute(String chatId, bool currentIsMuted) async {
+    try {
+      await _firestore.collection('chats').doc(chatId).update({
+        'isMuted': !currentIsMuted,
+        'mutedUntil': !currentIsMuted 
+            ? Timestamp.fromDate(DateTime.now().add(const Duration(days: 365))) 
+            : null,
+      });
+    } catch (e) {
+      throw Exception('Failed to toggle mute: $e');
+    }
+  }
+
+  /// Toggle archive status of a chat
+  static Future<void> toggleArchive(String chatId, bool currentIsArchived) async {
+    try {
+      await _firestore.collection('chats').doc(chatId).update({
+        'isArchived': !currentIsArchived,
+      });
+    } catch (e) {
+      throw Exception('Failed to toggle archive: $e');
+    }
+  }
+
   // ============================================================================
   // MESSAGE MANAGEMENT
   // ============================================================================

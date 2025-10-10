@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -138,7 +139,7 @@ class AuthService {
   Future<UserAccount> loginWithApple() async {
     try {
       // Check if Apple Sign-In is available (iOS 13+, macOS 10.15+)
-      if (!Platform.isIOS && !Platform.isMacOS) {
+      if (kIsWeb || (!Platform.isIOS && !Platform.isMacOS)) {
         throw Exception('Apple Sign-In only available on iOS and macOS');
       }
 

@@ -7,7 +7,7 @@ class ShakeService {
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   
   static const double _shakeThreshold = 15.0;
-  static StreamSubscription? _accelerometerSubscription;
+  static StreamSubscription<AccelerometerEvent>? _accelerometerSubscription;
 
   // ============================================================================
   // SHAKE TO FIND NEARBY PEOPLE
@@ -15,7 +15,7 @@ class ShakeService {
 
   /// Start listening for shake
   static void startShakeDetection(Function onShake) {
-    _accelerometerSubscription = accelerometerEvents.listen((event) {
+    _accelerometerSubscription = accelerometerEventStream().listen((AccelerometerEvent event) {
       final force = event.x.abs() + event.y.abs() + event.z.abs();
       
       if (force > _shakeThreshold) {

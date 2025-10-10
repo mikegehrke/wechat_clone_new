@@ -1,11 +1,21 @@
 import "package:flutter/material.dart";
+import "package:flutter/foundation.dart" show kIsWeb;
 import "package:provider/provider.dart";
+import "package:firebase_core/firebase_core.dart";
+import "firebase_options.dart";
 import "providers/auth_provider.dart";
 import "providers/video_provider.dart";
 import "pages/auth/login_page.dart";
 import "pages/main_navigation.dart";
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
   runApp(const MyApp());
 }
 

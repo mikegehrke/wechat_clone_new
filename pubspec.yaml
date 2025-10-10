@@ -48,9 +48,10 @@ dependencies:
   video_player: ^2.8.1
   # Social Features
   camera: ^0.10.5
-  sensors_plus: ^5.0.1
   # Dating Features
   geolocator: ^10.1.0
+  # Shake Feature
+  sensors_plus: ^7.0.0
   # E-commerce
   # stripe_payment: ^1.1.4  # Discontinued - replaced by flutter_stripe
   flutter_stripe: ^11.3.0
@@ -112,7 +113,7 @@ dependencies:
   # Permissions
   permission_handler: ^11.1.0
   # Audio Recording
-  record: ^5.0.4
+  record: ^6.1.0
   # File Handling
   file_picker: ^6.1.1
   # WebRTC for Video/Audio Calls

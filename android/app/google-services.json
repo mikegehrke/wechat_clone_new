@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "467507284871",
+    "project_id": "wechat-super-app-2024",
+    "storage_bucket": "wechat-super-app-2024.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:467507284871:android:a075e6c46c191ad086a122",
+        "android_client_info": {
+          "package_name": "com.example.wechat_clone_new"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "467507284871-1od1av3brpnkhr0ade7vqaujphghesvc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgWNxd4vXOcw3T47IVh5NCjZRS_ov46BI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "467507284871-1od1av3brpnkhr0ade7vqaujphghesvc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "467507284871-14bapb1m3t35hvds1lelminkuqn9jcd8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.wechat-super-app-2024"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

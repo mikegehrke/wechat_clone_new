@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'dart:io' show Platform;
 import '../../providers/auth_provider.dart';
@@ -260,7 +261,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       const SizedBox(width: 12),
                       
                       // Apple (nur iOS/macOS)
-                      if (Platform.isIOS || Platform.isMacOS)
+                      if (!kIsWeb && (Platform.isIOS || Platform.isMacOS))
                         Expanded(
                           child: OutlinedButton.icon(
                             onPressed: () async {
@@ -287,7 +288,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                           ),
                         ),
-                      if (Platform.isIOS || Platform.isMacOS)
+                      if (!kIsWeb && (Platform.isIOS || Platform.isMacOS))
                         const SizedBox(width: 12),
                       
                       // Phone
