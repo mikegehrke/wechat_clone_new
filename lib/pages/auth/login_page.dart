@@ -42,16 +42,7 @@ class _LoginPageState extends State<LoginPage> {
         print('📧 Current User: ${authProvider.currentUser?.username}');
         print('📧 Error: ${authProvider.error}');
 
-        if (success && mounted) {
-          await Future.delayed(const Duration(milliseconds: 500));
-          
-          if (!mounted) return;
-          
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (context) => const MainNavigation()),
-            (route) => false,
-          );
-        } else if (mounted) {
+        if (!success && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(authProvider.error ?? 'Login failed - User not found. Please register first.'),
@@ -82,25 +73,9 @@ class _LoginPageState extends State<LoginPage> {
       
       print('🔴 Google Login Success: $success');
       print('🔴 Current User: ${authProvider.currentUser?.username}');
+      print('🔴 IsAuthenticated: ${authProvider.isAuthenticated}');
       
-      if (success && mounted) {
-        // Wait a moment for auth state to update
-        await Future.delayed(const Duration(milliseconds: 500));
-        
-        if (!mounted) return;
-        
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const MainNavigation()),
-          (route) => false, // Remove all previous routes
-        );
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Welcome ${authProvider.currentUser?.username ?? "User"}!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else if (mounted && authProvider.error != null) {
+      if (!success && mounted && authProvider.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(authProvider.error!),
@@ -129,25 +104,9 @@ class _LoginPageState extends State<LoginPage> {
       
       print('🍎 Apple Login Success: $success');
       print('🍎 Current User: ${authProvider.currentUser?.username}');
+      print('🍎 IsAuthenticated: ${authProvider.isAuthenticated}');
       
-      if (success && mounted) {
-        // Wait a moment for auth state to update
-        await Future.delayed(const Duration(milliseconds: 500));
-        
-        if (!mounted) return;
-        
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const MainNavigation()),
-          (route) => false,
-        );
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Welcome ${authProvider.currentUser?.username ?? "User"}!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else if (mounted && authProvider.error != null) {
+      if (!success && mounted && authProvider.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(authProvider.error!),
@@ -295,18 +254,11 @@ class _LoginPageState extends State<LoginPage> {
         smsCode: otp,
       );
       
-      if (success && mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainNavigation()),
-        );
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Phone login successful!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else if (mounted && authProvider.error != null) {
+      print('📱 Phone Login Success: $success');
+      print('📱 Current User: ${authProvider.currentUser?.username}');
+      print('📱 IsAuthenticated: ${authProvider.isAuthenticated}');
+      
+      if (!success && mounted && authProvider.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(authProvider.error!),

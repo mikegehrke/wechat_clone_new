@@ -89,6 +89,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
+        print('🟢 AuthWrapper: isLoading=${authProvider.isLoading}, isAuthenticated=${authProvider.isAuthenticated}, user=${authProvider.currentUser?.username}');
+        
         if (authProvider.isLoading) {
           return const Scaffold(
             backgroundColor: Colors.white,
@@ -120,8 +122,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
         }
 
         if (authProvider.isAuthenticated) {
+          print('🟢 AuthWrapper: Showing MainNavigation');
           return const MainNavigation();
         } else {
+          print('🟢 AuthWrapper: Showing LoginPage');
           return const LoginPage();
         }
       },
