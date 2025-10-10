@@ -1,34 +1,47 @@
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import '../models/user.dart';
-import '../services/storage_service.dart';
+import '../services/firebase_auth_service.dart';
 
 class AuthProvider with ChangeNotifier {
   User? _currentUser;
-  String? _token;
   bool _isLoading = false;
   String? _error;
 
   User? get currentUser => _currentUser;
-  String? get token => _token;
   bool get isLoading => _isLoading;
   String? get error => _error;
-  bool get isAuthenticated => _currentUser != null && _token != null;
+  bool get isAuthenticated => _currentUser != null;
 
   Future<void> initialize() async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      _token = await StorageService.getToken();
-      _currentUser = await StorageService.getUser();
-
-      if (_token != null && _currentUser != null) {
-        // For demo purposes, we'll simulate a valid session
-        // In a real app, you would verify the token with your backend
-        print('User authenticated: ${_currentUser!.username}');
+      // Check if user is already logged in with Firebase
+      if (FirebaseAuthService.isLoggedIn) {
+        _currentUser = await FirebaseAuthService.getCurrentUser();
+        
+        if (_currentUser != null) {
+          // Update online status
+          await FirebaseAuthService.updateOnlineStatus(true);
+          print('User authenticated: ${_currentUser!.username}');
+        }
       }
+
+      // Listen to auth state changes
+      FirebaseAuthService.authStateChanges.listen((firebaseUser) async {
+        if (firebaseUser == null) {
+          _currentUser = null;
+          notifyListeners();
+        } else {
+          _currentUser = await FirebaseAuthService.getCurrentUser();
+          notifyListeners();
+        }
+      });
     } catch (e) {
       _error = e.toString();
+      print('Error initializing auth: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -41,34 +54,14 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Simulate API call delay
-      await Future.delayed(const Duration(seconds: 2));
+      _currentUser = await FirebaseAuthService.loginWithEmail(
+        email: email,
+        password: password,
+      );
 
-      // For demo purposes, accept any email/password combination
-      if (email.isNotEmpty && password.isNotEmpty) {
-        _token = 'demo_token_${DateTime.now().millisecondsSinceEpoch}';
-        _currentUser = User(
-          id: 'demo_user_1',
-          username: email.split('@')[0],
-          email: email,
-          status: 'Online',
-          lastSeen: DateTime.now(),
-          isOnline: true,
-        );
-
-        // Save to storage
-        await StorageService.saveToken(_token!);
-        await StorageService.saveUser(_currentUser!);
-
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      } else {
-        _error = 'Please enter email and password';
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
+      _isLoading = false;
+      notifyListeners();
+      return _currentUser != null;
     } catch (e) {
       _error = e.toString();
       _isLoading = false;
@@ -83,34 +76,103 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Simulate API call delay
-      await Future.delayed(const Duration(seconds: 2));
+      _currentUser = await FirebaseAuthService.registerWithEmail(
+        email: email,
+        password: password,
+        username: username,
+      );
 
-      // For demo purposes, accept any registration
-      if (username.isNotEmpty && email.isNotEmpty && password.isNotEmpty) {
-        _token = 'demo_token_${DateTime.now().millisecondsSinceEpoch}';
-        _currentUser = User(
-          id: 'demo_user_${DateTime.now().millisecondsSinceEpoch}',
-          username: username,
-          email: email,
-          status: 'New user',
-          lastSeen: DateTime.now(),
-          isOnline: true,
-        );
+      _isLoading = false;
+      notifyListeners();
+      return _currentUser != null;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
 
-        // Save to storage
-        await StorageService.saveToken(_token!);
-        await StorageService.saveUser(_currentUser!);
+  /// Login with Google
+  Future<bool> loginWithGoogle() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
 
-        _isLoading = false;
-        notifyListeners();
-        return true;
-      } else {
-        _error = 'Please fill in all fields';
-        _isLoading = false;
-        notifyListeners();
-        return false;
-      }
+    try {
+      _currentUser = await FirebaseAuthService.signInWithGoogle();
+
+      _isLoading = false;
+      notifyListeners();
+      return _currentUser != null;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Send phone verification code
+  Future<String?> sendPhoneVerificationCode(String phoneNumber) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    String? verificationId;
+
+    try {
+      await FirebaseAuthService.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        codeSent: (String verId, int? resendToken) {
+          verificationId = verId;
+          _isLoading = false;
+          notifyListeners();
+        },
+        verificationCompleted: (firebase_auth.PhoneAuthCredential credential) async {
+          // Auto-verification completed (Android only)
+          _isLoading = false;
+          notifyListeners();
+        },
+        verificationFailed: (firebase_auth.FirebaseAuthException e) {
+          _error = e.message ?? 'Verification failed';
+          _isLoading = false;
+          notifyListeners();
+        },
+        codeAutoRetrievalTimeout: (String verId) {
+          verificationId = verId;
+        },
+      );
+
+      return verificationId;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  /// Verify phone code and sign in
+  Future<bool> verifyPhoneCode({
+    required String verificationId,
+    required String smsCode,
+    String? username,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _currentUser = await FirebaseAuthService.signInWithPhoneCredential(
+        verificationId: verificationId,
+        smsCode: smsCode,
+        username: username,
+      );
+
+      _isLoading = false;
+      notifyListeners();
+      return _currentUser != null;
     } catch (e) {
       _error = e.toString();
       _isLoading = false;
@@ -124,12 +186,10 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      // Clear storage
-      await StorageService.clearAll();
+      await FirebaseAuthService.signOut();
 
       // Clear state
       _currentUser = null;
-      _token = null;
       _error = null;
     } catch (e) {
       _error = e.toString();
