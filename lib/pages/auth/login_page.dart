@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:provider/provider.dart';
 import 'dart:io' show Platform;
 import '../../providers/auth_provider.dart';
-import '../../services/auth_service.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/custom_button.dart';
 import 'register_page.dart';
@@ -53,43 +52,44 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _loginWithGoogle() async {
-    try {
-      // Show loading
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Signing in with Google...')),
-        );
-      }
-
-      final authService = AuthService();
-      final user = await authService.loginWithGoogle();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    final success = await authProvider.loginWithGoogle();
+    
+    if (success && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const MainNavigation()),
+      );
       
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainNavigation()),
-        );
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Welcome ${user.displayName ?? user.username ?? "User"}!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Google Sign-In failed: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Welcome ${authProvider.currentUser?.username ?? "User"}!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else if (mounted && authProvider.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.error!),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
   Future<void> _loginWithApple() async {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Apple Sign-In coming soon!'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+    // TODO: Implement Apple Sign-In
+    return;
+    
+    /* Original implementation for reference:
     try {
       // Show loading
       if (mounted) {
@@ -98,7 +98,6 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
 
-      final authService = AuthService();
       final user = await authService.loginWithApple();
       
       if (mounted) {
@@ -186,10 +185,10 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
 
-      final authService = AuthService();
-      final verificationId = await authService.sendOTP(phone);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final verificationId = await authProvider.sendPhoneVerificationCode(phone);
       
-      if (!mounted) return;
+      if (!mounted || verificationId == null) return;
       
       // Show OTP input dialog
       final otp = await showDialog<String>(
@@ -247,9 +246,12 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
 
-      await authService.verifyOTP(verificationId, otp);
+      final success = await authProvider.verifyPhoneCode(
+        verificationId: verificationId,
+        smsCode: otp,
+      );
       
-      if (mounted) {
+      if (success && mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => const MainNavigation()),
         );
@@ -258,6 +260,13 @@ class _LoginPageState extends State<LoginPage> {
           const SnackBar(
             content: Text('Phone login successful!'),
             backgroundColor: Colors.green,
+          ),
+        );
+      } else if (mounted && authProvider.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authProvider.error!),
+            backgroundColor: Colors.red,
           ),
         );
       }
