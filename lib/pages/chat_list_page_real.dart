@@ -261,7 +261,7 @@ class _ChatListPageRealState extends State<ChatListPageReal> {
     String lastMessagePreview = '';
     if (chat.lastMessage != null) {
       if (chat.lastMessage!.type == MessageType.text) {
-        lastMessagePreview = chat.lastMessage!.content;
+        lastMessagePreview = chat.lastMessage!.content ?? '';
       } else if (chat.lastMessage!.type == MessageType.image) {
         lastMessagePreview = '📷 Photo';
       } else if (chat.lastMessage!.type == MessageType.voice) {

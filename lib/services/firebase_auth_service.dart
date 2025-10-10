@@ -224,6 +224,7 @@ class FirebaseAuthService {
         user = app_models.User(
           id: userCredential.user!.uid,
           username: username ?? 'user_${userCredential.user!.uid.substring(0, 8)}',
+          email: '', // Phone login doesn't require email
           phoneNumber: userCredential.user!.phoneNumber,
           status: 'Hey there! I am using WeChat',
           lastSeen: DateTime.now(),
@@ -313,7 +314,7 @@ class FirebaseAuthService {
         user = app_models.User(
           id: userCredential.user!.uid,
           username: displayName ?? appleCredential.email?.split('@')[0] ?? 'user_${userCredential.user!.uid.substring(0, 8)}',
-          email: appleCredential.email ?? userCredential.user!.email,
+          email: appleCredential.email ?? userCredential.user!.email ?? '',
           status: 'Hey there! I am using WeChat',
           lastSeen: DateTime.now(),
           isOnline: true,

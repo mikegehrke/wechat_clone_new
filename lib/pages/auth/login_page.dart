@@ -103,42 +103,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Future<void> _loginWithApple_OLD() async {
-    /* Original implementation for reference:
-    try {
-      // Show loading
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Signing in with Apple...')),
-        );
-      }
-
-      final user = await authService.loginWithApple();
-      
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MainNavigation()),
-        );
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Welcome ${user.displayName ?? user.username ?? "User"}!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Apple Sign-In failed: ${e.toString()}'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
-        );
-      }
-    }
-  }
 
   Future<void> _loginWithPhone() async {
     // Show phone number input dialog

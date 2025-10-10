@@ -573,9 +573,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                       ),
                     ),
                   
-                  if (message.content.isNotEmpty)
+                  if (message.content != null && message.content!.isNotEmpty)
                     Text(
-                      message.content,
+                      message.content!,
                       style: const TextStyle(fontSize: 15),
                     ),
                   
