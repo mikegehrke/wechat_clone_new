@@ -70,6 +70,7 @@ dependencies:
   # Auth Providers
   google_sign_in: ^6.2.1
   sign_in_with_apple: ^6.1.0
+  crypto: ^3.0.3
   # Real Video Features
   video_thumbnail: ^0.5.3
   path_provider: ^2.1.1

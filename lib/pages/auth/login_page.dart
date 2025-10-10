@@ -78,17 +78,32 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _loginWithApple() async {
-    if (mounted) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    final success = await authProvider.loginWithApple();
+    
+    if (success && mounted) {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const MainNavigation()),
+      );
+      
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Apple Sign-In coming soon!'),
-          backgroundColor: Colors.orange,
+        SnackBar(
+          content: Text('Welcome ${authProvider.currentUser?.username ?? "User"}!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } else if (mounted && authProvider.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.error!),
+          backgroundColor: Colors.red,
         ),
       );
     }
-    // TODO: Implement Apple Sign-In
-    return;
-    
+  }
+
+  Future<void> _loginWithApple_OLD() async {
     /* Original implementation for reference:
     try {
       // Show loading

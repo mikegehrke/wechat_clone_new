@@ -113,6 +113,26 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  /// Login with Apple
+  Future<bool> loginWithApple() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _currentUser = await FirebaseAuthService.signInWithApple();
+
+      _isLoading = false;
+      notifyListeners();
+      return _currentUser != null;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Send phone verification code
   Future<String?> sendPhoneVerificationCode(String phoneNumber) async {
     _isLoading = true;

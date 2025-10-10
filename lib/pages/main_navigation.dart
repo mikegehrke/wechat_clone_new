@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'chat_list_page.dart';
-import 'contacts_page.dart';
+import 'chat_list_page_real.dart';
+import 'contacts_page_real.dart';
 import 'discover_page.dart';
 import 'profile_page.dart';
 
@@ -15,8 +15,8 @@ class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
-    const ChatListPage(),
-    const ContactsPage(),
+    const ChatListPageReal(),
+    const ContactsPageReal(),
     const DiscoverPage(),
     const ProfilePage(),
   ];

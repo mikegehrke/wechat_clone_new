@@ -1,6 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'dart:math';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import '../models/user.dart' as app_models;
 
 /// Firebase Authentication Service
@@ -246,19 +250,99 @@ class FirebaseAuthService {
   }
 
   // ============================================================================
-  // APPLE SIGN-IN (iOS only)
+  // APPLE SIGN-IN
   // ============================================================================
 
-  /// Sign in with Apple (requires additional setup)
-  /// Note: This requires the sign_in_with_apple package
-  // static Future<app_models.User?> signInWithApple() async {
-  //   try {
-  //     // Implementation requires sign_in_with_apple package
-  //     throw UnimplementedError('Apple Sign-In requires additional setup');
-  //   } catch (e) {
-  //     throw Exception('Apple sign-in failed: $e');
-  //   }
-  // }
+  /// Generates a cryptographically secure random nonce
+  String _generateNonce([int length = 32]) {
+    const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    final random = Random.secure();
+    return List.generate(length, (_) => charset[random.nextInt(charset.length)]).join();
+  }
+
+  /// Returns the sha256 hash of [input] in hex notation.
+  String _sha256ofString(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
+
+  /// Sign in with Apple
+  static Future<app_models.User?> signInWithApple() async {
+    try {
+      // Generate nonce for security
+      final rawNonce = FirebaseAuthService()._generateNonce();
+      final nonce = FirebaseAuthService()._sha256ofString(rawNonce);
+
+      // Request credential from Apple
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+        nonce: nonce,
+      );
+
+      // Create OAuth credential for Firebase
+      final oauthCredential = firebase_auth.OAuthProvider("apple.com").credential(
+        idToken: appleCredential.identityToken,
+        rawNonce: rawNonce,
+      );
+
+      // Sign in to Firebase
+      final userCredential = await _auth.signInWithCredential(oauthCredential);
+
+      if (userCredential.user == null) {
+        throw Exception('Apple sign-in failed');
+      }
+
+      // Check if user exists in Firestore
+      final userDoc = await _firestore
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
+
+      app_models.User user;
+
+      if (!userDoc.exists) {
+        // Create new user document
+        final displayName = appleCredential.givenName != null && appleCredential.familyName != null
+            ? '${appleCredential.givenName} ${appleCredential.familyName}'
+            : null;
+
+        user = app_models.User(
+          id: userCredential.user!.uid,
+          username: displayName ?? appleCredential.email?.split('@')[0] ?? 'user_${userCredential.user!.uid.substring(0, 8)}',
+          email: appleCredential.email ?? userCredential.user!.email,
+          status: 'Hey there! I am using WeChat',
+          lastSeen: DateTime.now(),
+          isOnline: true,
+        );
+
+        await _firestore.collection('users').doc(user.id).set(user.toJson());
+      } else {
+        // Update existing user
+        await _firestore.collection('users').doc(userCredential.user!.uid).update({
+          'isOnline': true,
+          'lastSeen': FieldValue.serverTimestamp(),
+        });
+
+        user = app_models.User.fromJson(userDoc.data()!);
+      }
+
+      return user;
+    } on firebase_auth.FirebaseAuthException catch (e) {
+      throw _handleAuthException(e);
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled) {
+        // User canceled the sign-in
+        return null;
+      }
+      throw Exception('Apple sign-in failed: ${e.message}');
+    } catch (e) {
+      throw Exception('Apple sign-in failed: $e');
+    }
+  }
 
   // ============================================================================
   // USER MANAGEMENT
