@@ -14,41 +14,53 @@ class AuthProvider with ChangeNotifier {
   bool get isAuthenticated => _currentUser != null;
 
   Future<void> initialize() async {
+    print('🔵 AuthProvider: Initializing...');
     _isLoading = true;
     notifyListeners();
 
     try {
       // Check if user is already logged in with Firebase
       if (FirebaseAuthService.isLoggedIn) {
+        print('🔵 AuthProvider: User already logged in');
         _currentUser = await FirebaseAuthService.getCurrentUser();
         
         if (_currentUser != null) {
+          print('🔵 AuthProvider: Current user loaded: ${_currentUser!.username}');
           // Update online status
           await FirebaseAuthService.updateOnlineStatus(true);
-          print('User authenticated: ${_currentUser!.username}');
         }
+      } else {
+        print('🔵 AuthProvider: No user logged in');
       }
 
-      // Listen to auth state changes
+      // Listen to auth state changes (but don't await it)
       FirebaseAuthService.authStateChanges.listen((firebaseUser) async {
+        print('🔵 AuthProvider: Auth state changed - User: ${firebaseUser?.uid}');
         if (firebaseUser == null) {
-          _currentUser = null;
-          notifyListeners();
-        } else {
+          if (_currentUser != null) {
+            print('🔵 AuthProvider: User logged out');
+            _currentUser = null;
+            notifyListeners();
+          }
+        } else if (_currentUser == null) {
+          print('🔵 AuthProvider: New user logged in, loading data...');
           _currentUser = await FirebaseAuthService.getCurrentUser();
+          print('🔵 AuthProvider: User data loaded: ${_currentUser?.username}');
           notifyListeners();
         }
       });
     } catch (e) {
       _error = e.toString();
-      print('Error initializing auth: $e');
+      print('❌ Error initializing auth: $e');
     } finally {
       _isLoading = false;
+      print('🔵 AuthProvider: Initialization complete');
       notifyListeners();
     }
   }
 
   Future<bool> login(String email, String password) async {
+    print('📧 AuthProvider: Starting email login...');
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -59,10 +71,16 @@ class AuthProvider with ChangeNotifier {
         password: password,
       );
 
+      print('📧 AuthProvider: Login result - User: ${_currentUser?.username}');
+      
       _isLoading = false;
       notifyListeners();
-      return _currentUser != null;
+      
+      final success = _currentUser != null;
+      print('📧 AuthProvider: Login ${success ? "SUCCESS" : "FAILED"}');
+      return success;
     } catch (e) {
+      print('❌ AuthProvider: Login error: $e');
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
@@ -95,6 +113,7 @@ class AuthProvider with ChangeNotifier {
 
   /// Login with Google
   Future<bool> loginWithGoogle() async {
+    print('🔴 AuthProvider: Starting Google login...');
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -102,10 +121,16 @@ class AuthProvider with ChangeNotifier {
     try {
       _currentUser = await FirebaseAuthService.signInWithGoogle();
 
+      print('🔴 AuthProvider: Google login result - User: ${_currentUser?.username}');
+      
       _isLoading = false;
       notifyListeners();
-      return _currentUser != null;
+      
+      final success = _currentUser != null;
+      print('🔴 AuthProvider: Google login ${success ? "SUCCESS" : "FAILED"}');
+      return success;
     } catch (e) {
+      print('❌ AuthProvider: Google login error: $e');
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
