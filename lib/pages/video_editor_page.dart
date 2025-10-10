@@ -6,6 +6,7 @@ import '../widgets/video_timeline.dart';
 import '../widgets/video_tools_panel.dart';
 import '../widgets/video_preview.dart';
 import '../models/video_edit_session.dart';
+import 'video_editor_advanced_page.dart';
 
 class VideoEditorPage extends StatefulWidget {
   final String? videoPath;
@@ -283,6 +284,24 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
+          // Advanced mode toggle
+          TextButton.icon(
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => VideoEditorAdvancedPage(
+                    initialVideoPath: widget.videoPath,
+                  ),
+                ),
+              );
+            },
+            icon: const Icon(Icons.auto_awesome, size: 18),
+            label: const Text('Advanced'),
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.orange,
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.save, color: Colors.white),
             onPressed: _exportVideo,
