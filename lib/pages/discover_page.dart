@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'video_editor_page.dart';
+import 'video_editor_advanced_page.dart';
 import 'tiktok_feed_page.dart';
 import 'stories_page.dart';
 import 'dating_page.dart';
@@ -75,12 +76,25 @@ class DiscoverPage extends StatelessWidget {
               _buildDiscoverItem(
                 icon: Icons.edit,
                 title: 'Video Editor',
-                subtitle: 'CapCut-style video editing',
+                subtitle: 'Simple video editing',
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const VideoEditorPage(),
+                    ),
+                  );
+                },
+              ),
+              _buildDiscoverItem(
+                icon: Icons.auto_awesome,
+                title: 'Video Editor Pro',
+                subtitle: 'Professional editing (Bearbeiter weit)',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const VideoEditorAdvancedPage(),
                     ),
                   );
                 },
