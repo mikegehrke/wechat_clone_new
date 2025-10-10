@@ -54,8 +54,8 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<!-- Google Sign-In REVERSED_CLIENT_ID -->
-				<string>com.googleusercontent.apps.467507284871-14bapb1m3t35hvds1lelminkuqn9jcd8</string>
+				<!-- Google Sign-In REVERSED_CLIENT_ID from GoogleService-Info.plist -->
+				<string>com.googleusercontent.apps.467507284871-jc2sc45tvk4qbi4qnkd51727h5urpfag</string>
 			</array>
 		</dict>
 	</array>

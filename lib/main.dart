@@ -9,12 +9,20 @@ import "pages/auth/login_page.dart";
 import "pages/main_navigation.dart";
 
 void main() async {
+  // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    // Initialize Firebase
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('✅ Firebase initialized successfully');
+  } catch (e, stackTrace) {
+    print('❌ Firebase initialization error: $e');
+    print('Stack trace: $stackTrace');
+    // Continue anyway - app will show errors if Firebase features are used
+  }
   
   runApp(const MyApp());
 }
