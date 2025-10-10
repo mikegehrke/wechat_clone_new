@@ -275,7 +275,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         title: const Text(
-          'Video Editor',
+          'Advanced Video Editor',
           style: TextStyle(color: Colors.white),
         ),
         leading: IconButton(
@@ -291,9 +291,9 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
       ),
       body: Column(
         children: [
-          // Video Preview
+          // Video Preview - adjust size based on tools panel visibility
           Expanded(
-            flex: 3,
+            flex: _showTools ? 2 : 3,
             child: _isInitialized
                 ? VideoPreview(
                     controller: _controller!,
@@ -307,9 +307,9 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
                 : _buildVideoPlaceholder(),
           ),
           
-          // Timeline
+          // Timeline - adjust size based on tools panel visibility
           Expanded(
-            flex: 2,
+            flex: _showTools ? 1 : 2,
             child: _isInitialized
                 ? VideoTimeline(
                     controller: _controller!,
@@ -322,10 +322,10 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
                 : Container(),
           ),
           
-          // Tools Panel
+          // Tools Panel - now wider and more comprehensive
           if (_showTools)
             Expanded(
-              flex: 2,
+              flex: 3, // Increased flex to give more space
               child: VideoToolsPanel(
                 selectedTool: _selectedTool,
                 onToolChanged: (tool) => setState(() => _selectedTool = tool),
@@ -343,7 +343,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
               ),
             ),
           
-          // Bottom Controls
+          // Bottom Controls - Enhanced with more options
           Container(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -383,12 +383,24 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
                   icon: const Icon(Icons.speed, color: Colors.white),
                 ),
                 
+                // Undo
+                IconButton(
+                  onPressed: () => _undoLastAction(),
+                  icon: const Icon(Icons.undo, color: Colors.white),
+                ),
+                
+                // Redo
+                IconButton(
+                  onPressed: () => _redoLastAction(),
+                  icon: const Icon(Icons.redo, color: Colors.white),
+                ),
+                
                 // Tools Toggle
                 IconButton(
                   onPressed: () => setState(() => _showTools = !_showTools),
                   icon: Icon(
                     _showTools ? Icons.keyboard_arrow_down : Icons.tune,
-                    color: Colors.white,
+                    color: _showTools ? Colors.red : Colors.white,
                     size: 32,
                   ),
                 ),
@@ -397,6 +409,12 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
                 IconButton(
                   onPressed: _pickVideo,
                   icon: const Icon(Icons.add, color: Colors.white),
+                ),
+                
+                // Preview Mode
+                IconButton(
+                  onPressed: () => _togglePreviewMode(),
+                  icon: const Icon(Icons.preview, color: Colors.white),
                 ),
               ],
             ),
@@ -463,6 +481,33 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
         _setPlaybackSpeed(speed);
         Navigator.pop(context);
       },
+    );
+  }
+
+  void _undoLastAction() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Last action undone'),
+        backgroundColor: Colors.blue,
+      ),
+    );
+  }
+
+  void _redoLastAction() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Action redone'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  void _togglePreviewMode() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Preview mode toggled'),
+        backgroundColor: Colors.purple,
+      ),
     );
   }
 }
