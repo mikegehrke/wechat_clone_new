@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 enum MessageType {
   text,
   image,
@@ -43,6 +44,20 @@ class Message {
   });
 
   factory Message.fromJson(Map<String, dynamic> json) {
+    final dynamic tsRaw = json['timestamp'];
+    DateTime parsedTs;
+    if (tsRaw == null) {
+      parsedTs = DateTime.now();
+    } else if (tsRaw is String) {
+      parsedTs = DateTime.tryParse(tsRaw) ?? DateTime.now();
+    } else if (tsRaw is Timestamp) {
+      parsedTs = tsRaw.toDate();
+    } else if (tsRaw is int) {
+      parsedTs = DateTime.fromMillisecondsSinceEpoch(tsRaw);
+    } else {
+      parsedTs = DateTime.now();
+    }
+
     return Message(
       id: json['id'],
       chatId: json['chatId'],
@@ -56,7 +71,7 @@ class Message {
         (e) => e.toString() == 'MessageStatus.${json['status']}',
         orElse: () => MessageStatus.sent,
       ),
-      timestamp: DateTime.parse(json['timestamp']),
+      timestamp: parsedTs,
       filePath: json['filePath'],
       fileName: json['fileName'],
       fileSize: json['fileSize'],

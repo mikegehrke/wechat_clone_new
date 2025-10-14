@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
 import 'message.dart';
 import 'user.dart';
 
@@ -30,6 +31,21 @@ class Chat {
   });
 
   factory Chat.fromJson(Map<String, dynamic> json) {
+    final dynamic lastActivityRaw = json['lastActivity'];
+    DateTime parsedLastActivity;
+    if (lastActivityRaw == null) {
+      parsedLastActivity = DateTime.now();
+    } else if (lastActivityRaw is String) {
+      parsedLastActivity = DateTime.tryParse(lastActivityRaw) ?? DateTime.now();
+    } else if (lastActivityRaw is Timestamp) {
+      parsedLastActivity = lastActivityRaw.toDate();
+    } else if (lastActivityRaw is int) {
+      parsedLastActivity =
+          DateTime.fromMillisecondsSinceEpoch(lastActivityRaw);
+    } else {
+      parsedLastActivity = DateTime.now();
+    }
+
     return Chat(
       id: json['id'],
       name: json['name'],
@@ -38,11 +54,11 @@ class Chat {
         orElse: () => ChatType.direct,
       ),
       participants: List<String>.from(json['participants'] ?? []),
-      lastMessage: json['lastMessage'] != null 
-          ? Message.fromJson(json['lastMessage']) 
+      lastMessage: json['lastMessage'] != null
+          ? Message.fromJson(json['lastMessage'])
           : null,
       unreadCount: json['unreadCount'] ?? 0,
-      lastActivity: DateTime.parse(json['lastActivity']),
+      lastActivity: parsedLastActivity,
       avatar: json['avatar'],
       metadata: json['metadata'],
     );

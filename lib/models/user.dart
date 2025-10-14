@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
+
 class User {
   final String id;
   final String username;
@@ -22,6 +24,22 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    final dynamic lastSeenRaw = json['lastSeen'];
+
+    DateTime parsedLastSeen;
+    if (lastSeenRaw == null) {
+      parsedLastSeen = DateTime.now();
+    } else if (lastSeenRaw is String) {
+      parsedLastSeen = DateTime.tryParse(lastSeenRaw) ?? DateTime.now();
+    } else if (lastSeenRaw is Timestamp) {
+      parsedLastSeen = lastSeenRaw.toDate();
+    } else if (lastSeenRaw is int) {
+      // Support milliseconds since epoch
+      parsedLastSeen = DateTime.fromMillisecondsSinceEpoch(lastSeenRaw);
+    } else {
+      parsedLastSeen = DateTime.now();
+    }
+
     return User(
       id: json['id'],
       username: json['username'],
@@ -30,7 +48,7 @@ class User {
       phoneNumber: json['phoneNumber'],
       status: json['status'],
       isOnline: json['isOnline'] ?? false,
-      lastSeen: DateTime.parse(json['lastSeen']),
+      lastSeen: parsedLastSeen,
       friends: List<String>.from(json['friends'] ?? []),
     );
   }
