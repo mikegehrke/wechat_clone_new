@@ -14,7 +14,7 @@ class VideoService {
       // Generate unique filename
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final fileName = 'video_${userId}_$timestamp.mp4';
-      
+
       // Upload video to Firebase Storage
       final videoRef = _storage.ref().child('videos/$fileName');
       final uploadTask = videoRef.putFile(videoFile);
@@ -34,7 +34,9 @@ class VideoService {
       String? thumbnailUrl;
       if (thumbnailPath != null) {
         final thumbnailFile = File(thumbnailPath);
-        final thumbnailRef = _storage.ref().child('thumbnails/${fileName}_thumb.jpg');
+        final thumbnailRef = _storage.ref().child(
+          'thumbnails/${fileName}_thumb.jpg',
+        );
         final thumbnailUploadTask = thumbnailRef.putFile(thumbnailFile);
         final thumbnailSnapshot = await thumbnailUploadTask;
         thumbnailUrl = await thumbnailSnapshot.ref.getDownloadURL();
@@ -73,7 +75,9 @@ class VideoService {
         musicArtist: musicArtist,
       );
 
-      final docRef = await _firestore.collection('videoPosts').add(videoPost.toJson());
+      final docRef = await _firestore
+          .collection('videoPosts')
+          .add(videoPost.toJson());
       return docRef.id;
     } catch (e) {
       throw Exception('Failed to create video post: $e');
@@ -111,7 +115,7 @@ class VideoService {
     try {
       final docRef = _firestore.collection('videoPosts').doc(videoId);
       final doc = await docRef.get();
-      
+
       if (!doc.exists) {
         throw Exception('Video post not found');
       }
@@ -123,17 +127,11 @@ class VideoService {
       if (likedUsers.contains(userId)) {
         // Unlike
         likedUsers.remove(userId);
-        await docRef.update({
-          'likes': likes - 1,
-          'likedUsers': likedUsers,
-        });
+        await docRef.update({'likes': likes - 1, 'likedUsers': likedUsers});
       } else {
         // Like
         likedUsers.add(userId);
-        await docRef.update({
-          'likes': likes + 1,
-          'likedUsers': likedUsers,
-        });
+        await docRef.update({'likes': likes + 1, 'likedUsers': likedUsers});
       }
     } catch (e) {
       throw Exception('Failed to toggle like: $e');
@@ -141,14 +139,23 @@ class VideoService {
   }
 
   // Add comment
-  static Future<void> addComment(String videoId, String userId, String username, String comment) async {
+  static Future<void> addComment(
+    String videoId,
+    String userId,
+    String username,
+    String comment,
+  ) async {
     try {
-      await _firestore.collection('videoPosts').doc(videoId).collection('comments').add({
-        'userId': userId,
-        'username': username,
-        'comment': comment,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+      await _firestore
+          .collection('videoPosts')
+          .doc(videoId)
+          .collection('comments')
+          .add({
+            'userId': userId,
+            'username': username,
+            'comment': comment,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
 
       // Update comment count
       await _firestore.collection('videoPosts').doc(videoId).update({
@@ -203,16 +210,12 @@ class VideoService {
         // Unfollow
         following.remove(targetUserId);
         await userRef.update({'following': following});
-        await targetUserRef.update({
-          'followers': FieldValue.increment(-1),
-        });
+        await targetUserRef.update({'followers': FieldValue.increment(-1)});
       } else {
         // Follow
         following.add(targetUserId);
         await userRef.update({'following': following});
-        await targetUserRef.update({
-          'followers': FieldValue.increment(1),
-        });
+        await targetUserRef.update({'followers': FieldValue.increment(1)});
       }
     } catch (e) {
       throw Exception('Failed to toggle follow: $e');
@@ -229,7 +232,7 @@ class VideoService {
           .get();
 
       return snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
+        final data = doc.data();
         data['id'] = doc.id;
         return VideoPost.fromJson(data);
       }).toList();
@@ -248,7 +251,7 @@ class VideoService {
           .get();
 
       return snapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
+        final data = doc.data();
         data['id'] = doc.id;
         return VideoPost.fromJson(data);
       }).toList();

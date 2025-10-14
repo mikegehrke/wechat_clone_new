@@ -42,7 +42,11 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
                       color: Colors.grey[900],
-                      child: const Icon(Icons.movie, size: 64, color: Colors.white),
+                      child: const Icon(
+                        Icons.movie,
+                        size: 64,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                   Container(
@@ -65,7 +69,11 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                         shape: BoxShape.circle,
                       ),
                       child: IconButton(
-                        icon: const Icon(Icons.play_arrow, size: 48, color: Colors.white),
+                        icon: const Icon(
+                          Icons.play_arrow,
+                          size: 48,
+                          color: Colors.white,
+                        ),
                         onPressed: _playMovie,
                       ),
                     ),
@@ -75,13 +83,12 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
             ),
             actions: [
               IconButton(
-                icon: Icon(_isInWatchlist ? Icons.bookmark : Icons.bookmark_border),
+                icon: Icon(
+                  _isInWatchlist ? Icons.bookmark : Icons.bookmark_border,
+                ),
                 onPressed: _toggleWatchlist,
               ),
-              IconButton(
-                icon: const Icon(Icons.share),
-                onPressed: _shareMovie,
-              ),
+              IconButton(icon: const Icon(Icons.share), onPressed: _shareMovie),
             ],
           ),
 
@@ -108,10 +115,21 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                     spacing: 12,
                     runSpacing: 8,
                     children: [
-                      _buildMetaChip(Icons.calendar_today, _movie.year.toString()),
-                      _buildMetaChip(Icons.access_time, _formatDuration(_movie.duration)),
-                      _buildMetaChip(Icons.star, _movie.rating.toStringAsFixed(1)),
-                      ..._movie.genres.take(2).map((genre) => _buildGenreChip(genre)),
+                      _buildMetaChip(
+                        Icons.calendar_today,
+                        _movie.year.toString(),
+                      ),
+                      _buildMetaChip(
+                        Icons.access_time,
+                        _formatDuration(_movie.duration),
+                      ),
+                      _buildMetaChip(
+                        Icons.star,
+                        _movie.rating.toStringAsFixed(1),
+                      ),
+                      ..._movie.genres
+                          .take(2)
+                          .map((genre) => _buildGenreChip(genre)),
                     ],
                   ),
 
@@ -133,7 +151,10 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                             ),
                           ),
                           icon: const Icon(Icons.play_arrow),
-                          label: const Text('Play', style: TextStyle(fontSize: 16)),
+                          label: const Text(
+                            'Play',
+                            style: TextStyle(fontSize: 16),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -160,18 +181,12 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                   // Synopsis
                   const Text(
                     'Synopsis',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     _movie.description,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      height: 1.6,
-                    ),
+                    style: const TextStyle(fontSize: 15, height: 1.6),
                   ),
 
                   const SizedBox(height: 24),
@@ -181,10 +196,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                   // Cast
                   const Text(
                     'Cast',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
                   SizedBox(
@@ -205,10 +217,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
                   // Similar movies
                   const Text(
                     'More Like This',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
                   SizedBox(
@@ -291,10 +300,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
           Text(
             name,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -316,17 +322,12 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
               color: Colors.grey[300],
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Center(
-              child: Icon(Icons.movie, size: 40),
-            ),
+            child: const Center(child: Icon(Icons.movie, size: 40)),
           ),
           const SizedBox(height: 8),
           Text(
             'Similar Movie ${index + 1}',
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -336,11 +337,8 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
               const Icon(Icons.star, size: 12, color: Colors.amber),
               const SizedBox(width: 4),
               Text(
-                '${(4.0 + index * 0.2).toStringAsFixed(1)}',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey[600],
-                ),
+                (4.0 + index * 0.2).toStringAsFixed(1),
+                style: TextStyle(fontSize: 11, color: Colors.grey[600]),
               ),
             ],
           ),
@@ -352,7 +350,7 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
   String _formatDuration(Duration duration) {
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
-    
+
     if (hours > 0) {
       return '${hours}h ${minutes}m';
     }
@@ -381,20 +379,20 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
 
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => VideoPlayerPage(video: video),
-      ),
+      MaterialPageRoute(builder: (context) => VideoPlayerPage(video: video)),
     );
   }
 
   void _toggleWatchlist() {
     setState(() => _isInWatchlist = !_isInWatchlist);
-    
+
     StreamingService.toggleWatchlist(_movie.id, 'demo_user_1');
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_isInWatchlist ? 'Added to watchlist' : 'Removed from watchlist'),
+        content: Text(
+          _isInWatchlist ? 'Added to watchlist' : 'Removed from watchlist',
+        ),
         duration: const Duration(seconds: 1),
       ),
     );
@@ -412,9 +410,9 @@ class _MovieDetailPageState extends State<MovieDetailPage> {
               title: const Text('Copy Link'),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Link copied')),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Link copied')));
               },
             ),
             ListTile(

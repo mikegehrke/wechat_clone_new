@@ -1,16 +1,15 @@
-import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter/material.dart';
 
 /// Central AI Service for the entire app
 /// Integrates multiple AI providers for different capabilities
 class AIService {
   // API Keys - In production, store in secure environment variables
-  static const String _openAIKey = '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';
+  static const String _openAIKey =
+      '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';
   static const String _stabilityAIKey = 'YOUR_STABILITY_AI_KEY';
   static const String _elevenLabsKey = 'YOUR_ELEVENLABS_API_KEY';
-  
+
   static const String _openAIBaseUrl = 'https://api.openai.com/v1';
   static const String _stabilityAIBaseUrl = 'https://api.stability.ai/v1';
   static const String _elevenLabsBaseUrl = 'https://api.elevenlabs.io/v1';
@@ -96,14 +95,16 @@ class AIService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$_stabilityAIBaseUrl/generation/stable-diffusion-xl-1024-v1-0/text-to-image'),
+        Uri.parse(
+          '$_stabilityAIBaseUrl/generation/stable-diffusion-xl-1024-v1-0/text-to-image',
+        ),
         headers: {
           'Authorization': 'Bearer $_stabilityAIKey',
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
           'text_prompts': [
-            {'text': prompt, 'weight': 1.0}
+            {'text': prompt, 'weight': 1.0},
           ],
           'cfg_scale': 7,
           'height': height,
@@ -155,9 +156,7 @@ class AIService {
   }
 
   /// AI-powered image enhancement
-  static Future<String> enhanceImage({
-    required String imagePath,
-  }) async {
+  static Future<String> enhanceImage({required String imagePath}) async {
     try {
       // AI improves lighting, colors, sharpness
       await Future.delayed(const Duration(seconds: 2));
@@ -187,7 +186,7 @@ class AIService {
         body: jsonEncode({
           'model': model,
           'messages': [
-            {'role': 'user', 'content': prompt}
+            {'role': 'user', 'content': prompt},
           ],
           'max_tokens': maxTokens,
         }),
@@ -221,10 +220,7 @@ class AIService {
         body: jsonEncode({
           'text': text,
           'model_id': 'eleven_multilingual_v2',
-          'voice_settings': {
-            'stability': 0.5,
-            'similarity_boost': 0.75,
-          }
+          'voice_settings': {'stability': 0.5, 'similarity_boost': 0.75},
         }),
       );
 
@@ -270,9 +266,7 @@ class AIService {
           'Authorization': 'Bearer $_openAIKey',
           'Content-Type': 'application/json',
         },
-        body: jsonEncode({
-          'input': text ?? '',
-        }),
+        body: jsonEncode({'input': text ?? ''}),
       );
 
       if (response.statusCode == 200) {
@@ -282,7 +276,7 @@ class AIService {
           isFlagged: result['flagged'],
           categories: Map<String, bool>.from(result['categories']),
           categoryScores: Map<String, double>.from(
-            result['category_scores'].map((k, v) => MapEntry(k, v.toDouble()))
+            result['category_scores'].map((k, v) => MapEntry(k, v.toDouble())),
           ),
         );
       } else {
@@ -308,11 +302,8 @@ class AIService {
   }) async {
     try {
       final prompt = _buildReplyPrompt(conversationHistory);
-      final response = await generateText(
-        prompt: prompt,
-        maxTokens: 100,
-      );
-      
+      final response = await generateText(prompt: prompt, maxTokens: 100);
+
       return _parseReplies(response);
     } catch (e) {
       return _mockSmartReplies();
@@ -328,10 +319,11 @@ class AIService {
       final messages = [
         {
           'role': 'system',
-          'content': 'You are a helpful AI assistant for a super-app. Be concise and friendly.'
+          'content':
+              'You are a helpful AI assistant for a super-app. Be concise and friendly.',
         },
         if (context != null) ...context,
-        {'role': 'user', 'content': userMessage}
+        {'role': 'user', 'content': userMessage},
       ];
 
       final response = await http.post(
@@ -354,7 +346,7 @@ class AIService {
     } catch (e) {
       // Fallback
     }
-    
+
     return _mockChatAgent(userMessage);
   }
 
@@ -377,7 +369,11 @@ class AIService {
   }
 
   static List<String> _parseReplies(String response) {
-    return response.split('\n').where((s) => s.trim().isNotEmpty).take(3).toList();
+    return response
+        .split('\n')
+        .where((s) => s.trim().isNotEmpty)
+        .take(3)
+        .toList();
   }
 
   // ============================================================================
@@ -386,34 +382,67 @@ class AIService {
 
   static List<VideoSegment> _mockAutoTrim(int duration) {
     return [
-      VideoSegment(startTime: 5.0, endTime: 15.0, score: 0.95, reason: 'High action moment'),
-      VideoSegment(startTime: 23.0, endTime: 33.0, score: 0.88, reason: 'Interesting dialogue'),
-      VideoSegment(startTime: 45.0, endTime: 55.0, score: 0.92, reason: 'Emotional peak'),
+      VideoSegment(
+        startTime: 5.0,
+        endTime: 15.0,
+        score: 0.95,
+        reason: 'High action moment',
+      ),
+      VideoSegment(
+        startTime: 23.0,
+        endTime: 33.0,
+        score: 0.88,
+        reason: 'Interesting dialogue',
+      ),
+      VideoSegment(
+        startTime: 45.0,
+        endTime: 55.0,
+        score: 0.92,
+        reason: 'Emotional peak',
+      ),
     ];
   }
 
   static List<VideoScene> _mockSceneDetection() {
     return [
-      VideoScene(startTime: 0.0, endTime: 12.5, type: 'outdoor', confidence: 0.94),
-      VideoScene(startTime: 12.5, endTime: 28.3, type: 'indoor', confidence: 0.91),
-      VideoScene(startTime: 28.3, endTime: 45.0, type: 'transition', confidence: 0.87),
+      VideoScene(
+        startTime: 0.0,
+        endTime: 12.5,
+        type: 'outdoor',
+        confidence: 0.94,
+      ),
+      VideoScene(
+        startTime: 12.5,
+        endTime: 28.3,
+        type: 'indoor',
+        confidence: 0.91,
+      ),
+      VideoScene(
+        startTime: 28.3,
+        endTime: 45.0,
+        type: 'transition',
+        confidence: 0.87,
+      ),
     ];
   }
 
   static List<TransitionSuggestion> _mockTransitionSuggestions(int count) {
     final transitions = ['fade', 'dissolve', 'slide', 'zoom', 'wipe'];
-    return List.generate(count - 1, (i) => TransitionSuggestion(
-      type: transitions[i % transitions.length],
-      duration: 0.5,
-      confidence: 0.85 + (i % 3) * 0.05,
-    ));
+    return List.generate(
+      count - 1,
+      (i) => TransitionSuggestion(
+        type: transitions[i % transitions.length],
+        duration: 0.5,
+        confidence: 0.85 + (i % 3) * 0.05,
+      ),
+    );
   }
 
   static List<BeatMarker> _mockBeatDetection() {
-    return List.generate(20, (i) => BeatMarker(
-      time: i * 0.5,
-      strength: 0.7 + (i % 3) * 0.1,
-    ));
+    return List.generate(
+      20,
+      (i) => BeatMarker(time: i * 0.5, strength: 0.7 + (i % 3) * 0.1),
+    );
   }
 
   static String _mockGenerateImage(String prompt) {
@@ -430,18 +459,26 @@ class AIService {
 
   static List<Caption> _mockGenerateCaptions() {
     return [
-      Caption(startTime: 0.0, endTime: 2.5, text: 'Welcome to this amazing video'),
-      Caption(startTime: 2.5, endTime: 5.0, text: 'AI-generated captions in real-time'),
-      Caption(startTime: 5.0, endTime: 8.0, text: 'Making content accessible for everyone'),
+      Caption(
+        startTime: 0.0,
+        endTime: 2.5,
+        text: 'Welcome to this amazing video',
+      ),
+      Caption(
+        startTime: 2.5,
+        endTime: 5.0,
+        text: 'AI-generated captions in real-time',
+      ),
+      Caption(
+        startTime: 5.0,
+        endTime: 8.0,
+        text: 'Making content accessible for everyone',
+      ),
     ];
   }
 
   static List<String> _mockSmartReplies() {
-    return [
-      'Sounds great! 👍',
-      'Tell me more',
-      'Thanks for sharing!',
-    ];
+    return ['Sounds great! 👍', 'Tell me more', 'Thanks for sharing!'];
   }
 
   static String _mockChatAgent(String message) {
@@ -503,10 +540,7 @@ class BeatMarker {
   final double time;
   final double strength;
 
-  BeatMarker({
-    required this.time,
-    required this.strength,
-  });
+  BeatMarker({required this.time, required this.strength});
 }
 
 class Caption {
@@ -514,11 +548,7 @@ class Caption {
   final double endTime;
   final String text;
 
-  Caption({
-    required this.startTime,
-    required this.endTime,
-    required this.text,
-  });
+  Caption({required this.startTime, required this.endTime, required this.text});
 }
 
 class ModerationResult {

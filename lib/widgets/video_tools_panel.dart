@@ -52,7 +52,11 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
   final List<Map<String, dynamic>> _filters = [
     {'name': 'none', 'displayName': 'Original', 'icon': Icons.image},
     {'name': 'vintage', 'displayName': 'Vintage', 'icon': Icons.filter_vintage},
-    {'name': 'dramatic', 'displayName': 'Dramatic', 'icon': Icons.theater_comedy},
+    {
+      'name': 'dramatic',
+      'displayName': 'Dramatic',
+      'icon': Icons.theater_comedy,
+    },
     {'name': 'warm', 'displayName': 'Warm', 'icon': Icons.wb_sunny},
     {'name': 'cool', 'displayName': 'Cool', 'icon': Icons.ac_unit},
     {'name': 'blackwhite', 'displayName': 'B&W', 'icon': Icons.filter_b_and_w},
@@ -68,7 +72,7 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
       child: Column(
         children: [
           // Tool tabs
-          Container(
+          SizedBox(
             height: 50,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
@@ -76,12 +80,18 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
               itemBuilder: (context, index) {
                 final tool = _tools[index];
                 final isSelected = widget.selectedTool == tool;
-                
+
                 return GestureDetector(
                   onTap: () => widget.onToolChanged(tool),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: isSelected ? Colors.red : Colors.grey[800],
                       borderRadius: BorderRadius.circular(20),
@@ -91,7 +101,9 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
                         _getToolDisplayName(tool),
                         style: TextStyle(
                           color: isSelected ? Colors.white : Colors.grey[400],
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
                       ),
                     ),
@@ -100,11 +112,9 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
               },
             ),
           ),
-          
+
           // Tool content
-          Expanded(
-            child: _buildToolContent(),
-          ),
+          Expanded(child: _buildToolContent()),
         ],
       ),
     );
@@ -140,7 +150,11 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
         children: [
           const Text(
             'Trim Video',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -148,15 +162,24 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
               Expanded(
                 child: Column(
                   children: [
-                    const Text('Start Time', style: TextStyle(color: Colors.white)),
+                    const Text(
+                      'Start Time',
+                      style: TextStyle(color: Colors.white),
+                    ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey[800],
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text('00:00', style: TextStyle(color: Colors.white)),
+                      child: const Text(
+                        '00:00',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ],
                 ),
@@ -165,15 +188,24 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
               Expanded(
                 child: Column(
                   children: [
-                    const Text('End Time', style: TextStyle(color: Colors.white)),
+                    const Text(
+                      'End Time',
+                      style: TextStyle(color: Colors.white),
+                    ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.grey[800],
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text('00:30', style: TextStyle(color: Colors.white)),
+                      child: const Text(
+                        '00:30',
+                        style: TextStyle(color: Colors.white),
+                      ),
                     ),
                   ],
                 ),
@@ -206,7 +238,11 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
         children: [
           const Text(
             'Filters',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
           Expanded(
@@ -219,8 +255,10 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
               itemCount: _filters.length,
               itemBuilder: (context, index) {
                 final filter = _filters[index];
-                final isSelected = filter['name'] == 'none'; // In real app, check current filter
-                
+                final isSelected =
+                    filter['name'] ==
+                    'none'; // In real app, check current filter
+
                 return GestureDetector(
                   onTap: () => widget.onFilterSelected(filter['name']),
                   child: Container(
@@ -231,11 +269,7 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          filter['icon'],
-                          color: Colors.white,
-                          size: 24,
-                        ),
+                        Icon(filter['icon'], color: Colors.white, size: 24),
                         const SizedBox(height: 4),
                         Text(
                           filter['displayName'],
@@ -265,10 +299,14 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
         children: [
           const Text(
             'Adjustments',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
-          
+
           // Brightness
           _buildAdjustmentSlider(
             'Brightness',
@@ -278,9 +316,9 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
             widget.onBrightnessChanged,
             Icons.brightness_6,
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Contrast
           _buildAdjustmentSlider(
             'Contrast',
@@ -290,9 +328,9 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
             widget.onContrastChanged,
             Icons.contrast,
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Saturation
           _buildAdjustmentSlider(
             'Saturation',
@@ -352,10 +390,14 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
         children: [
           const Text(
             'Add Text',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               Expanded(
@@ -383,9 +425,9 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               Expanded(
@@ -425,10 +467,14 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
         children: [
           const Text(
             'Audio',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               Expanded(
@@ -456,9 +502,9 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               Expanded(
@@ -498,10 +544,14 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
         children: [
           const Text(
             'Playback Speed',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               _buildSpeedButton('0.5x', 0.5),
@@ -517,9 +567,9 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
               _buildSpeedButton('2x', 2.0),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Slider(
             value: widget.playbackSpeed,
             min: 0.25,
@@ -529,7 +579,7 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
             activeColor: Colors.red,
             inactiveColor: Colors.grey[600],
           ),
-          
+
           Text(
             'Current Speed: ${widget.playbackSpeed}x',
             style: const TextStyle(color: Colors.white, fontSize: 14),
@@ -541,7 +591,7 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
 
   Widget _buildSpeedButton(String label, double speed) {
     final isSelected = widget.playbackSpeed == speed;
-    
+
     return GestureDetector(
       onTap: () => widget.onSpeedChanged(speed),
       child: Container(
@@ -568,10 +618,14 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
         children: [
           const Text(
             'Transitions',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
-          
+
           GridView.count(
             shrinkWrap: true,
             crossAxisCount: 3,
@@ -594,9 +648,9 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
   Widget _buildTransitionButton(String name, IconData icon) {
     return GestureDetector(
       onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$name transition applied')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('$name transition applied')));
       },
       child: Container(
         decoration: BoxDecoration(
@@ -625,41 +679,80 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
         children: [
           const Text(
             'Stickers & Emojis',
-            style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
-          
+
           Expanded(
             child: GridView.count(
               crossAxisCount: 6,
               crossAxisSpacing: 8,
               mainAxisSpacing: 8,
-              children: [
-                '😀', '😂', '😍', '🤔', '😎', '🥳',
-                '❤️', '👍', '👏', '🎉', '🔥', '💯',
-                '⭐', '🌟', '✨', '💫', '🌈', '🎨',
-                '🎵', '🎶', '🎤', '🎧', '🎸', '🎹',
-                '🏆', '🎯', '🎪', '🎭', '🎨', '🎬',
-                '📱', '💻', '🎮', '🕹️', '🎲', '🎰',
-              ].map((emoji) => GestureDetector(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('$emoji sticker added')),
-                  );
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.grey[800],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      emoji,
-                      style: const TextStyle(fontSize: 24),
-                    ),
-                  ),
-                ),
-              )).toList(),
+              children:
+                  [
+                        '😀',
+                        '😂',
+                        '😍',
+                        '🤔',
+                        '😎',
+                        '🥳',
+                        '❤️',
+                        '👍',
+                        '👏',
+                        '🎉',
+                        '🔥',
+                        '💯',
+                        '⭐',
+                        '🌟',
+                        '✨',
+                        '💫',
+                        '🌈',
+                        '🎨',
+                        '🎵',
+                        '🎶',
+                        '🎤',
+                        '🎧',
+                        '🎸',
+                        '🎹',
+                        '🏆',
+                        '🎯',
+                        '🎪',
+                        '🎭',
+                        '🎨',
+                        '🎬',
+                        '📱',
+                        '💻',
+                        '🎮',
+                        '🕹️',
+                        '🎲',
+                        '🎰',
+                      ]
+                      .map(
+                        (emoji) => GestureDetector(
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('$emoji sticker added')),
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[800],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Center(
+                              child: Text(
+                                emoji,
+                                style: const TextStyle(fontSize: 24),
+                              ),
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
             ),
           ),
         ],
@@ -669,15 +762,24 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
 
   String _getToolDisplayName(String tool) {
     switch (tool) {
-      case 'trim': return 'Trim';
-      case 'filter': return 'Filter';
-      case 'adjust': return 'Adjust';
-      case 'text': return 'Text';
-      case 'audio': return 'Audio';
-      case 'speed': return 'Speed';
-      case 'transition': return 'Transition';
-      case 'sticker': return 'Sticker';
-      default: return tool;
+      case 'trim':
+        return 'Trim';
+      case 'filter':
+        return 'Filter';
+      case 'adjust':
+        return 'Adjust';
+      case 'text':
+        return 'Text';
+      case 'audio':
+        return 'Audio';
+      case 'speed':
+        return 'Speed';
+      case 'transition':
+        return 'Transition';
+      case 'sticker':
+        return 'Sticker';
+      default:
+        return tool;
     }
   }
 
@@ -705,9 +807,9 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
   }
 
   void _showFontPicker() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Font picker coming soon!')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Font picker coming soon!')));
   }
 
   void _showAnimationPicker() {
@@ -717,9 +819,9 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
   }
 
   void _showAudioLibrary() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Audio library coming soon!')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Audio library coming soon!')));
   }
 
   void _showVoiceRecording() {
@@ -729,8 +831,8 @@ class _VideoToolsPanelState extends State<VideoToolsPanel> {
   }
 
   void _showAudioEffects() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Audio effects coming soon!')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Audio effects coming soon!')));
   }
 }

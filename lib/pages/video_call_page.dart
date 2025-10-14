@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/video_call_service.dart';
 
@@ -35,7 +34,7 @@ class _VideoCallPageState extends State<VideoCallPage> {
   Future<void> _initializeCall() async {
     try {
       final userId = FirebaseAuth.instance.currentUser!.uid;
-      
+
       await VideoCallService.joinChannel(
         channelName: widget.channelName,
         userId: userId,
@@ -45,9 +44,9 @@ class _VideoCallPageState extends State<VideoCallPage> {
       setState(() => _isCallConnected = true);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to join call: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to join call: $e')));
         Navigator.pop(context);
       }
     }
@@ -57,7 +56,7 @@ class _VideoCallPageState extends State<VideoCallPage> {
     try {
       await VideoCallService.endCall(widget.callId);
       await VideoCallService.leaveChannel();
-      
+
       if (mounted) {
         Navigator.pop(context);
       }
@@ -95,9 +94,7 @@ class _VideoCallPageState extends State<VideoCallPage> {
         children: [
           // Remote video (full screen)
           if (widget.isVideo && _remoteUid != null)
-            Center(
-              child: _remoteVideo(),
-            )
+            Center(child: _remoteVideo())
           else
             Center(
               child: Column(
@@ -106,7 +103,11 @@ class _VideoCallPageState extends State<VideoCallPage> {
                   CircleAvatar(
                     radius: 60,
                     backgroundColor: Colors.blue,
-                    child: const Icon(Icons.person, size: 60, color: Colors.white),
+                    child: const Icon(
+                      Icons.person,
+                      size: 60,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Text(
@@ -197,7 +198,10 @@ class _VideoCallPageState extends State<VideoCallPage> {
                   ),
                   const Spacer(),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black45,
                       borderRadius: BorderRadius.circular(12),

@@ -21,20 +21,20 @@ class _CreateStatusPageState extends State<CreateStatusPage> {
   String _statusMode = 'media'; // 'media', 'text'
   Color _backgroundColor = const Color(0xFF4CAF50);
   Color _textColor = Colors.white;
-  String _fontStyle = 'normal';
+  final String _fontStyle = 'normal';
 
-  Future<void> _pickMedia(bool isVideo, {ImageSource source = ImageSource.gallery}) async {
+  Future<void> _pickMedia(
+    bool isVideo, {
+    ImageSource source = ImageSource.gallery,
+  }) async {
     try {
       final picker = ImagePicker();
       XFile? pickedFile;
-      
+
       if (isVideo) {
         pickedFile = await picker.pickVideo(source: source);
       } else {
-        pickedFile = await picker.pickImage(
-          source: source,
-          imageQuality: 80,
-        );
+        pickedFile = await picker.pickImage(source: source, imageQuality: 80);
       }
 
       if (pickedFile != null) {
@@ -44,9 +44,9 @@ class _CreateStatusPageState extends State<CreateStatusPage> {
         });
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to pick media: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to pick media: $e')));
     }
   }
 
@@ -69,7 +69,8 @@ class _CreateStatusPageState extends State<CreateStatusPage> {
           userId: user.uid,
           userName: user.displayName ?? 'User',
           content: _textController.text.trim(),
-          backgroundColor: '#${_backgroundColor.value.toRadixString(16).substring(2)}',
+          backgroundColor:
+              '#${_backgroundColor.value.toRadixString(16).substring(2)}',
           textColor: '#${_textColor.value.toRadixString(16).substring(2)}',
           fontStyle: _fontStyle,
         );
@@ -84,32 +85,36 @@ class _CreateStatusPageState extends State<CreateStatusPage> {
 
         // Upload media file first
         String mediaUrl = await StatusService.uploadStatusMedia(
-          _mediaFile!, 
+          _mediaFile!,
           _mediaType,
         );
 
         // Determine status type
-        StatusType statusType = _mediaType == 'video' ? StatusType.video : StatusType.image;
+        StatusType statusType = _mediaType == 'video'
+            ? StatusType.video
+            : StatusType.image;
 
         await StatusService.postStatus(
           userId: user.uid,
           userName: user.displayName ?? 'User',
           type: statusType,
           mediaUrl: mediaUrl,
-          caption: _captionController.text.trim().isEmpty ? null : _captionController.text.trim(),
+          caption: _captionController.text.trim().isEmpty
+              ? null
+              : _captionController.text.trim(),
         );
       }
 
       if (mounted) {
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Status posted!')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Status posted!')));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to post status: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to post status: $e')));
     } finally {
       setState(() => _isLoading = false);
     }
@@ -121,7 +126,8 @@ class _CreateStatusPageState extends State<CreateStatusPage> {
       appBar: AppBar(
         title: const Text('Create Status'),
         actions: [
-          if (_statusMode == 'media' && _mediaFile != null || _statusMode == 'text' && _textController.text.isNotEmpty)
+          if (_statusMode == 'media' && _mediaFile != null ||
+              _statusMode == 'text' && _textController.text.isNotEmpty)
             TextButton(
               onPressed: _isLoading ? null : _postStatus,
               child: _isLoading
@@ -142,12 +148,16 @@ class _CreateStatusPageState extends State<CreateStatusPage> {
                 onPressed: () => setState(() => _statusMode = 'media'),
                 icon: Icon(
                   Icons.photo_camera,
-                  color: _statusMode == 'media' ? const Color(0xFF07C160) : Colors.grey,
+                  color: _statusMode == 'media'
+                      ? const Color(0xFF07C160)
+                      : Colors.grey,
                 ),
                 label: Text(
                   'Media',
                   style: TextStyle(
-                    color: _statusMode == 'media' ? const Color(0xFF07C160) : Colors.grey,
+                    color: _statusMode == 'media'
+                        ? const Color(0xFF07C160)
+                        : Colors.grey,
                   ),
                 ),
               ),
@@ -155,12 +165,16 @@ class _CreateStatusPageState extends State<CreateStatusPage> {
                 onPressed: () => setState(() => _statusMode = 'text'),
                 icon: Icon(
                   Icons.text_fields,
-                  color: _statusMode == 'text' ? const Color(0xFF07C160) : Colors.grey,
+                  color: _statusMode == 'text'
+                      ? const Color(0xFF07C160)
+                      : Colors.grey,
                 ),
                 label: Text(
                   'Text',
                   style: TextStyle(
-                    color: _statusMode == 'text' ? const Color(0xFF07C160) : Colors.grey,
+                    color: _statusMode == 'text'
+                        ? const Color(0xFF07C160)
+                        : Colors.grey,
                   ),
                 ),
               ),
@@ -181,9 +195,16 @@ class _CreateStatusPageState extends State<CreateStatusPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.photo_library, size: 80, color: Colors.grey),
+                      const Icon(
+                        Icons.photo_library,
+                        size: 80,
+                        color: Colors.grey,
+                      ),
                       const SizedBox(height: 16),
-                      const Text('No media selected', style: TextStyle(fontSize: 16)),
+                      const Text(
+                        'No media selected',
+                        style: TextStyle(fontSize: 16),
+                      ),
                       const SizedBox(height: 32),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -203,7 +224,8 @@ class _CreateStatusPageState extends State<CreateStatusPage> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton.icon(
-                        onPressed: () => _pickMedia(false, source: ImageSource.camera),
+                        onPressed: () =>
+                            _pickMedia(false, source: ImageSource.camera),
                         icon: const Icon(Icons.camera_alt),
                         label: const Text('Camera'),
                       ),
@@ -287,7 +309,9 @@ class _CreateStatusPageState extends State<CreateStatusPage> {
                           color: color,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: _backgroundColor == color ? Colors.white : Colors.transparent,
+                            color: _backgroundColor == color
+                                ? Colors.white
+                                : Colors.transparent,
                             width: 3,
                           ),
                         ),
@@ -300,7 +324,11 @@ class _CreateStatusPageState extends State<CreateStatusPage> {
                 children: [
                   const Text('Text Color: '),
                   const SizedBox(width: 8),
-                  for (Color color in [Colors.white, Colors.black, const Color(0xFFFFEB3B)])
+                  for (Color color in [
+                    Colors.white,
+                    Colors.black,
+                    const Color(0xFFFFEB3B),
+                  ])
                     GestureDetector(
                       onTap: () => setState(() => _textColor = color),
                       child: Container(
@@ -311,7 +339,9 @@ class _CreateStatusPageState extends State<CreateStatusPage> {
                           color: color,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: _textColor == color ? const Color(0xFF07C160) : Colors.grey,
+                            color: _textColor == color
+                                ? const Color(0xFF07C160)
+                                : Colors.grey,
                             width: 2,
                           ),
                         ),
@@ -334,8 +364,12 @@ class _CreateStatusPageState extends State<CreateStatusPage> {
                 style: TextStyle(
                   color: _textColor,
                   fontSize: 24,
-                  fontWeight: _fontStyle == 'bold' ? FontWeight.bold : FontWeight.normal,
-                  fontStyle: _fontStyle == 'italic' ? FontStyle.italic : FontStyle.normal,
+                  fontWeight: _fontStyle == 'bold'
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                  fontStyle: _fontStyle == 'italic'
+                      ? FontStyle.italic
+                      : FontStyle.normal,
                 ),
                 decoration: InputDecoration(
                   hintText: 'Type your status...',

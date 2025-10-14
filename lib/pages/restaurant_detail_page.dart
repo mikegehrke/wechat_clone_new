@@ -9,10 +9,7 @@ import 'delivery/delivery_cart_page.dart';
 class RestaurantDetailPage extends StatefulWidget {
   final Restaurant restaurant;
 
-  const RestaurantDetailPage({
-    super.key,
-    required this.restaurant,
-  });
+  const RestaurantDetailPage({super.key, required this.restaurant});
 
   @override
   State<RestaurantDetailPage> createState() => _RestaurantDetailPageState();
@@ -23,7 +20,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
   Map<String, List<FoodItem>> _menuByCategory = {};
   bool _isLoading = false;
   String? _error;
-  List<CartItem> _cartItems = [];
+  final List<CartItem> _cartItems = [];
 
   @override
   void initState() {
@@ -38,8 +35,10 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
     });
 
     try {
-      final menuItems = await DeliveryService.getRestaurantMenu(widget.restaurant.id);
-      
+      final menuItems = await DeliveryService.getRestaurantMenu(
+        widget.restaurant.id,
+      );
+
       // Group items by category
       final menuByCategory = <String, List<FoodItem>>{};
       for (final item in menuItems) {
@@ -83,7 +82,11 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                       return Container(
                         color: Colors.grey[300],
                         child: const Center(
-                          child: Icon(Icons.restaurant, size: 100, color: Colors.grey),
+                          child: Icon(
+                            Icons.restaurant,
+                            size: 100,
+                            color: Colors.grey,
+                          ),
                         ),
                       );
                     },
@@ -171,7 +174,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
               ),
             ],
           ),
-          
+
           // Restaurant info
           SliverToBoxAdapter(
             child: Padding(
@@ -184,9 +187,9 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                     widget.restaurant.description,
                     style: const TextStyle(fontSize: 16),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Info cards
                   Row(
                     children: [
@@ -207,9 +210,9 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   Row(
                     children: [
                       Expanded(
@@ -229,22 +232,19 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 24),
-                  
+
                   // Menu section
                   const Text(
                     'Menu',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
             ),
           ),
-          
+
           // Menu items
           _buildMenuItems(),
         ],
@@ -280,10 +280,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
           const SizedBox(height: 2),
           Text(
             subtitle,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -335,10 +332,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
                 SizedBox(height: 16),
                 Text(
                   'No menu items available',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
                 ),
               ],
             ),
@@ -348,46 +342,51 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
     }
 
     return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final category = _menuByCategory.keys.elementAt(index);
-          final items = _menuByCategory[category]!;
-          
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Category header
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-                child: Text(
-                  category,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+      delegate: SliverChildBuilderDelegate((context, index) {
+        final category = _menuByCategory.keys.elementAt(index);
+        final items = _menuByCategory[category]!;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Category header
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 12),
+              child: Text(
+                category,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              
-              // Category items
-              ...items.map((item) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            ),
+
+            // Category items
+            ...items.map(
+              (item) => Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
                 child: FoodItemCard(
                   item: item,
                   onTap: () => _navigateToFoodItem(item),
                   onAdd: () => _addToCart(item),
                 ),
-              )),
-            ],
-          );
-        },
-        childCount: _menuByCategory.length,
-      ),
+              ),
+            ),
+          ],
+        );
+      }, childCount: _menuByCategory.length),
     );
   }
 
   Widget _buildBottomBar() {
     final totalItems = _cartItems.fold(0, (sum, item) => sum + item.quantity);
-    final totalPrice = _cartItems.fold(0.0, (sum, item) => sum + item.totalPrice);
+    final totalPrice = _cartItems.fold(
+      0.0,
+      (sum, item) => sum + item.totalPrice,
+    );
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -427,7 +426,7 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
               ],
             ),
           ),
-          
+
           // View cart button
           ElevatedButton(
             onPressed: _viewCart,
@@ -447,10 +446,8 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => FoodItemDetailPage(
-          item: foodItem,
-          restaurant: widget.restaurant,
-        ),
+        builder: (context) =>
+            FoodItemDetailPage(item: foodItem, restaurant: widget.restaurant),
       ),
     );
   }
@@ -468,21 +465,20 @@ class _RestaurantDetailPageState extends State<RestaurantDetailPage> {
       });
     } else {
       setState(() {
-        _cartItems.add(CartItem(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          foodItem: foodItem,
-          quantity: 1,
-        ));
+        _cartItems.add(
+          CartItem(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            foodItem: foodItem,
+            quantity: 1,
+          ),
+        );
       });
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${foodItem.name} added to cart'),
-        action: SnackBarAction(
-          label: 'View Cart',
-          onPressed: _viewCart,
-        ),
+        action: SnackBarAction(label: 'View Cart', onPressed: _viewCart),
       ),
     );
   }

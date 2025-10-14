@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -37,7 +36,9 @@ class PushNotification {
       title: json['title'],
       body: json['body'],
       imageUrl: json['imageUrl'],
-      data: json['data'] != null ? Map<String, dynamic>.from(json['data']) : null,
+      data: json['data'] != null
+          ? Map<String, dynamic>.from(json['data'])
+          : null,
       type: NotificationType.values.firstWhere(
         (e) => e.toString() == 'NotificationType.${json['type']}',
         orElse: () => NotificationType.general,
@@ -49,7 +50,9 @@ class PushNotification {
       createdAt: DateTime.parse(json['createdAt']),
       isRead: json['isRead'] ?? false,
       actionUrl: json['actionUrl'],
-      metadata: json['metadata'] != null ? Map<String, dynamic>.from(json['metadata']) : null,
+      metadata: json['metadata'] != null
+          ? Map<String, dynamic>.from(json['metadata'])
+          : null,
     );
   }
 
@@ -82,24 +85,20 @@ enum NotificationType {
   marketing,
 }
 
-enum NotificationPriority {
-  low,
-  normal,
-  high,
-  critical,
-}
+enum NotificationPriority { low, normal, high, critical }
 
 class PushNotificationsService {
   static const String _notificationsKey = 'push_notifications';
   static const String _tokenKey = 'push_token';
   static const String _settingsKey = 'push_settings';
-  
+
   // Firebase instances
   static final FirebaseMessaging _fcm = FirebaseMessaging.instance;
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  
+
   // Singleton
-  static final PushNotificationsService _instance = PushNotificationsService._internal();
+  static final PushNotificationsService _instance =
+      PushNotificationsService._internal();
   factory PushNotificationsService() => _instance;
   PushNotificationsService._internal();
 
@@ -133,16 +132,17 @@ class PushNotificationsService {
         provisional: false,
         sound: true,
       );
-      
-      final granted = settings.authorizationStatus == AuthorizationStatus.authorized;
+
+      final granted =
+          settings.authorizationStatus == AuthorizationStatus.authorized;
       _settings['permissionGranted'] = granted;
       await _saveSettingsToStorage();
-      
+
       if (granted) {
         // Get and save FCM token
         await getPushToken();
       }
-      
+
       return granted;
     } catch (e) {
       return false;
@@ -163,17 +163,17 @@ class PushNotificationsService {
     try {
       // Get FCM token
       _pushToken = await _fcm.getToken();
-      
+
       if (_pushToken != null) {
         await _saveTokenToStorage();
-        
+
         // Save token to Firestore for backend use
         // await _firestore.collection('fcmTokens').doc('user_id').set({
         //   'token': _pushToken,
         //   'updatedAt': FieldValue.serverTimestamp(),
         // });
       }
-      
+
       return _pushToken;
     } catch (e) {
       return null;
@@ -185,7 +185,7 @@ class PushNotificationsService {
       // Delete old token and get new one
       await _fcm.deleteToken();
       _pushToken = await _fcm.getToken();
-      
+
       if (_pushToken != null) {
         await _saveTokenToStorage();
       }
@@ -245,7 +245,7 @@ class PushNotificationsService {
           actionUrl: notification.actionUrl,
           metadata: notification.metadata,
         );
-        
+
         _notifications[index] = updatedNotification;
         await _saveNotificationsToStorage();
       }
@@ -271,7 +271,7 @@ class PushNotificationsService {
           metadata: notification.metadata,
         );
       }).toList();
-      
+
       await _saveNotificationsToStorage();
     } catch (e) {
       throw Exception('Failed to mark all notifications as read: $e');
@@ -309,16 +309,24 @@ class PushNotificationsService {
     bool? silentMode,
   }) async {
     try {
-      if (chatNotifications != null) _settings['chatNotifications'] = chatNotifications;
-      if (groupNotifications != null) _settings['groupNotifications'] = groupNotifications;
-      if (momentNotifications != null) _settings['momentNotifications'] = momentNotifications;
-      if (callNotifications != null) _settings['callNotifications'] = callNotifications;
-      if (paymentNotifications != null) _settings['paymentNotifications'] = paymentNotifications;
-      if (securityNotifications != null) _settings['securityNotifications'] = securityNotifications;
-      if (systemNotifications != null) _settings['systemNotifications'] = systemNotifications;
-      if (marketingNotifications != null) _settings['marketingNotifications'] = marketingNotifications;
+      if (chatNotifications != null)
+        _settings['chatNotifications'] = chatNotifications;
+      if (groupNotifications != null)
+        _settings['groupNotifications'] = groupNotifications;
+      if (momentNotifications != null)
+        _settings['momentNotifications'] = momentNotifications;
+      if (callNotifications != null)
+        _settings['callNotifications'] = callNotifications;
+      if (paymentNotifications != null)
+        _settings['paymentNotifications'] = paymentNotifications;
+      if (securityNotifications != null)
+        _settings['securityNotifications'] = securityNotifications;
+      if (systemNotifications != null)
+        _settings['systemNotifications'] = systemNotifications;
+      if (marketingNotifications != null)
+        _settings['marketingNotifications'] = marketingNotifications;
       if (silentMode != null) _settings['silentMode'] = silentMode;
-      
+
       await _saveSettingsToStorage();
     } catch (e) {
       throw Exception('Failed to update settings: $e');
@@ -336,7 +344,7 @@ class PushNotificationsService {
       _settings['quietHoursStart'] = '${startTime.hour}:${startTime.minute}';
       _settings['quietHoursEnd'] = '${endTime.hour}:${endTime.minute}';
       _settings['quietHoursDays'] = daysOfWeek.join(',');
-      
+
       await _saveSettingsToStorage();
     } catch (e) {
       throw Exception('Failed to set quiet hours: $e');
@@ -357,7 +365,7 @@ class PushNotificationsService {
     try {
       // In real app, handle actual deep link routing
       await Future.delayed(const Duration(milliseconds: 100));
-      
+
       print('Handling deep link: $link');
     } catch (e) {
       throw Exception('Failed to handle deep link: $e');
@@ -374,21 +382,19 @@ class PushNotificationsService {
   }) async {
     try {
       if (!(_settings['chatNotifications'] ?? true)) return;
-      
+
       final title = isGroup ? '$senderName in Group' : senderName;
-      final body = message.length > 50 ? '${message.substring(0, 50)}...' : message;
-      
+      final body = message.length > 50
+          ? '${message.substring(0, 50)}...'
+          : message;
+
       await sendNotification(
         title: title,
         body: body,
         imageUrl: senderAvatar,
         type: NotificationType.chat,
         priority: NotificationPriority.high,
-        data: {
-          'chatId': chatId,
-          'senderName': senderName,
-          'isGroup': isGroup,
-        },
+        data: {'chatId': chatId, 'senderName': senderName, 'isGroup': isGroup},
         actionUrl: '/chat/$chatId',
       );
     } catch (e) {
@@ -405,10 +411,10 @@ class PushNotificationsService {
   }) async {
     try {
       if (!(_settings['callNotifications'] ?? true)) return;
-      
+
       final title = 'Incoming ${isVideoCall ? 'Video' : 'Voice'} Call';
       final body = '$callerName is calling you';
-      
+
       await sendNotification(
         title: title,
         body: body,
@@ -437,7 +443,7 @@ class PushNotificationsService {
   }) async {
     try {
       if (!(_settings['paymentNotifications'] ?? true)) return;
-      
+
       await sendNotification(
         title: title,
         body: body,
@@ -464,16 +470,13 @@ class PushNotificationsService {
   }) async {
     try {
       if (!(_settings['securityNotifications'] ?? true)) return;
-      
+
       await sendNotification(
         title: title,
         body: body,
         type: NotificationType.security,
         priority: NotificationPriority.critical,
-        data: {
-          'eventType': eventType,
-          'deviceInfo': deviceInfo,
-        },
+        data: {'eventType': eventType, 'deviceInfo': deviceInfo},
         actionUrl: '/security',
       );
     } catch (e) {
@@ -486,8 +489,10 @@ class PushNotificationsService {
     try {
       // In real app, show actual local notification
       await Future.delayed(const Duration(milliseconds: 100));
-      
-      print('Showing notification: ${notification.title} - ${notification.body}');
+
+      print(
+        'Showing notification: ${notification.title} - ${notification.body}',
+      );
     } catch (e) {
       print('Failed to show local notification: $e');
     }
@@ -497,7 +502,7 @@ class PushNotificationsService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final notificationsJson = prefs.getString(_notificationsKey);
-      
+
       if (notificationsJson != null) {
         final notificationsList = jsonDecode(notificationsJson) as List;
         _notifications = notificationsList
@@ -513,7 +518,9 @@ class PushNotificationsService {
   Future<void> _saveNotificationsToStorage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final notificationsJson = jsonEncode(_notifications.map((n) => n.toJson()).toList());
+      final notificationsJson = jsonEncode(
+        _notifications.map((n) => n.toJson()).toList(),
+      );
       await prefs.setString(_notificationsKey, notificationsJson);
     } catch (e) {
       print('Failed to save notifications to storage: $e');
@@ -544,7 +551,7 @@ class PushNotificationsService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final settingsJson = prefs.getString(_settingsKey);
-      
+
       if (settingsJson != null) {
         final settingsMap = jsonDecode(settingsJson);
         _settings = Map<String, bool>.from(settingsMap);

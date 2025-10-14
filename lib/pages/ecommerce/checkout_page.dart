@@ -11,7 +11,7 @@ class CheckoutPage extends StatefulWidget {
 }
 
 class _CheckoutPageState extends State<CheckoutPage> {
-  String _shippingAddress = '123 Main St, Apartment 4B';
+  final String _shippingAddress = '123 Main St, Apartment 4B';
   bool _isProcessing = false;
 
   double get _subtotal => widget.cartItems.fold(

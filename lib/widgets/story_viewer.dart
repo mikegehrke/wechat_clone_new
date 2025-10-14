@@ -18,7 +18,7 @@ class StoryViewer extends StatefulWidget {
 
 class _StoryViewerState extends State<StoryViewer> {
   // StoryItemController not available
-  int _currentStoryIndex = 0;
+  final int _currentStoryIndex = 0;
 
   @override
   void initState() {
@@ -41,7 +41,7 @@ class _StoryViewerState extends State<StoryViewer> {
         ),
       ),
     );
-    
+
     /* Original code - requires story_view package
     final storyItems = widget.storyGroup.stories.map((story) {
       switch (story.type) {

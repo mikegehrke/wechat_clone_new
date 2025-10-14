@@ -8,12 +8,12 @@ class UserService {
   static Future<UserAccount?> getUserById(String userId) async {
     try {
       final doc = await _firestore.collection('users').doc(userId).get();
-      
+
       if (!doc.exists) return null;
-      
+
       final data = doc.data()!;
       data['id'] = doc.id;
-      
+
       return UserAccount.fromJson(data);
     } catch (e) {
       throw Exception('Failed to get user: $e');
@@ -24,11 +24,11 @@ class UserService {
   static Future<List<UserAccount>> searchUsers(String query) async {
     try {
       if (query.isEmpty) return [];
-      
+
       final snapshot = await _firestore
           .collection('users')
           .where('username', isGreaterThanOrEqualTo: query)
-          .where('username', isLessThanOrEqualTo: query + '\uf8ff')
+          .where('username', isLessThanOrEqualTo: '$query\uf8ff')
           .limit(20)
           .get();
 
@@ -46,9 +46,9 @@ class UserService {
   static Future<List<UserAccount>> getUsersByIds(List<String> userIds) async {
     try {
       if (userIds.isEmpty) return [];
-      
+
       final users = <UserAccount>[];
-      
+
       // Firestore 'in' query supports max 10 items
       for (var i = 0; i < userIds.length; i += 10) {
         final batch = userIds.skip(i).take(10).toList();
@@ -56,14 +56,16 @@ class UserService {
             .collection('users')
             .where(FieldPath.documentId, whereIn: batch)
             .get();
-        
-        users.addAll(snapshot.docs.map((doc) {
-          final data = doc.data();
-          data['id'] = doc.id;
-          return UserAccount.fromJson(data);
-        }));
+
+        users.addAll(
+          snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return UserAccount.fromJson(data);
+          }),
+        );
       }
-      
+
       return users;
     } catch (e) {
       throw Exception('Failed to get users: $e');
@@ -81,13 +83,13 @@ class UserService {
   }) async {
     try {
       final updates = <String, dynamic>{};
-      
+
       if (displayName != null) updates['displayName'] = displayName;
       if (username != null) updates['username'] = username;
       if (bio != null) updates['bio'] = bio;
       if (avatarUrl != null) updates['avatarUrl'] = avatarUrl;
       if (status != null) updates['status'] = status;
-      
+
       if (updates.isNotEmpty) {
         await _firestore.collection('users').doc(userId).update(updates);
       }
@@ -119,9 +121,9 @@ class UserService {
           .doc(userId)
           .collection('contacts')
           .get();
-      
+
       if (snapshot.docs.isEmpty) return [];
-      
+
       final contactIds = snapshot.docs.map((doc) => doc.id).toList();
       return getUsersByIds(contactIds);
     } catch (e) {
@@ -136,7 +138,7 @@ class UserService {
           .collection('users')
           .limit(100) // Limit to prevent large data loads
           .get();
-      
+
       return snapshot.docs.map((doc) {
         final data = doc.data();
         data['id'] = doc.id;

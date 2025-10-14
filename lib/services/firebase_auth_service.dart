@@ -10,7 +10,8 @@ import '../models/user.dart' as app_models;
 /// Firebase Authentication Service
 /// Handles all authentication-related operations with Firebase
 class FirebaseAuthService {
-  static final firebase_auth.FirebaseAuth _auth = firebase_auth.FirebaseAuth.instance;
+  static final firebase_auth.FirebaseAuth _auth =
+      firebase_auth.FirebaseAuth.instance;
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   static final GoogleSignIn _googleSignIn = GoogleSignIn();
 
@@ -28,7 +29,8 @@ class FirebaseAuthService {
   static bool get isLoggedIn => _auth.currentUser != null;
 
   /// Stream of auth state changes
-  static Stream<firebase_auth.User?> get authStateChanges => _auth.authStateChanges();
+  static Stream<firebase_auth.User?> get authStateChanges =>
+      _auth.authStateChanges();
 
   // ============================================================================
   // EMAIL/PASSWORD AUTHENTICATION
@@ -87,10 +89,9 @@ class FirebaseAuthService {
       }
 
       // Update user status
-      await _firestore.collection('users').doc(userCredential.user!.uid).update({
-        'isOnline': true,
-        'lastSeen': FieldValue.serverTimestamp(),
-      });
+      await _firestore.collection('users').doc(userCredential.user!.uid).update(
+        {'isOnline': true, 'lastSeen': FieldValue.serverTimestamp()},
+      );
 
       // Get user data from Firestore
       return await getUserById(userCredential.user!.uid);
@@ -110,14 +111,15 @@ class FirebaseAuthService {
     try {
       // Trigger Google Sign-In flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      
+
       if (googleUser == null) {
         // User canceled the sign-in
         return null;
       }
 
       // Obtain auth details from request
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
       // Create a new credential
       final credential = firebase_auth.GoogleAuthProvider.credential(
@@ -155,10 +157,13 @@ class FirebaseAuthService {
         await _firestore.collection('users').doc(user.id).set(user.toJson());
       } else {
         // Update existing user
-        await _firestore.collection('users').doc(userCredential.user!.uid).update({
-          'isOnline': true,
-          'lastSeen': FieldValue.serverTimestamp(),
-        });
+        await _firestore
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .update({
+              'isOnline': true,
+              'lastSeen': FieldValue.serverTimestamp(),
+            });
 
         user = app_models.User.fromJson(userDoc.data()!);
       }
@@ -179,8 +184,10 @@ class FirebaseAuthService {
   static Future<void> verifyPhoneNumber({
     required String phoneNumber,
     required Function(String verificationId, int? resendToken) codeSent,
-    required Function(firebase_auth.PhoneAuthCredential credential) verificationCompleted,
-    required Function(firebase_auth.FirebaseAuthException exception) verificationFailed,
+    required Function(firebase_auth.PhoneAuthCredential credential)
+    verificationCompleted,
+    required Function(firebase_auth.FirebaseAuthException exception)
+    verificationFailed,
     required Function(String verificationId) codeAutoRetrievalTimeout,
   }) async {
     await _auth.verifyPhoneNumber(
@@ -223,7 +230,8 @@ class FirebaseAuthService {
         // Create new user document
         user = app_models.User(
           id: userCredential.user!.uid,
-          username: username ?? 'user_${userCredential.user!.uid.substring(0, 8)}',
+          username:
+              username ?? 'user_${userCredential.user!.uid.substring(0, 8)}',
           email: '', // Phone login doesn't require email
           phoneNumber: userCredential.user!.phoneNumber,
           status: 'Hey there! I am using WeChat',
@@ -234,10 +242,13 @@ class FirebaseAuthService {
         await _firestore.collection('users').doc(user.id).set(user.toJson());
       } else {
         // Update existing user
-        await _firestore.collection('users').doc(userCredential.user!.uid).update({
-          'isOnline': true,
-          'lastSeen': FieldValue.serverTimestamp(),
-        });
+        await _firestore
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .update({
+              'isOnline': true,
+              'lastSeen': FieldValue.serverTimestamp(),
+            });
 
         user = app_models.User.fromJson(userDoc.data()!);
       }
@@ -256,9 +267,13 @@ class FirebaseAuthService {
 
   /// Generates a cryptographically secure random nonce
   String _generateNonce([int length = 32]) {
-    const charset = '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+    const charset =
+        '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
     final random = Random.secure();
-    return List.generate(length, (_) => charset[random.nextInt(charset.length)]).join();
+    return List.generate(
+      length,
+      (_) => charset[random.nextInt(charset.length)],
+    ).join();
   }
 
   /// Returns the sha256 hash of [input] in hex notation.
@@ -285,10 +300,9 @@ class FirebaseAuthService {
       );
 
       // Create OAuth credential for Firebase
-      final oauthCredential = firebase_auth.OAuthProvider("apple.com").credential(
-        idToken: appleCredential.identityToken,
-        rawNonce: rawNonce,
-      );
+      final oauthCredential = firebase_auth.OAuthProvider(
+        "apple.com",
+      ).credential(idToken: appleCredential.identityToken, rawNonce: rawNonce);
 
       // Sign in to Firebase
       final userCredential = await _auth.signInWithCredential(oauthCredential);
@@ -307,13 +321,18 @@ class FirebaseAuthService {
 
       if (!userDoc.exists) {
         // Create new user document
-        final displayName = appleCredential.givenName != null && appleCredential.familyName != null
+        final displayName =
+            appleCredential.givenName != null &&
+                appleCredential.familyName != null
             ? '${appleCredential.givenName} ${appleCredential.familyName}'
             : null;
 
         user = app_models.User(
           id: userCredential.user!.uid,
-          username: displayName ?? appleCredential.email?.split('@')[0] ?? 'user_${userCredential.user!.uid.substring(0, 8)}',
+          username:
+              displayName ??
+              appleCredential.email?.split('@')[0] ??
+              'user_${userCredential.user!.uid.substring(0, 8)}',
           email: appleCredential.email ?? userCredential.user!.email ?? '',
           status: 'Hey there! I am using WeChat',
           lastSeen: DateTime.now(),
@@ -323,10 +342,13 @@ class FirebaseAuthService {
         await _firestore.collection('users').doc(user.id).set(user.toJson());
       } else {
         // Update existing user
-        await _firestore.collection('users').doc(userCredential.user!.uid).update({
-          'isOnline': true,
-          'lastSeen': FieldValue.serverTimestamp(),
-        });
+        await _firestore
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .update({
+              'isOnline': true,
+              'lastSeen': FieldValue.serverTimestamp(),
+            });
 
         user = app_models.User.fromJson(userDoc.data()!);
       }
@@ -353,7 +375,7 @@ class FirebaseAuthService {
   static Future<app_models.User?> getUserById(String userId) async {
     try {
       final doc = await _firestore.collection('users').doc(userId).get();
-      
+
       if (!doc.exists) return null;
 
       return app_models.User.fromJson(doc.data()!);
@@ -380,7 +402,7 @@ class FirebaseAuthService {
 
     try {
       final updates = <String, dynamic>{};
-      
+
       if (username != null) updates['username'] = username;
       if (status != null) updates['status'] = status;
       if (avatar != null) updates['avatar'] = avatar;
@@ -422,9 +444,9 @@ class FirebaseAuthService {
         .doc(_auth.currentUser!.uid)
         .snapshots()
         .map((doc) {
-      if (!doc.exists) return null;
-      return app_models.User.fromJson(doc.data()!);
-    });
+          if (!doc.exists) return null;
+          return app_models.User.fromJson(doc.data()!);
+        });
   }
 
   // ============================================================================
@@ -440,7 +462,8 @@ class FirebaseAuthService {
       }
 
       // Sign out from Google if signed in
-      if (await _googleSignIn.isSignedIn()) {
+      final isSignedIn = await _googleSignIn.isSignedIn();
+      if (isSignedIn) {
         await _googleSignIn.signOut();
       }
 
@@ -556,7 +579,7 @@ class FirebaseAuthService {
       final snapshot = await _firestore
           .collection('users')
           .where('username', isGreaterThanOrEqualTo: query)
-          .where('username', isLessThanOrEqualTo: query + '\uf8ff')
+          .where('username', isLessThanOrEqualTo: '$query\uf8ff')
           .limit(20)
           .get();
 
@@ -571,10 +594,7 @@ class FirebaseAuthService {
   /// Get all users (for contacts list)
   static Future<List<app_models.User>> getAllUsers({int limit = 50}) async {
     try {
-      final snapshot = await _firestore
-          .collection('users')
-          .limit(limit)
-          .get();
+      final snapshot = await _firestore.collection('users').limit(limit).get();
 
       return snapshot.docs
           .map((doc) => app_models.User.fromJson(doc.data()))

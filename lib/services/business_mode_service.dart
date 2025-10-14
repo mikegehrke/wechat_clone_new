@@ -113,7 +113,7 @@ class BusinessModeService {
       var queryRef = _firestore.collection('business_accounts').limit(50);
 
       if (category != null) {
-        queryRef = queryRef.where('category', isEqualTo: category) as Query<Map<String, dynamic>>;
+        queryRef = queryRef.where('category', isEqualTo: category);
       }
 
       final snapshot = await queryRef.get();
@@ -127,7 +127,8 @@ class BusinessModeService {
       if (query != null && query.isNotEmpty) {
         final q = query.toLowerCase();
         results = results.where((business) {
-          final name = (business['businessName'] as String? ?? '').toLowerCase();
+          final name = (business['businessName'] as String? ?? '')
+              .toLowerCase();
           final desc = (business['description'] as String? ?? '').toLowerCase();
           return name.contains(q) || desc.contains(q);
         }).toList();
@@ -168,19 +169,21 @@ class BusinessModeService {
           .doc(businessId)
           .collection('updates')
           .add({
-        'content': content,
-        'mediaUrls': mediaUrls ?? [],
-        'likes': [],
-        'comments': [],
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+            'content': content,
+            'mediaUrls': mediaUrls ?? [],
+            'likes': [],
+            'comments': [],
+            'timestamp': FieldValue.serverTimestamp(),
+          });
     } catch (e) {
       throw Exception('Failed to post update: $e');
     }
   }
 
   /// Get business updates
-  static Stream<List<Map<String, dynamic>>> getBusinessUpdatesStream(String businessId) {
+  static Stream<List<Map<String, dynamic>>> getBusinessUpdatesStream(
+    String businessId,
+  ) {
     return _firestore
         .collection('business_accounts')
         .doc(businessId)
@@ -189,11 +192,11 @@ class BusinessModeService {
         .limit(50)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        return data;
-      }).toList();
-    });
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            return data;
+          }).toList();
+        });
   }
 }

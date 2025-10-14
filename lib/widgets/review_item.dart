@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/product.dart';
 import '../models/game.dart';
 import 'rating_stars.dart';
 
@@ -115,18 +114,15 @@ class ReviewItem extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Review content
             Text(
               review.review,
-              style: const TextStyle(
-                fontSize: 14,
-                height: 1.5,
-              ),
+              style: const TextStyle(fontSize: 14, height: 1.5),
             ),
-            
+
             // Review images - not in GameReview
             if (false) ...[
               const SizedBox(height: 12),
@@ -163,11 +159,11 @@ class ReviewItem extends StatelessWidget {
                 ),
               ),
             ],
-            
+
             const SizedBox(height: 12),
             const Divider(),
             const SizedBox(height: 8),
-            
+
             // Actions
             Row(
               children: [
@@ -189,18 +185,19 @@ class ReviewItem extends StatelessWidget {
                 const SizedBox(width: 8),
                 TextButton.icon(
                   onPressed: () {},
-                  icon: Icon(Icons.comment_outlined, size: 18, color: Colors.grey[700]),
+                  icon: Icon(
+                    Icons.comment_outlined,
+                    size: 18,
+                    color: Colors.grey[700],
+                  ),
                   label: Text(
                     'Reply',
-                    style: TextStyle(
-                      color: Colors.grey[700],
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: Colors.grey[700], fontSize: 13),
                   ),
                 ),
               ],
             ),
-            
+
             // Seller response - not in GameReview
             if (false) ...[
               const SizedBox(height: 12),
@@ -277,12 +274,7 @@ class ReviewItem extends StatelessWidget {
             itemCount: 0, // No images in GameReview
             itemBuilder: (context, index) {
               return InteractiveViewer(
-                child: Center(
-                  child: Image.network(
-                    '',
-                    fit: BoxFit.contain,
-                  ),
-                ),
+                child: Center(child: Image.network('', fit: BoxFit.contain)),
               );
             },
           ),

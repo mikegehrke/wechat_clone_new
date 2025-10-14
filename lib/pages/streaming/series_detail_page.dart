@@ -12,7 +12,8 @@ class SeriesDetailPage extends StatefulWidget {
   State<SeriesDetailPage> createState() => _SeriesDetailPageState();
 }
 
-class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerProviderStateMixin {
+class _SeriesDetailPageState extends State<SeriesDetailPage>
+    with SingleTickerProviderStateMixin {
   late Series _series;
   late TabController _tabController;
   bool _isInWatchlist = false;
@@ -51,7 +52,11 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
                       color: Colors.grey[900],
-                      child: const Icon(Icons.tv, size: 64, color: Colors.white),
+                      child: const Icon(
+                        Icons.tv,
+                        size: 64,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                   Container(
@@ -71,7 +76,9 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
             ),
             actions: [
               IconButton(
-                icon: Icon(_isInWatchlist ? Icons.bookmark : Icons.bookmark_border),
+                icon: Icon(
+                  _isInWatchlist ? Icons.bookmark : Icons.bookmark_border,
+                ),
                 onPressed: _toggleWatchlist,
               ),
               IconButton(
@@ -108,10 +115,21 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
                           spacing: 12,
                           runSpacing: 8,
                           children: [
-                            _buildMetaChip(Icons.calendar_today, '${_series.year}'),
-                            _buildMetaChip(Icons.live_tv, '${_series.seasons} Seasons'),
-                            _buildMetaChip(Icons.star, _series.rating.toStringAsFixed(1)),
-                            ..._series.genres.take(2).map((genre) => _buildGenreChip(genre)),
+                            _buildMetaChip(
+                              Icons.calendar_today,
+                              '${_series.year}',
+                            ),
+                            _buildMetaChip(
+                              Icons.live_tv,
+                              '${_series.seasons} Seasons',
+                            ),
+                            _buildMetaChip(
+                              Icons.star,
+                              _series.rating.toStringAsFixed(1),
+                            ),
+                            ..._series.genres
+                                .take(2)
+                                .map((genre) => _buildGenreChip(genre)),
                           ],
                         ),
 
@@ -153,10 +171,7 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
                         const SizedBox(height: 12),
                         Text(
                           _series.description,
-                          style: const TextStyle(
-                            fontSize: 15,
-                            height: 1.6,
-                          ),
+                          style: const TextStyle(fontSize: 15, height: 1.6),
                         ),
                       ],
                     ),
@@ -184,10 +199,7 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
           SliverFillRemaining(
             child: TabBarView(
               controller: _tabController,
-              children: [
-                _buildEpisodesTab(),
-                _buildMoreInfoTab(),
-              ],
+              children: [_buildEpisodesTab(), _buildMoreInfoTab()],
             ),
           ),
         ],
@@ -210,10 +222,7 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
               children: [
                 const Text(
                   'Season',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(width: 12),
                 DropdownButton<int>(
@@ -256,10 +265,7 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
           // Cast
           const Text(
             'Cast',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -280,10 +286,7 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
           // Details
           const Text(
             'Details',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           _buildDetailRow('Creator', 'John Doe'),
@@ -299,10 +302,7 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
           // Similar series
           const Text(
             'More Like This',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -322,7 +322,7 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
 
   Widget _buildEpisodeItem(int episodeNumber) {
     final isWatched = episodeNumber < 3; // Mock watched status
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(
@@ -353,7 +353,11 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
                         color: Color(0xFF07C160),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.check, size: 12, color: Colors.white),
+                      child: const Icon(
+                        Icons.check,
+                        size: 12,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
               ],
@@ -376,18 +380,12 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
                   const SizedBox(height: 4),
                   Text(
                     'Episode Title Goes Here',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[700],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '45 min',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -462,10 +460,7 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
           Text(
             name,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -484,19 +479,13 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
             width: 100,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -517,17 +506,12 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
               color: Colors.grey[300],
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Center(
-              child: Icon(Icons.tv, size: 40),
-            ),
+            child: const Center(child: Icon(Icons.tv, size: 40)),
           ),
           const SizedBox(height: 8),
           Text(
             'Similar Series ${index + 1}',
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -537,11 +521,8 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
               const Icon(Icons.star, size: 12, color: Colors.amber),
               const SizedBox(width: 4),
               Text(
-                '${(4.0 + index * 0.2).toStringAsFixed(1)}',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey[600],
-                ),
+                (4.0 + index * 0.2).toStringAsFixed(1),
+                style: TextStyle(fontSize: 11, color: Colors.grey[600]),
               ),
             ],
           ),
@@ -575,9 +556,7 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
 
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => VideoPlayerPage(video: video),
-      ),
+      MaterialPageRoute(builder: (context) => VideoPlayerPage(video: video)),
     );
   }
 
@@ -589,12 +568,14 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
 
   void _toggleWatchlist() {
     setState(() => _isInWatchlist = !_isInWatchlist);
-    
+
     StreamingService.toggleWatchlist(_series.id, 'demo_user_1');
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(_isInWatchlist ? 'Added to watchlist' : 'Removed from watchlist'),
+        content: Text(
+          _isInWatchlist ? 'Added to watchlist' : 'Removed from watchlist',
+        ),
         duration: const Duration(seconds: 1),
       ),
     );
@@ -612,9 +593,9 @@ class _SeriesDetailPageState extends State<SeriesDetailPage> with SingleTickerPr
               title: const Text('Copy Link'),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Link copied')),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Link copied')));
               },
             ),
             ListTile(

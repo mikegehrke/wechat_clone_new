@@ -1,20 +1,15 @@
 import 'package:flutter/material.dart';
-import '../models/payment.dart';
 
 class TransactionItem extends StatelessWidget {
   final dynamic transaction; // Can be WalletTransaction or PaymentTransaction
   final VoidCallback? onTap;
 
-  const TransactionItem({
-    super.key,
-    required this.transaction,
-    this.onTap,
-  });
+  const TransactionItem({super.key, required this.transaction, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final isCredit = transaction.type == 'credit';
-    
+
     return ListTile(
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -22,7 +17,9 @@ class TransactionItem extends StatelessWidget {
         width: 48,
         height: 48,
         decoration: BoxDecoration(
-          color: isCredit ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+          color: isCredit
+              ? Colors.green.withOpacity(0.1)
+              : Colors.red.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(
@@ -32,17 +29,11 @@ class TransactionItem extends StatelessWidget {
       ),
       title: Text(
         transaction.description,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
       ),
       subtitle: Text(
         _formatDate(transaction.timestamp),
-        style: TextStyle(
-          color: Colors.grey[600],
-          fontSize: 12,
-        ),
+        style: TextStyle(color: Colors.grey[600], fontSize: 12),
       ),
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,

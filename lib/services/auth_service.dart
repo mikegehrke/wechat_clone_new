@@ -13,14 +13,14 @@ class AuthService {
   static const String _userKey = 'current_user';
   static const String _settingsKey = 'app_settings';
   static const String _complianceKey = 'compliance_settings';
-  
+
   // Firebase instances
   static final auth.FirebaseAuth _auth = auth.FirebaseAuth.instance;
   static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   static final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: ['email', 'profile'],
   );
-  
+
   // Singleton
   static final AuthService _instance = AuthService._internal();
   factory AuthService() => _instance;
@@ -51,19 +51,24 @@ class AuthService {
     try {
       // Verify OTP with Firebase
       final credential = auth.PhoneAuthProvider.credential(
-        verificationId: otpCode.split(':')[0], // In real app, store verificationId separately
+        verificationId: otpCode.split(
+          ':',
+        )[0], // In real app, store verificationId separately
         smsCode: otpCode.split(':')[1],
       );
-      
+
       final userCredential = await _auth.signInWithCredential(credential);
-      
+
       // Create or get user account
-      final user = await _getOrCreateUser(phoneNumber, userCredential.user!.uid);
-      
+      final user = await _getOrCreateUser(
+        phoneNumber,
+        userCredential.user!.uid,
+      );
+
       // Save to storage
       await _saveUserToStorage(user);
       _currentUser = user;
-      
+
       return user;
     } catch (e) {
       throw Exception('Login failed: $e');
@@ -80,14 +85,17 @@ class AuthService {
         email: email,
         password: password,
       );
-      
+
       // Create or get user account
-      final user = await _getOrCreateUserByEmail(email, userCredential.user!.uid);
-      
+      final user = await _getOrCreateUserByEmail(
+        email,
+        userCredential.user!.uid,
+      );
+
       // Save to storage
       await _saveUserToStorage(user);
       _currentUser = user;
-      
+
       return user;
     } catch (e) {
       throw Exception('Login failed: $e');
@@ -99,13 +107,14 @@ class AuthService {
     try {
       // Trigger Google Sign-In flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      
+
       if (googleUser == null) {
         throw Exception('Google Sign-In aborted');
       }
 
       // Obtain auth details
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
 
       // Create Firebase credential
       final credential = auth.GoogleAuthProvider.credential(
@@ -115,7 +124,7 @@ class AuthService {
 
       // Sign in to Firebase
       final userCredential = await _auth.signInWithCredential(credential);
-      
+
       // Create or get user account
       final user = await _getOrCreateUserBySocial(
         provider: 'google',
@@ -124,11 +133,11 @@ class AuthService {
         name: googleUser.displayName,
         avatarUrl: googleUser.photoUrl,
       );
-      
+
       // Save to storage
       await _saveUserToStorage(user);
       _currentUser = user;
-      
+
       return user;
     } catch (e) {
       throw Exception('Google Sign-In failed: $e');
@@ -159,13 +168,16 @@ class AuthService {
 
       // Sign in to Firebase
       final userCredential = await _auth.signInWithCredential(oauthCredential);
-      
+
       // Get display name from Apple credential
       String? displayName;
-      if (appleCredential.givenName != null || appleCredential.familyName != null) {
-        displayName = '${appleCredential.givenName ?? ''} ${appleCredential.familyName ?? ''}'.trim();
+      if (appleCredential.givenName != null ||
+          appleCredential.familyName != null) {
+        displayName =
+            '${appleCredential.givenName ?? ''} ${appleCredential.familyName ?? ''}'
+                .trim();
       }
-      
+
       // Create or get user account
       final user = await _getOrCreateUserBySocial(
         provider: 'apple',
@@ -174,11 +186,11 @@ class AuthService {
         name: displayName ?? userCredential.user!.displayName,
         avatarUrl: userCredential.user!.photoURL,
       );
-      
+
       // Save to storage
       await _saveUserToStorage(user);
       _currentUser = user;
-      
+
       return user;
     } catch (e) {
       throw Exception('Apple Sign-In failed: $e');
@@ -200,7 +212,7 @@ class AuthService {
       } else if (provider.toLowerCase() == 'apple') {
         return await loginWithApple();
       }
-      
+
       // Fallback for other providers
       final user = await _getOrCreateUserBySocial(
         provider: provider,
@@ -209,10 +221,10 @@ class AuthService {
         name: name,
         avatarUrl: avatarUrl,
       );
-      
+
       await _saveUserToStorage(user);
       _currentUser = user;
-      
+
       return user;
     } catch (e) {
       throw Exception('Social login failed: $e');
@@ -223,16 +235,17 @@ class AuthService {
     try {
       // Sign out from Firebase
       await _auth.signOut();
-      
+
       // Sign out from Google if signed in
-      if (await _googleSignIn.isSignedIn()) {
+      final isSignedIn = await _googleSignIn.isSignedIn();
+      if (isSignedIn) {
         await _googleSignIn.signOut();
       }
-      
+
       // Clear local storage
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_userKey);
-      
+
       _currentUser = null;
     } catch (e) {
       throw Exception('Logout failed: $e');
@@ -255,9 +268,11 @@ class AuthService {
           password: password,
         );
       }
-      
+
       // Create new user account
-      final userId = userCredential?.user?.uid ?? 'user_${DateTime.now().millisecondsSinceEpoch}';
+      final userId =
+          userCredential?.user?.uid ??
+          'user_${DateTime.now().millisecondsSinceEpoch}';
       final user = UserAccount(
         id: userId,
         phoneNumber: phoneNumber,
@@ -268,10 +283,10 @@ class AuthService {
         privacy: PrivacySettings(),
         security: SecuritySettings(),
       );
-      
+
       // Save to Firestore
       await _firestore.collection('users').doc(userId).set(user.toJson());
-      
+
       // Save to storage
       await _saveUserToStorage(user);
       _currentUser = user;
@@ -285,7 +300,7 @@ class AuthService {
     try {
       // Use Firebase Phone Authentication
       String verificationId = '';
-      
+
       await _auth.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         verificationCompleted: (auth.PhoneAuthCredential credential) async {
@@ -304,7 +319,7 @@ class AuthService {
         },
         timeout: const Duration(seconds: 60),
       );
-      
+
       return verificationId;
     } catch (e) {
       throw Exception('Failed to send OTP: $e');
@@ -318,7 +333,7 @@ class AuthService {
         verificationId: verificationId,
         smsCode: otpCode,
       );
-      
+
       await _auth.signInWithCredential(credential);
       return true;
     } catch (e) {
@@ -330,10 +345,10 @@ class AuthService {
   Future<List<ConnectedDevice>> getConnectedDevices() async {
     try {
       if (_currentUser == null) return [];
-      
+
       // In real app, fetch from backend
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       return _currentUser!.devices;
     } catch (e) {
       throw Exception('Failed to get devices: $e');
@@ -350,7 +365,7 @@ class AuthService {
   }) async {
     try {
       if (_currentUser == null) throw Exception('Not logged in');
-      
+
       final device = ConnectedDevice(
         id: 'device_${DateTime.now().millisecondsSinceEpoch}',
         name: deviceName,
@@ -362,7 +377,7 @@ class AuthService {
         lastSeenAt: DateTime.now(),
         isPrimary: _currentUser!.devices.isEmpty,
       );
-      
+
       // Add to user's devices
       final updatedUser = UserAccount(
         id: _currentUser!.id,
@@ -383,7 +398,7 @@ class AuthService {
         security: _currentUser!.security,
         metadata: _currentUser!.metadata,
       );
-      
+
       await _saveUserToStorage(updatedUser);
       _currentUser = updatedUser;
     } catch (e) {
@@ -394,9 +409,11 @@ class AuthService {
   Future<void> removeDevice(String deviceId) async {
     try {
       if (_currentUser == null) throw Exception('Not logged in');
-      
-      final updatedDevices = _currentUser!.devices.where((d) => d.id != deviceId).toList();
-      
+
+      final updatedDevices = _currentUser!.devices
+          .where((d) => d.id != deviceId)
+          .toList();
+
       final updatedUser = UserAccount(
         id: _currentUser!.id,
         phoneNumber: _currentUser!.phoneNumber,
@@ -416,7 +433,7 @@ class AuthService {
         security: _currentUser!.security,
         metadata: _currentUser!.metadata,
       );
-      
+
       await _saveUserToStorage(updatedUser);
       _currentUser = updatedUser;
     } catch (e) {
@@ -428,7 +445,7 @@ class AuthService {
   Future<void> enableTwoFactor() async {
     try {
       if (_currentUser == null) throw Exception('Not logged in');
-      
+
       final updatedSecurity = SecuritySettings(
         twoFactorEnabled: true,
         biometricLockEnabled: _currentUser!.security.biometricLockEnabled,
@@ -436,13 +453,14 @@ class AuthService {
         pinHash: _currentUser!.security.pinHash,
         autoLockEnabled: _currentUser!.security.autoLockEnabled,
         autoLockTimeoutMinutes: _currentUser!.security.autoLockTimeoutMinutes,
-        endToEndEncryptionEnabled: _currentUser!.security.endToEndEncryptionEnabled,
+        endToEndEncryptionEnabled:
+            _currentUser!.security.endToEndEncryptionEnabled,
         deviceBindingEnabled: _currentUser!.security.deviceBindingEnabled,
         activeSessions: _currentUser!.security.activeSessions,
         securityHistory: _currentUser!.security.securityHistory,
         customSettings: _currentUser!.security.customSettings,
       );
-      
+
       final updatedUser = UserAccount(
         id: _currentUser!.id,
         phoneNumber: _currentUser!.phoneNumber,
@@ -462,7 +480,7 @@ class AuthService {
         security: updatedSecurity,
         metadata: _currentUser!.metadata,
       );
-      
+
       await _saveUserToStorage(updatedUser);
       _currentUser = updatedUser;
     } catch (e) {
@@ -473,9 +491,9 @@ class AuthService {
   Future<void> setPIN(String pin) async {
     try {
       if (_currentUser == null) throw Exception('Not logged in');
-      
+
       final pinHash = _hashPIN(pin);
-      
+
       final updatedSecurity = SecuritySettings(
         twoFactorEnabled: _currentUser!.security.twoFactorEnabled,
         biometricLockEnabled: _currentUser!.security.biometricLockEnabled,
@@ -483,13 +501,14 @@ class AuthService {
         pinHash: pinHash,
         autoLockEnabled: _currentUser!.security.autoLockEnabled,
         autoLockTimeoutMinutes: _currentUser!.security.autoLockTimeoutMinutes,
-        endToEndEncryptionEnabled: _currentUser!.security.endToEndEncryptionEnabled,
+        endToEndEncryptionEnabled:
+            _currentUser!.security.endToEndEncryptionEnabled,
         deviceBindingEnabled: _currentUser!.security.deviceBindingEnabled,
         activeSessions: _currentUser!.security.activeSessions,
         securityHistory: _currentUser!.security.securityHistory,
         customSettings: _currentUser!.security.customSettings,
       );
-      
+
       final updatedUser = UserAccount(
         id: _currentUser!.id,
         phoneNumber: _currentUser!.phoneNumber,
@@ -509,7 +528,7 @@ class AuthService {
         security: updatedSecurity,
         metadata: _currentUser!.metadata,
       );
-      
+
       await _saveUserToStorage(updatedUser);
       _currentUser = updatedUser;
     } catch (e) {
@@ -520,7 +539,7 @@ class AuthService {
   Future<bool> verifyPIN(String pin) async {
     try {
       if (_currentUser == null) return false;
-      
+
       final pinHash = _hashPIN(pin);
       return pinHash == _currentUser!.security.pinHash;
     } catch (e) {
@@ -551,10 +570,10 @@ class AuthService {
   Future<Map<String, dynamic>> exportUserData() async {
     try {
       if (_currentUser == null) throw Exception('Not logged in');
-      
+
       // In real app, generate comprehensive data export
       await Future.delayed(const Duration(seconds: 2));
-      
+
       return {
         'user': _currentUser!.toJson(),
         'settings': _appSettings?.toJson(),
@@ -570,16 +589,16 @@ class AuthService {
   Future<void> deleteAccount() async {
     try {
       if (_currentUser == null) throw Exception('Not logged in');
-      
+
       // In real app, delete all user data from backend
       await Future.delayed(const Duration(seconds: 2));
-      
+
       // Clear local storage
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_userKey);
       await prefs.remove(_settingsKey);
       await prefs.remove(_complianceKey);
-      
+
       _currentUser = null;
       _appSettings = null;
       _complianceSettings = null;
@@ -589,15 +608,18 @@ class AuthService {
   }
 
   // Private Methods
-  Future<UserAccount> _getOrCreateUser(String phoneNumber, String userId) async {
+  Future<UserAccount> _getOrCreateUser(
+    String phoneNumber,
+    String userId,
+  ) async {
     try {
       // Check if user exists in Firestore
       final doc = await _firestore.collection('users').doc(userId).get();
-      
+
       if (doc.exists) {
         return UserAccount.fromJson(doc.data()!);
       }
-      
+
       // Create new user
       final user = UserAccount(
         id: userId,
@@ -608,25 +630,28 @@ class AuthService {
         privacy: PrivacySettings(),
         security: SecuritySettings(),
       );
-      
+
       // Save to Firestore
       await _firestore.collection('users').doc(userId).set(user.toJson());
-      
+
       return user;
     } catch (e) {
       throw Exception('Failed to get or create user: $e');
     }
   }
 
-  Future<UserAccount> _getOrCreateUserByEmail(String email, String userId) async {
+  Future<UserAccount> _getOrCreateUserByEmail(
+    String email,
+    String userId,
+  ) async {
     try {
       // Check if user exists in Firestore
       final doc = await _firestore.collection('users').doc(userId).get();
-      
+
       if (doc.exists) {
         return UserAccount.fromJson(doc.data()!);
       }
-      
+
       // Create new user
       final user = UserAccount(
         id: userId,
@@ -638,10 +663,10 @@ class AuthService {
         privacy: PrivacySettings(),
         security: SecuritySettings(),
       );
-      
+
       // Save to Firestore
       await _firestore.collection('users').doc(userId).set(user.toJson());
-      
+
       return user;
     } catch (e) {
       throw Exception('Failed to get or create user by email: $e');
@@ -657,14 +682,14 @@ class AuthService {
   }) async {
     try {
       final userId = 'user_${providerId.hashCode}';
-      
+
       // Check if user exists in Firestore
       final doc = await _firestore.collection('users').doc(userId).get();
-      
+
       if (doc.exists) {
         return UserAccount.fromJson(doc.data()!);
       }
-      
+
       // Create new user
       final socialLogin = SocialLogin(
         provider: provider,
@@ -674,12 +699,14 @@ class AuthService {
         avatarUrl: avatarUrl,
         connectedAt: DateTime.now(),
       );
-      
+
       final user = UserAccount(
         id: userId,
         phoneNumber: '', // Will be set later if needed
         email: email,
-        username: name?.toLowerCase().replaceAll(' ', '_') ?? 'user_${providerId.substring(0, 4)}',
+        username:
+            name?.toLowerCase().replaceAll(' ', '_') ??
+            'user_${providerId.substring(0, 4)}',
         displayName: name ?? 'User ${providerId.substring(0, 4)}',
         avatarUrl: avatarUrl,
         createdAt: DateTime.now(),
@@ -687,10 +714,10 @@ class AuthService {
         privacy: PrivacySettings(),
         security: SecuritySettings(),
       );
-      
+
       // Save to Firestore
       await _firestore.collection('users').doc(userId).set(user.toJson());
-      
+
       return user;
     } catch (e) {
       throw Exception('Failed to get or create user by social: $e');
@@ -711,7 +738,7 @@ class AuthService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userJson = prefs.getString(_userKey);
-      
+
       if (userJson != null) {
         final userMap = jsonDecode(userJson);
         _currentUser = UserAccount.fromJson(userMap);
@@ -735,7 +762,7 @@ class AuthService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final settingsJson = prefs.getString(_settingsKey);
-      
+
       if (settingsJson != null) {
         final settingsMap = jsonDecode(settingsJson);
         _appSettings = AppSettings.fromJson(settingsMap);
@@ -768,7 +795,7 @@ class AuthService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final complianceJson = prefs.getString(_complianceKey);
-      
+
       if (complianceJson != null) {
         final complianceMap = jsonDecode(complianceJson);
         _complianceSettings = ComplianceSettings.fromJson(complianceMap);

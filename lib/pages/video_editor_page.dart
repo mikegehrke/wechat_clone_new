@@ -33,10 +33,10 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
   String _selectedFilter = 'none';
 
   // Text overlays
-  List<TextOverlay> _textOverlays = [];
+  final List<TextOverlay> _textOverlays = [];
 
   // Audio tracks
-  List<AudioTrack> _audioTracks = [];
+  final List<AudioTrack> _audioTracks = [];
 
   @override
   void initState() {

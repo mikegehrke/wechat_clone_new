@@ -6,7 +6,7 @@ import '../../services/payment_service.dart';
 
 class SendMoneyPage extends StatefulWidget {
   final User? recipient;
-  
+
   const SendMoneyPage({super.key, this.recipient});
 
   @override
@@ -18,7 +18,7 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
   final _amountController = TextEditingController();
   final _noteController = TextEditingController();
   final _searchController = TextEditingController();
-  
+
   User? _selectedRecipient;
   List<User> _recentContacts = [];
   List<User> _searchResults = [];
@@ -44,11 +44,11 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final methods = await PaymentService.getPaymentMethods('demo_user_1');
       final contacts = await _getRecentContacts();
-      
+
       setState(() {
         _paymentMethods = methods;
         _selectedPaymentMethod = methods.firstWhere(
@@ -107,10 +107,13 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
     // Simulate search delay
     await Future.delayed(const Duration(milliseconds: 500));
 
-    final results = _recentContacts.where((user) =>
-      user.username.toLowerCase().contains(query.toLowerCase()) ||
-      user.email.toLowerCase().contains(query.toLowerCase())
-    ).toList();
+    final results = _recentContacts
+        .where(
+          (user) =>
+              user.username.toLowerCase().contains(query.toLowerCase()) ||
+              user.email.toLowerCase().contains(query.toLowerCase()),
+        )
+        .toList();
 
     setState(() {
       _searchResults = results;
@@ -137,13 +140,10 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                   // Recipient selection
                   const Text(
                     'Send To',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
-                  
+
                   if (_selectedRecipient == null) ...[
                     // Search bar
                     TextField(
@@ -158,7 +158,7 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    
+
                     // Search results or recent contacts
                     if (_isSearching)
                       const Center(child: CircularProgressIndicator())
@@ -175,12 +175,12 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                       ),
                   ] else
                     _buildSelectedRecipient(),
-                  
+
                   if (_selectedRecipient != null) ...[
                     const SizedBox(height: 24),
                     const Divider(),
                     const SizedBox(height: 24),
-                    
+
                     // Amount
                     const Text(
                       'Amount',
@@ -190,12 +190,16 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     TextFormField(
                       controller: _amountController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
                       inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d+\.?\d{0,2}'),
+                        ),
                       ],
                       style: const TextStyle(
                         fontSize: 32,
@@ -223,9 +227,9 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                         return null;
                       },
                     ),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Payment method
                     const Text(
                       'Payment Method',
@@ -235,9 +239,9 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     DropdownButtonFormField<PaymentMethod>(
-                      value: _selectedPaymentMethod,
+                      initialValue: _selectedPaymentMethod,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -263,9 +267,9 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                         setState(() => _selectedPaymentMethod = value);
                       },
                     ),
-                    
+
                     const SizedBox(height: 24),
-                    
+
                     // Note
                     const Text(
                       'Note (Optional)',
@@ -275,7 +279,7 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    
+
                     TextFormField(
                       controller: _noteController,
                       maxLines: 3,
@@ -286,9 +290,9 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(height: 32),
-                    
+
                     // Send button
                     SizedBox(
                       height: 50,
@@ -337,34 +341,38 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
 
   Widget _buildContactsList(List<User> contacts) {
     return Column(
-      children: contacts.map((user) => Card(
-        margin: const EdgeInsets.only(bottom: 8),
-        child: ListTile(
-          leading: CircleAvatar(
-            backgroundColor: Colors.blue[100],
-            child: Text(
-              user.username[0].toUpperCase(),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.blue,
+      children: contacts
+          .map(
+            (user) => Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Colors.blue[100],
+                  child: Text(
+                    user.username[0].toUpperCase(),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+                title: Text(
+                  user.username,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(user.email),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  setState(() {
+                    _selectedRecipient = user;
+                    _searchController.clear();
+                    _searchResults = [];
+                  });
+                },
               ),
             ),
-          ),
-          title: Text(
-            user.username,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-          subtitle: Text(user.email),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () {
-            setState(() {
-              _selectedRecipient = user;
-              _searchController.clear();
-              _searchResults = [];
-            });
-          },
-        ),
-      )).toList(),
+          )
+          .toList(),
     );
   }
 
@@ -400,10 +408,7 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
                   ),
                   Text(
                     _selectedRecipient!.email,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -515,16 +520,18 @@ class _SendMoneyPageState extends State<SendMoneyPage> {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Successfully sent \$${amount.toStringAsFixed(2)} to ${_selectedRecipient!.username}'),
+            content: Text(
+              'Successfully sent \$${amount.toStringAsFixed(2)} to ${_selectedRecipient!.username}',
+            ),
             backgroundColor: const Color(0xFF07C160),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send money: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to send money: $e')));
       }
     }
   }

@@ -75,15 +75,21 @@ class ProfessionalProfile {
       phone: json['phone'] ?? '',
       website: json['website'] ?? '',
       skills: List<String>.from(json['skills'] ?? []),
-      workExperience: (json['workExperience'] as List?)
-          ?.map((exp) => WorkExperience.fromJson(exp))
-          .toList() ?? [],
-      education: (json['education'] as List?)
-          ?.map((edu) => Education.fromJson(edu))
-          .toList() ?? [],
-      certifications: (json['certifications'] as List?)
-          ?.map((cert) => Certification.fromJson(cert))
-          .toList() ?? [],
+      workExperience:
+          (json['workExperience'] as List?)
+              ?.map((exp) => WorkExperience.fromJson(exp))
+              .toList() ??
+          [],
+      education:
+          (json['education'] as List?)
+              ?.map((edu) => Education.fromJson(edu))
+              .toList() ??
+          [],
+      certifications:
+          (json['certifications'] as List?)
+              ?.map((cert) => Certification.fromJson(cert))
+              .toList() ??
+          [],
       languages: List<String>.from(json['languages'] ?? []),
       interests: List<String>.from(json['interests'] ?? []),
       connectionsCount: json['connectionsCount'] ?? 0,
@@ -201,9 +207,9 @@ class WorkExperience {
     final end = endDate ?? DateTime.now();
     final years = end.year - startDate.year;
     final months = end.month - startDate.month;
-    
+
     if (years > 0) {
-      return months > 0 ? '$years yr ${months} mo' : '$years yr';
+      return months > 0 ? '$years yr $months mo' : '$years yr';
     } else {
       return '$months mo';
     }
@@ -299,7 +305,9 @@ class Certification {
       name: json['name'],
       issuingOrganization: json['issuingOrganization'],
       issueDate: DateTime.parse(json['issueDate']),
-      expirationDate: json['expirationDate'] != null ? DateTime.parse(json['expirationDate']) : null,
+      expirationDate: json['expirationDate'] != null
+          ? DateTime.parse(json['expirationDate'])
+          : null,
       credentialId: json['credentialId'] ?? '',
       credentialUrl: json['credentialUrl'] ?? '',
     );
@@ -421,7 +429,7 @@ class ProfessionalPost {
   String get formattedTimeAgo {
     final now = DateTime.now();
     final difference = now.difference(createdAt);
-    
+
     if (difference.inDays > 0) {
       return '${difference.inDays}d';
     } else if (difference.inHours > 0) {
@@ -434,14 +442,7 @@ class ProfessionalPost {
   }
 }
 
-enum PostType {
-  text,
-  image,
-  video,
-  article,
-  job,
-  event,
-}
+enum PostType { text, image, video, article, job, event }
 
 class JobPosting {
   final String id;
@@ -504,8 +505,8 @@ class JobPosting {
       salaryCurrency: json['salaryCurrency'] ?? 'USD',
       isRemote: json['isRemote'] ?? false,
       postedDate: DateTime.parse(json['postedDate']),
-      applicationDeadline: json['applicationDeadline'] != null 
-          ? DateTime.parse(json['applicationDeadline']) 
+      applicationDeadline: json['applicationDeadline'] != null
+          ? DateTime.parse(json['applicationDeadline'])
           : null,
       applicantsCount: json['applicantsCount'] ?? 0,
       isApplied: json['isApplied'] ?? false,
@@ -544,7 +545,7 @@ class JobPosting {
   String get formattedPostedDate {
     final now = DateTime.now();
     final difference = now.difference(postedDate);
-    
+
     if (difference.inDays > 0) {
       return '${difference.inDays} days ago';
     } else if (difference.inHours > 0) {

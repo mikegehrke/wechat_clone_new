@@ -86,7 +86,7 @@ class ChatService {
       final chats = <Chat>[];
       for (var doc in snapshot.docs) {
         final data = doc.data();
-        
+
         // Get last message
         final lastMessageSnapshot = await _firestore
             .collection('chats')
@@ -103,19 +103,24 @@ class ChatService {
           lastMessage = Message.fromJson(msgData);
         }
 
-        final unreadCount = (data['unreadCount'] as Map<String, dynamic>?)?[userId] ?? 0;
+        final unreadCount =
+            (data['unreadCount'] as Map<String, dynamic>?)?[userId] ?? 0;
 
-        chats.add(Chat(
-          id: doc.id,
-          name: data['name'] ?? '',
-          type: data['type'] == 'group' ? ChatType.group : ChatType.direct,
-          participants: List<String>.from(data['participants']),
-          lastMessage: lastMessage,
-          unreadCount: unreadCount,
-          lastActivity: (data['lastActivity'] as Timestamp?)?.toDate() ?? DateTime.now(),
-          avatar: data['avatar'],
-          metadata: data['metadata'],
-        ));
+        chats.add(
+          Chat(
+            id: doc.id,
+            name: data['name'] ?? '',
+            type: data['type'] == 'group' ? ChatType.group : ChatType.direct,
+            participants: List<String>.from(data['participants']),
+            lastMessage: lastMessage,
+            unreadCount: unreadCount,
+            lastActivity:
+                (data['lastActivity'] as Timestamp?)?.toDate() ??
+                DateTime.now(),
+            avatar: data['avatar'],
+            metadata: data['metadata'],
+          ),
+        );
       }
 
       return chats;
@@ -132,55 +137,62 @@ class ChatService {
         .orderBy('lastActivity', descending: true)
         .snapshots()
         .asyncMap((snapshot) async {
-      final chats = <Chat>[];
-      
-      for (var doc in snapshot.docs) {
-        final data = doc.data();
-        
-        // Get last message
-        final lastMessageSnapshot = await _firestore
-            .collection('chats')
-            .doc(doc.id)
-            .collection('messages')
-            .orderBy('timestamp', descending: true)
-            .limit(1)
-            .get();
+          final chats = <Chat>[];
 
-        Message? lastMessage;
-        if (lastMessageSnapshot.docs.isNotEmpty) {
-          final msgData = lastMessageSnapshot.docs.first.data();
-          msgData['id'] = lastMessageSnapshot.docs.first.id;
-          lastMessage = Message.fromJson(msgData);
-        }
+          for (var doc in snapshot.docs) {
+            final data = doc.data();
 
-        final unreadCount = (data['unreadCount'] as Map<String, dynamic>?)?[userId] ?? 0;
+            // Get last message
+            final lastMessageSnapshot = await _firestore
+                .collection('chats')
+                .doc(doc.id)
+                .collection('messages')
+                .orderBy('timestamp', descending: true)
+                .limit(1)
+                .get();
 
-        chats.add(Chat(
-          id: doc.id,
-          name: data['name'] ?? '',
-          type: data['type'] == 'group' ? ChatType.group : ChatType.direct,
-          participants: List<String>.from(data['participants']),
-          lastMessage: lastMessage,
-          unreadCount: unreadCount,
-          lastActivity: (data['lastActivity'] as Timestamp?)?.toDate() ?? DateTime.now(),
-          avatar: data['avatar'],
-          metadata: data['metadata'],
-        ));
-      }
+            Message? lastMessage;
+            if (lastMessageSnapshot.docs.isNotEmpty) {
+              final msgData = lastMessageSnapshot.docs.first.data();
+              msgData['id'] = lastMessageSnapshot.docs.first.id;
+              lastMessage = Message.fromJson(msgData);
+            }
 
-      return chats;
-    });
+            final unreadCount =
+                (data['unreadCount'] as Map<String, dynamic>?)?[userId] ?? 0;
+
+            chats.add(
+              Chat(
+                id: doc.id,
+                name: data['name'] ?? '',
+                type: data['type'] == 'group'
+                    ? ChatType.group
+                    : ChatType.direct,
+                participants: List<String>.from(data['participants']),
+                lastMessage: lastMessage,
+                unreadCount: unreadCount,
+                lastActivity:
+                    (data['lastActivity'] as Timestamp?)?.toDate() ??
+                    DateTime.now(),
+                avatar: data['avatar'],
+                metadata: data['metadata'],
+              ),
+            );
+          }
+
+          return chats;
+        });
   }
 
   /// Get chat by ID
   static Future<Chat?> getChatById(String chatId) async {
     try {
       final doc = await _firestore.collection('chats').doc(chatId).get();
-      
+
       if (!doc.exists) return null;
 
       final data = doc.data()!;
-      
+
       // Get last message
       final lastMessageSnapshot = await _firestore
           .collection('chats')
@@ -204,7 +216,8 @@ class ChatService {
         participants: List<String>.from(data['participants']),
         lastMessage: lastMessage,
         unreadCount: 0,
-        lastActivity: (data['lastActivity'] as Timestamp?)?.toDate() ?? DateTime.now(),
+        lastActivity:
+            (data['lastActivity'] as Timestamp?)?.toDate() ?? DateTime.now(),
         avatar: data['avatar'],
         metadata: data['metadata'],
       );
@@ -251,8 +264,8 @@ class ChatService {
     try {
       await _firestore.collection('chats').doc(chatId).update({
         'isMuted': !currentIsMuted,
-        'mutedUntil': !currentIsMuted 
-            ? Timestamp.fromDate(DateTime.now().add(const Duration(days: 365))) 
+        'mutedUntil': !currentIsMuted
+            ? Timestamp.fromDate(DateTime.now().add(const Duration(days: 365)))
             : null,
       });
     } catch (e) {
@@ -261,7 +274,10 @@ class ChatService {
   }
 
   /// Toggle archive status of a chat
-  static Future<void> toggleArchive(String chatId, bool currentIsArchived) async {
+  static Future<void> toggleArchive(
+    String chatId,
+    bool currentIsArchived,
+  ) async {
     try {
       await _firestore.collection('chats').doc(chatId).update({
         'isArchived': !currentIsArchived,
@@ -302,8 +318,12 @@ class ChatService {
 
       // Update chat's last activity and unread counts
       final chatDoc = await _firestore.collection('chats').doc(chatId).get();
-      final participants = List<String>.from(chatDoc.data()?['participants'] ?? []);
-      final unreadCount = Map<String, dynamic>.from(chatDoc.data()?['unreadCount'] ?? {});
+      final participants = List<String>.from(
+        chatDoc.data()?['participants'] ?? [],
+      );
+      final unreadCount = Map<String, dynamic>.from(
+        chatDoc.data()?['unreadCount'] ?? {},
+      );
 
       // Increment unread count for all participants except sender
       for (var participantId in participants) {
@@ -335,7 +355,7 @@ class ChatService {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final fileName = 'chat_${chatId}_$timestamp.jpg';
       final ref = _storage.ref().child('chat_images/$fileName');
-      
+
       final uploadTask = ref.putFile(imageFile);
       final snapshot = await uploadTask;
       final imageUrl = await snapshot.ref.getDownloadURL();
@@ -346,10 +366,7 @@ class ChatService {
         senderId: senderId,
         content: caption ?? '',
         type: MessageType.image,
-        metadata: {
-          'imageUrl': imageUrl,
-          'fileName': fileName,
-        },
+        metadata: {'imageUrl': imageUrl, 'fileName': fileName},
       );
     } catch (e) {
       throw Exception('Failed to send image: $e');
@@ -368,7 +385,7 @@ class ChatService {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final fileName = 'voice_${chatId}_$timestamp.m4a';
       final ref = _storage.ref().child('voice_messages/$fileName');
-      
+
       final uploadTask = ref.putFile(voiceFile);
       final snapshot = await uploadTask;
       final voiceUrl = await snapshot.ref.getDownloadURL();
@@ -402,7 +419,7 @@ class ChatService {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final storageFileName = 'file_${chatId}_$timestamp';
       final ref = _storage.ref().child('chat_files/$storageFileName');
-      
+
       final uploadTask = ref.putFile(file);
       final snapshot = await uploadTask;
       final fileUrl = await snapshot.ref.getDownloadURL();
@@ -448,8 +465,9 @@ class ChatService {
       return snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
         data['id'] = doc.id;
-        data['timestamp'] = (data['timestamp'] as Timestamp?)?.toDate().toIso8601String() 
-            ?? DateTime.now().toIso8601String();
+        data['timestamp'] =
+            (data['timestamp'] as Timestamp?)?.toDate().toIso8601String() ??
+            DateTime.now().toIso8601String();
         return Message.fromJson(data);
       }).toList();
     } catch (e) {
@@ -467,14 +485,15 @@ class ChatService {
         .limit(limit)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        data['timestamp'] = (data['timestamp'] as Timestamp?)?.toDate().toIso8601String() 
-            ?? DateTime.now().toIso8601String();
-        return Message.fromJson(data);
-      }).toList();
-    });
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            data['timestamp'] =
+                (data['timestamp'] as Timestamp?)?.toDate().toIso8601String() ??
+                DateTime.now().toIso8601String();
+            return Message.fromJson(data);
+          }).toList();
+        });
   }
 
   /// Mark messages as read
@@ -568,7 +587,7 @@ class ChatService {
   }) async {
     try {
       final chatDoc = await _firestore.collection('chats').doc(chatId).get();
-      
+
       if (!chatDoc.exists) {
         throw Exception('Chat not found');
       }
@@ -577,8 +596,12 @@ class ChatService {
         throw Exception('Can only add participants to group chats');
       }
 
-      final currentParticipants = List<String>.from(chatDoc.data()?['participants'] ?? []);
-      final unreadCount = Map<String, dynamic>.from(chatDoc.data()?['unreadCount'] ?? {});
+      final currentParticipants = List<String>.from(
+        chatDoc.data()?['participants'] ?? [],
+      );
+      final unreadCount = Map<String, dynamic>.from(
+        chatDoc.data()?['unreadCount'] ?? {},
+      );
 
       // Add new participants
       for (var userId in userIds) {
@@ -604,7 +627,7 @@ class ChatService {
   }) async {
     try {
       final chatDoc = await _firestore.collection('chats').doc(chatId).get();
-      
+
       if (!chatDoc.exists) {
         throw Exception('Chat not found');
       }
@@ -613,8 +636,12 @@ class ChatService {
         throw Exception('Can only remove participants from group chats');
       }
 
-      final currentParticipants = List<String>.from(chatDoc.data()?['participants'] ?? []);
-      final unreadCount = Map<String, dynamic>.from(chatDoc.data()?['unreadCount'] ?? {});
+      final currentParticipants = List<String>.from(
+        chatDoc.data()?['participants'] ?? [],
+      );
+      final unreadCount = Map<String, dynamic>.from(
+        chatDoc.data()?['unreadCount'] ?? {},
+      );
 
       currentParticipants.remove(userId);
       unreadCount.remove(userId);
@@ -636,7 +663,7 @@ class ChatService {
   }) async {
     try {
       final updates = <String, dynamic>{};
-      
+
       if (name != null) updates['name'] = name;
       if (avatar != null) updates['avatar'] = avatar;
 
@@ -665,9 +692,9 @@ class ChatService {
           .collection('typing')
           .doc(userId)
           .set({
-        'isTyping': isTyping,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+            'isTyping': isTyping,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
     } catch (e) {
       throw Exception('Failed to set typing status: $e');
     }
@@ -681,12 +708,12 @@ class ChatService {
         .collection('typing')
         .snapshots()
         .map((snapshot) {
-      final typingStatus = <String, bool>{};
-      for (var doc in snapshot.docs) {
-        typingStatus[doc.id] = doc.data()['isTyping'] ?? false;
-      }
-      return typingStatus;
-    });
+          final typingStatus = <String, bool>{};
+          for (var doc in snapshot.docs) {
+            typingStatus[doc.id] = doc.data()['isTyping'] ?? false;
+          }
+          return typingStatus;
+        });
   }
 
   // ============================================================================
@@ -704,7 +731,7 @@ class ChatService {
           .doc(chatId)
           .collection('messages')
           .where('content', isGreaterThanOrEqualTo: query)
-          .where('content', isLessThanOrEqualTo: query + '\uf8ff')
+          .where('content', isLessThanOrEqualTo: '$query\uf8ff')
           .orderBy('content')
           .orderBy('timestamp', descending: true)
           .get();
@@ -712,8 +739,9 @@ class ChatService {
       return snapshot.docs.map((doc) {
         final data = doc.data();
         data['id'] = doc.id;
-        data['timestamp'] = (data['timestamp'] as Timestamp?)?.toDate().toIso8601String() 
-            ?? DateTime.now().toIso8601String();
+        data['timestamp'] =
+            (data['timestamp'] as Timestamp?)?.toDate().toIso8601String() ??
+            DateTime.now().toIso8601String();
         return Message.fromJson(data);
       }).toList();
     } catch (e) {
@@ -734,14 +762,15 @@ class ChatService {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        data['timestamp'] = (data['timestamp'] as Timestamp?)?.toDate().toIso8601String() 
-            ?? DateTime.now().toIso8601String();
-        return Message.fromJson(data);
-      }).toList();
-    });
+          return snapshot.docs.map((doc) {
+            final data = doc.data();
+            data['id'] = doc.id;
+            data['timestamp'] =
+                (data['timestamp'] as Timestamp?)?.toDate().toIso8601String() ??
+                DateTime.now().toIso8601String();
+            return Message.fromJson(data);
+          }).toList();
+        });
   }
 
   /// Upload file to storage
@@ -752,7 +781,9 @@ class ChatService {
     required String fileName,
   }) async {
     try {
-      final ref = _storage.ref().child('chats/$chatId/$userId/${DateTime.now().millisecondsSinceEpoch}_$fileName');
+      final ref = _storage.ref().child(
+        'chats/$chatId/$userId/${DateTime.now().millisecondsSinceEpoch}_$fileName',
+      );
       final uploadTask = await ref.putFile(file);
       return await uploadTask.ref.getDownloadURL();
     } catch (e) {

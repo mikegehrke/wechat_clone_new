@@ -2,8 +2,6 @@ import '../models/payment.dart';
 import '../models/delivery.dart' as delivery;
 import '../models/product.dart' as product;
 import '../models/game.dart';
-import '../models/streaming.dart';
-import '../models/professional.dart';
 import 'payment_service.dart';
 
 class PaymentIntegrationService {
@@ -15,7 +13,10 @@ class PaymentIntegrationService {
     required String userId,
   }) async {
     try {
-      final subtotal = cartItems.fold(0.0, (sum, item) => sum + item.totalPrice);
+      final subtotal = cartItems.fold(
+        0.0,
+        (sum, item) => sum + item.totalPrice,
+      );
       final tax = subtotal * 0.08; // 8% tax
       final shipping = subtotal > 50 ? 0.0 : 9.99; // Free shipping over $50
       final total = subtotal + tax + shipping;
@@ -329,7 +330,7 @@ class PaymentIntegrationService {
   static Future<Map<String, dynamic>> getPaymentAnalytics(String userId) async {
     try {
       final transactions = await PaymentService.getTransactionHistory(userId);
-      
+
       final analytics = {
         'total_spent': transactions
             .where((tx) => tx.type == 'payment')
@@ -357,9 +358,11 @@ class PaymentIntegrationService {
     }
   }
 
-  static Map<String, double> _categorizeTransactions(List<PaymentTransaction> transactions) {
+  static Map<String, double> _categorizeTransactions(
+    List<PaymentTransaction> transactions,
+  ) {
     final categories = <String, double>{};
-    
+
     for (final transaction in transactions) {
       final metadata = transaction.metadata;
       if (metadata != null && metadata['type'] != null) {
@@ -367,7 +370,7 @@ class PaymentIntegrationService {
         categories[type] = (categories[type] ?? 0.0) + transaction.amount;
       }
     }
-    
+
     return categories;
   }
 
@@ -380,11 +383,11 @@ class PaymentIntegrationService {
     try {
       // In a real app, implement fraud detection, velocity checks, etc.
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // Basic validation rules
       if (amount <= 0) return false;
       if (amount > 10000) return false; // Max $10,000 per transaction
-      
+
       return true;
     } catch (e) {
       return false;

@@ -117,18 +117,18 @@ class VideoContent {
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
     final seconds = duration.inSeconds.remainder(60);
-    
+
     if (hours > 0) {
-      return '${hours}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+      return '$hours:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
     } else {
-      return '${minutes}:${seconds.toString().padLeft(2, '0')}';
+      return '$minutes:${seconds.toString().padLeft(2, '0')}';
     }
   }
 
   String get formattedPublishedDate {
     final now = DateTime.now();
     final difference = now.difference(publishedAt);
-    
+
     if (difference.inDays > 365) {
       return '${(difference.inDays / 365).floor()} year${(difference.inDays / 365).floor() > 1 ? 's' : ''} ago';
     } else if (difference.inDays > 30) {
@@ -143,21 +143,9 @@ class VideoContent {
   }
 }
 
-enum VideoQuality {
-  sd,
-  hd,
-  fullHd,
-  ultraHd,
-}
+enum VideoQuality { sd, hd, fullHd, ultraHd }
 
-enum ContentType {
-  video,
-  movie,
-  series,
-  documentary,
-  music,
-  live,
-}
+enum ContentType { video, movie, series, documentary, music, live }
 
 class Movie {
   final String id;
@@ -273,7 +261,7 @@ class Movie {
   String get formattedDuration {
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
-    
+
     if (hours > 0) {
       return '${hours}h ${minutes}m';
     } else {
@@ -361,9 +349,11 @@ class Series {
       isWatched: json['isWatched'] ?? false,
       isInWatchlist: json['isInWatchlist'] ?? false,
       addedAt: DateTime.parse(json['addedAt']),
-      seasonList: (json['seasonList'] as List?)
-          ?.map((season) => Season.fromJson(season))
-          .toList() ?? [],
+      seasonList:
+          (json['seasonList'] as List?)
+              ?.map((season) => Season.fromJson(season))
+              .toList() ??
+          [],
     );
   }
 
@@ -437,9 +427,11 @@ class Season {
       thumbnailUrl: json['thumbnailUrl'],
       episodes: json['episodes'],
       releaseDate: DateTime.parse(json['releaseDate']),
-      episodeList: (json['episodeList'] as List?)
-          ?.map((episode) => Episode.fromJson(episode))
-          .toList() ?? [],
+      episodeList:
+          (json['episodeList'] as List?)
+              ?.map((episode) => Episode.fromJson(episode))
+              .toList() ??
+          [],
     );
   }
 
@@ -500,8 +492,8 @@ class Episode {
       duration: Duration(minutes: json['duration'] ?? 0),
       releaseDate: DateTime.parse(json['releaseDate']),
       isWatched: json['isWatched'] ?? false,
-      watchProgress: json['watchProgress'] != null 
-          ? Duration(seconds: json['watchProgress']) 
+      watchProgress: json['watchProgress'] != null
+          ? Duration(seconds: json['watchProgress'])
           : null,
     );
   }
@@ -526,7 +518,7 @@ class Episode {
   String get formattedDuration {
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
-    
+
     if (hours > 0) {
       return '${hours}h ${minutes}m';
     } else {
@@ -577,9 +569,11 @@ class Playlist {
       ownerAvatar: json['ownerAvatar'],
       videoCount: json['videoCount'],
       createdAt: DateTime.parse(json['createdAt']),
-      videos: (json['videos'] as List?)
-          ?.map((video) => VideoContent.fromJson(video))
-          .toList() ?? [],
+      videos:
+          (json['videos'] as List?)
+              ?.map((video) => VideoContent.fromJson(video))
+              .toList() ??
+          [],
       isPublic: json['isPublic'] ?? true,
       isSubscribed: json['isSubscribed'] ?? false,
     );

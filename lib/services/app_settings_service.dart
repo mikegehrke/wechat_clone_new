@@ -8,7 +8,7 @@ class AppSettingsService {
   static const String _complianceKey = 'compliance_settings';
   static const String _permissionsKey = 'app_permissions';
   static const String _onboardingKey = 'onboarding_completed';
-  
+
   // Singleton
   static final AppSettingsService _instance = AppSettingsService._internal();
   factory AppSettingsService() => _instance;
@@ -36,10 +36,8 @@ class AppSettingsService {
   // Language & Localization
   Future<void> setLanguage(String languageCode) async {
     try {
-      if (_appSettings == null) {
-        _appSettings = _getDefaultSettings();
-      }
-      
+      _appSettings ??= _getDefaultSettings();
+
       final updatedSettings = AppSettings(
         language: languageCode,
         region: _appSettings!.region,
@@ -56,7 +54,7 @@ class AppSettingsService {
         cache: _appSettings!.cache,
         customSettings: _appSettings!.customSettings,
       );
-      
+
       await _saveSettingsToStorage(updatedSettings);
       _appSettings = updatedSettings;
     } catch (e) {
@@ -66,10 +64,8 @@ class AppSettingsService {
 
   Future<void> setRegion(String regionCode) async {
     try {
-      if (_appSettings == null) {
-        _appSettings = _getDefaultSettings();
-      }
-      
+      _appSettings ??= _getDefaultSettings();
+
       final updatedSettings = AppSettings(
         language: _appSettings!.language,
         region: regionCode,
@@ -86,7 +82,7 @@ class AppSettingsService {
         cache: _appSettings!.cache,
         customSettings: _appSettings!.customSettings,
       );
-      
+
       await _saveSettingsToStorage(updatedSettings);
       _appSettings = updatedSettings;
     } catch (e) {
@@ -97,10 +93,8 @@ class AppSettingsService {
   // Theme & Accessibility
   Future<void> setThemeMode(ThemeMode themeMode) async {
     try {
-      if (_appSettings == null) {
-        _appSettings = _getDefaultSettings();
-      }
-      
+      _appSettings ??= _getDefaultSettings();
+
       final updatedSettings = AppSettings(
         language: _appSettings!.language,
         region: _appSettings!.region,
@@ -117,7 +111,7 @@ class AppSettingsService {
         cache: _appSettings!.cache,
         customSettings: _appSettings!.customSettings,
       );
-      
+
       await _saveSettingsToStorage(updatedSettings);
       _appSettings = updatedSettings;
     } catch (e) {
@@ -127,10 +121,8 @@ class AppSettingsService {
 
   Future<void> setFontSize(double fontSize) async {
     try {
-      if (_appSettings == null) {
-        _appSettings = _getDefaultSettings();
-      }
-      
+      _appSettings ??= _getDefaultSettings();
+
       final updatedSettings = AppSettings(
         language: _appSettings!.language,
         region: _appSettings!.region,
@@ -147,7 +139,7 @@ class AppSettingsService {
         cache: _appSettings!.cache,
         customSettings: _appSettings!.customSettings,
       );
-      
+
       await _saveSettingsToStorage(updatedSettings);
       _appSettings = updatedSettings;
     } catch (e) {
@@ -161,10 +153,8 @@ class AppSettingsService {
     bool? isReduceMotion,
   }) async {
     try {
-      if (_appSettings == null) {
-        _appSettings = _getDefaultSettings();
-      }
-      
+      _appSettings ??= _getDefaultSettings();
+
       final updatedSettings = AppSettings(
         language: _appSettings!.language,
         region: _appSettings!.region,
@@ -174,14 +164,15 @@ class AppSettingsService {
         isSystemTheme: _appSettings!.isSystemTheme,
         fontSize: _appSettings!.fontSize,
         isLargeText: _appSettings!.isLargeText,
-        isScreenReaderEnabled: isScreenReaderEnabled ?? _appSettings!.isScreenReaderEnabled,
+        isScreenReaderEnabled:
+            isScreenReaderEnabled ?? _appSettings!.isScreenReaderEnabled,
         isHighContrast: isHighContrast ?? _appSettings!.isHighContrast,
         isReduceMotion: isReduceMotion ?? _appSettings!.isReduceMotion,
         notifications: _appSettings!.notifications,
         cache: _appSettings!.cache,
         customSettings: _appSettings!.customSettings,
       );
-      
+
       await _saveSettingsToStorage(updatedSettings);
       _appSettings = updatedSettings;
     } catch (e) {
@@ -194,7 +185,7 @@ class AppSettingsService {
     try {
       // In real app, request actual permission
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       _permissions[permission] = true;
       await _savePermissionsToStorage();
     } catch (e) {
@@ -206,7 +197,7 @@ class AppSettingsService {
     try {
       // In real app, check actual permission status
       await Future.delayed(const Duration(milliseconds: 100));
-      
+
       return _permissions[permission] ?? false;
     } catch (e) {
       return false;
@@ -244,10 +235,8 @@ class AppSettingsService {
   // Notifications
   Future<void> updateNotificationSettings(NotificationSettings settings) async {
     try {
-      if (_appSettings == null) {
-        _appSettings = _getDefaultSettings();
-      }
-      
+      _appSettings ??= _getDefaultSettings();
+
       final updatedSettings = AppSettings(
         language: _appSettings!.language,
         region: _appSettings!.region,
@@ -264,7 +253,7 @@ class AppSettingsService {
         cache: _appSettings!.cache,
         customSettings: _appSettings!.customSettings,
       );
-      
+
       await _saveSettingsToStorage(updatedSettings);
       _appSettings = updatedSettings;
     } catch (e) {
@@ -275,10 +264,8 @@ class AppSettingsService {
   // Cache Management
   Future<void> updateCacheSettings(CacheSettings settings) async {
     try {
-      if (_appSettings == null) {
-        _appSettings = _getDefaultSettings();
-      }
-      
+      _appSettings ??= _getDefaultSettings();
+
       final updatedSettings = AppSettings(
         language: _appSettings!.language,
         region: _appSettings!.region,
@@ -295,7 +282,7 @@ class AppSettingsService {
         cache: settings,
         customSettings: _appSettings!.customSettings,
       );
-      
+
       await _saveSettingsToStorage(updatedSettings);
       _appSettings = updatedSettings;
     } catch (e) {
@@ -307,7 +294,7 @@ class AppSettingsService {
     try {
       // In real app, clear actual cache
       await Future.delayed(const Duration(seconds: 1));
-      
+
       // Can't use context here (no BuildContext available in service)
       // Return success instead
     } catch (e) {
@@ -329,7 +316,7 @@ class AppSettingsService {
     try {
       // In real app, generate comprehensive data export
       await Future.delayed(const Duration(seconds: 2));
-      
+
       return {
         'settings': _appSettings?.toJson(),
         'compliance': _complianceSettings?.toJson(),
@@ -360,7 +347,7 @@ class AppSettingsService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final settingsJson = prefs.getString(_settingsKey);
-      
+
       if (settingsJson != null) {
         final settingsMap = jsonDecode(settingsJson);
         _appSettings = AppSettings.fromJson(settingsMap);
@@ -387,7 +374,7 @@ class AppSettingsService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final complianceJson = prefs.getString(_complianceKey);
-      
+
       if (complianceJson != null) {
         final complianceMap = jsonDecode(complianceJson);
         _complianceSettings = ComplianceSettings.fromJson(complianceMap);
@@ -414,7 +401,7 @@ class AppSettingsService {
     try {
       final prefs = await SharedPreferences.getInstance();
       final permissionsJson = prefs.getString(_permissionsKey);
-      
+
       if (permissionsJson != null) {
         final permissionsMap = jsonDecode(permissionsJson);
         _permissions = Map<String, bool>.from(permissionsMap);

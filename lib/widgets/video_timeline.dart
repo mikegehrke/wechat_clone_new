@@ -26,7 +26,7 @@ class VideoTimeline extends StatefulWidget {
 
 class _VideoTimelineState extends State<VideoTimeline> {
   double _timelineWidth = 0;
-  bool _isDragging = false;
+  final bool _isDragging = false;
 
   @override
   Widget build(BuildContext context) {
@@ -44,22 +44,16 @@ class _VideoTimelineState extends State<VideoTimeline> {
               children: [
                 Text(
                   _formatDuration(widget.currentPosition),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
                 ),
                 Text(
                   _formatDuration(widget.totalDuration),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
                 ),
               ],
             ),
           ),
-          
+
           // Main timeline
           Expanded(
             child: LayoutBuilder(
@@ -69,19 +63,19 @@ class _VideoTimelineState extends State<VideoTimeline> {
                   children: [
                     // Background grid
                     _buildTimelineGrid(),
-                    
+
                     // Video track
                     _buildVideoTrack(),
-                    
+
                     // Audio tracks
                     ..._buildAudioTracks(),
-                    
+
                     // Text overlays
                     ..._buildTextOverlays(),
-                    
+
                     // Playhead
                     _buildPlayhead(),
-                    
+
                     // Trim handles
                     _buildTrimHandles(),
                   ],
@@ -89,7 +83,7 @@ class _VideoTimelineState extends State<VideoTimeline> {
               },
             ),
           ),
-          
+
           // Timeline controls
           Container(
             height: 40,
@@ -105,7 +99,9 @@ class _VideoTimelineState extends State<VideoTimeline> {
                     value: _getTimelinePosition(),
                     onChanged: (value) {
                       final position = Duration(
-                        milliseconds: (value * widget.totalDuration.inMilliseconds).round(),
+                        milliseconds:
+                            (value * widget.totalDuration.inMilliseconds)
+                                .round(),
                       );
                       widget.onSeek(position);
                     },
@@ -165,7 +161,7 @@ class _VideoTimelineState extends State<VideoTimeline> {
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
-            
+
             // Video duration indicator
             Positioned(
               left: 8,
@@ -197,7 +193,7 @@ class _VideoTimelineState extends State<VideoTimeline> {
       final index = entry.key;
       final track = entry.value;
       final startPosition = _getPositionFromTime(track.startTime);
-      
+
       return Positioned(
         top: 60 + (index * 25),
         left: startPosition,
@@ -229,7 +225,7 @@ class _VideoTimelineState extends State<VideoTimeline> {
       final overlay = entry.value;
       final startPosition = _getPositionFromTime(overlay.startTime);
       final endPosition = _getPositionFromTime(overlay.endTime);
-      
+
       return Positioned(
         top: 60 + (widget.audioTracks.length * 25) + (index * 25),
         left: startPosition,
@@ -257,7 +253,7 @@ class _VideoTimelineState extends State<VideoTimeline> {
 
   Widget _buildPlayhead() {
     final position = _getPositionFromTime(widget.currentPosition);
-    
+
     return Positioned(
       left: position - 1,
       top: 0,
@@ -267,11 +263,7 @@ class _VideoTimelineState extends State<VideoTimeline> {
         decoration: const BoxDecoration(
           color: Colors.red,
           boxShadow: [
-            BoxShadow(
-              color: Colors.red,
-              blurRadius: 4,
-              spreadRadius: 1,
-            ),
+            BoxShadow(color: Colors.red, blurRadius: 4, spreadRadius: 1),
           ],
         ),
       ),
@@ -299,7 +291,7 @@ class _VideoTimelineState extends State<VideoTimeline> {
             ),
           ),
         ),
-        
+
         // Right trim handle
         Positioned(
           right: 16,
@@ -324,12 +316,14 @@ class _VideoTimelineState extends State<VideoTimeline> {
 
   double _getPositionFromTime(Duration time) {
     if (widget.totalDuration.inMilliseconds == 0) return 0;
-    return (time.inMilliseconds / widget.totalDuration.inMilliseconds) * _timelineWidth;
+    return (time.inMilliseconds / widget.totalDuration.inMilliseconds) *
+        _timelineWidth;
   }
 
   double _getTimelinePosition() {
     if (widget.totalDuration.inMilliseconds == 0) return 0;
-    return widget.currentPosition.inMilliseconds / widget.totalDuration.inMilliseconds;
+    return widget.currentPosition.inMilliseconds /
+        widget.totalDuration.inMilliseconds;
   }
 
   String _formatDuration(Duration duration) {
@@ -352,10 +346,7 @@ class TimelineGridPainter extends CustomPainter {
   final Duration duration;
   final double width;
 
-  TimelineGridPainter({
-    required this.duration,
-    required this.width,
-  });
+  TimelineGridPainter({required this.duration, required this.width});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -367,11 +358,7 @@ class TimelineGridPainter extends CustomPainter {
     final interval = duration.inSeconds / 10; // 10 grid lines
     for (int i = 0; i <= 10; i++) {
       final x = (i / 10) * width;
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x, size.height),
-        paint,
-      );
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
     }
 
     // Draw horizontal center line

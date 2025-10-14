@@ -17,34 +17,31 @@ class DatingService {
           .collection('swipes')
           .where('userId', isEqualTo: userId)
           .get();
-      
+
       final swipedIds = swipesSnapshot.docs
           .map((doc) => doc.data()['targetUserId'] as String)
           .toList();
-      
+
       // Get profiles from Firestore, excluding already swiped
       Query query = _firestore.collection('datingProfiles');
-      
+
       // Filter by preferences
-      if (preferences.minAge != null) {
-        query = query.where('age', isGreaterThanOrEqualTo: preferences.minAge);
-      }
-      if (preferences.maxAge != null) {
-        query = query.where('age', isLessThanOrEqualTo: preferences.maxAge);
-      }
+      query = query.where('age', isGreaterThanOrEqualTo: preferences.minAge);
+      query = query.where('age', isLessThanOrEqualTo: preferences.maxAge);
       // Note: gender filter removed as DatingPreferences doesn't have gender field
-      
+
       final snapshot = await query.limit(limit * 2).get();
-      
+
       final profiles = snapshot.docs
           .where((doc) => !swipedIds.contains(doc.id) && doc.id != userId)
           .take(limit)
           .map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        data['id'] = doc.id;
-        return DatingProfile.fromJson(data);
-      }).toList();
-      
+            final data = doc.data() as Map<String, dynamic>;
+            data['id'] = doc.id;
+            return DatingProfile.fromJson(data);
+          })
+          .toList();
+
       return profiles;
     } catch (e) {
       throw Exception('Failed to get potential matches: $e');
@@ -67,7 +64,8 @@ class DatingService {
       });
 
       // Check for mutual like
-      if (swipeType == DatingSwipeType.like || swipeType == DatingSwipeType.superLike) {
+      if (swipeType == DatingSwipeType.like ||
+          swipeType == DatingSwipeType.superLike) {
         final mutualSwipe = await _firestore
             .collection('swipes')
             .where('userId', isEqualTo: targetUserId)
@@ -119,18 +117,22 @@ class DatingService {
           .get();
 
       final matches = <Match>[];
-      
-      matches.addAll(snapshot.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        return Match.fromJson(data);
-      }));
 
-      matches.addAll(snapshot2.docs.map((doc) {
-        final data = doc.data();
-        data['id'] = doc.id;
-        return Match.fromJson(data);
-      }));
+      matches.addAll(
+        snapshot.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return Match.fromJson(data);
+        }),
+      );
+
+      matches.addAll(
+        snapshot2.docs.map((doc) {
+          final data = doc.data();
+          data['id'] = doc.id;
+          return Match.fromJson(data);
+        }),
+      );
 
       // Sort by match date
       matches.sort((a, b) => b.matchedAt.compareTo(a.matchedAt));
@@ -142,22 +144,31 @@ class DatingService {
   }
 
   // Get match profile
-  static Future<DatingProfile?> getMatchProfile(String matchId, String currentUserId) async {
+  static Future<DatingProfile?> getMatchProfile(
+    String matchId,
+    String currentUserId,
+  ) async {
     try {
-      final matchDoc = await _firestore.collection('matches').doc(matchId).get();
-      
+      final matchDoc = await _firestore
+          .collection('matches')
+          .doc(matchId)
+          .get();
+
       if (!matchDoc.exists) {
         throw Exception('Match not found');
       }
 
       final matchData = matchDoc.data() as Map<String, dynamic>;
-      final otherUserId = matchData['userId1'] == currentUserId 
-          ? matchData['userId2'] 
+      final otherUserId = matchData['userId1'] == currentUserId
+          ? matchData['userId2']
           : matchData['userId1'];
 
       // Get profile
-      final profileDoc = await _firestore.collection('datingProfiles').doc(otherUserId).get();
-      
+      final profileDoc = await _firestore
+          .collection('datingProfiles')
+          .doc(otherUserId)
+          .get();
+
       if (!profileDoc.exists) {
         return null;
       }
@@ -177,12 +188,16 @@ class DatingService {
     required String message,
   }) async {
     try {
-      await _firestore.collection('matches').doc(matchId).collection('messages').add({
-        'senderId': senderId,
-        'message': message,
-        'timestamp': FieldValue.serverTimestamp(),
-        'isRead': false,
-      });
+      await _firestore
+          .collection('matches')
+          .doc(matchId)
+          .collection('messages')
+          .add({
+            'senderId': senderId,
+            'message': message,
+            'timestamp': FieldValue.serverTimestamp(),
+            'isRead': false,
+          });
 
       // Update match with last message
       await _firestore.collection('matches').doc(matchId).update({
@@ -196,7 +211,9 @@ class DatingService {
   }
 
   // Get match messages
-  static Future<List<Map<String, dynamic>>> getMatchMessages(String matchId) async {
+  static Future<List<Map<String, dynamic>>> getMatchMessages(
+    String matchId,
+  ) async {
     try {
       final snapshot = await _firestore
           .collection('matches')
@@ -216,9 +233,15 @@ class DatingService {
   }
 
   // Update dating preferences
-  static Future<void> updatePreferences(String userId, DatingPreferences preferences) async {
+  static Future<void> updatePreferences(
+    String userId,
+    DatingPreferences preferences,
+  ) async {
     try {
-      await _firestore.collection('datingPreferences').doc(userId).set(preferences.toJson());
+      await _firestore
+          .collection('datingPreferences')
+          .doc(userId)
+          .set(preferences.toJson());
     } catch (e) {
       throw Exception('Failed to update preferences: $e');
     }
@@ -227,8 +250,11 @@ class DatingService {
   // Get dating preferences
   static Future<DatingPreferences> getPreferences(String userId) async {
     try {
-      final doc = await _firestore.collection('datingPreferences').doc(userId).get();
-      
+      final doc = await _firestore
+          .collection('datingPreferences')
+          .doc(userId)
+          .get();
+
       if (doc.exists) {
         return DatingPreferences.fromJson(doc.data()!);
       } else {
@@ -242,7 +268,9 @@ class DatingService {
   // Create dating profile
   static Future<String> createDatingProfile(DatingProfile profile) async {
     try {
-      final docRef = await _firestore.collection('datingProfiles').add(profile.toJson());
+      final docRef = await _firestore
+          .collection('datingProfiles')
+          .add(profile.toJson());
       return docRef.id;
     } catch (e) {
       throw Exception('Failed to create dating profile: $e');
@@ -250,9 +278,15 @@ class DatingService {
   }
 
   // Update dating profile
-  static Future<void> updateDatingProfile(String profileId, DatingProfile profile) async {
+  static Future<void> updateDatingProfile(
+    String profileId,
+    DatingProfile profile,
+  ) async {
     try {
-      await _firestore.collection('datingProfiles').doc(profileId).update(profile.toJson());
+      await _firestore
+          .collection('datingProfiles')
+          .doc(profileId)
+          .update(profile.toJson());
     } catch (e) {
       throw Exception('Failed to update dating profile: $e');
     }
@@ -270,7 +304,10 @@ class DatingService {
   // Create sample profile for demo/testing
   static Future<void> createSampleProfile(DatingProfile profile) async {
     try {
-      await _firestore.collection('datingProfiles').doc(profile.id).set(profile.toJson());
+      await _firestore
+          .collection('datingProfiles')
+          .doc(profile.id)
+          .set(profile.toJson());
     } catch (e) {
       throw Exception('Failed to create profile: $e');
     }
@@ -280,89 +317,517 @@ class DatingService {
   static List<DatingProfile> _createMockProfiles() {
     final random = Random();
     final names = [
-      'Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'William', 'Sophia', 'James',
-      'Isabella', 'Benjamin', 'Charlotte', 'Lucas', 'Amelia', 'Henry', 'Mia',
-      'Alexander', 'Harper', 'Mason', 'Evelyn', 'Michael', 'Abigail', 'Ethan',
-      'Emily', 'Daniel', 'Elizabeth', 'Jacob', 'Sofia', 'Logan', 'Avery',
-      'Jackson', 'Ella', 'Levi', 'Madison', 'Sebastian', 'Scarlett', 'Mateo',
-      'Victoria', 'Jack', 'Aria', 'Owen', 'Grace', 'Theodore', 'Chloe',
-      'Aiden', 'Camila', 'Samuel', 'Penelope', 'Joseph', 'Riley', 'John',
-      'Layla', 'David', 'Lillian', 'Wyatt', 'Nora', 'Matthew', 'Zoey',
-      'Luke', 'Mila', 'Asher', 'Aubrey', 'Carter', 'Hannah', 'Julian',
-      'Lily', 'Grayson', 'Addison', 'Leo', 'Eleanor', 'Jayden', 'Natalie',
-      'Gabriel', 'Luna', 'Isaac', 'Savannah', 'Lincoln', 'Leah', 'Anthony',
-      'Zoe', 'Hudson', 'Stella', 'Dylan', 'Hazel', 'Ezra', 'Ellie', 'Thomas',
-      'Paisley', 'Charles', 'Audrey', 'Christopher', 'Skylar', 'Jaxon',
-      'Violet', 'Maverick', 'Claire', 'Josiah', 'Bella', 'Isaiah', 'Aurora',
-      'Andrew', 'Lucy', 'Elias', 'Anna', 'Joshua', 'Caroline', 'Nathan',
-      'Genesis', 'Caleb', 'Aaliyah', 'Ryan', 'Kennedy', 'Adrian', 'Kinsley',
-      'Miles', 'Allison', 'Eli', 'Maya', 'Aaron', 'Sarah', 'Ian', 'Madelyn',
-      'Adam', 'Adeline', 'Axel', 'Alexa', 'Tyler', 'Ariana', 'Justin',
-      'Elena', 'Evan', 'Gabriella', 'Landon', 'Naomi', 'Jason', 'Alice',
-      'Parker', 'Sadie', 'Hunter', 'Hailey', 'Nolan', 'Eva', 'Zachary',
-      'Emilia', 'Easton', 'Autumn', 'Blake', 'Quinn', 'Nevaeh', 'Colton',
-      'Piper', 'Jordan', 'Ruby', 'Brayden', 'Serenity', 'Nicholas', 'Willow',
-      'Angel', 'Everly', 'Dominic', 'Cora', 'Austin', 'Kaylee', 'Ian',
-      'Lydia', 'Adam', 'Aubree', 'Elias', 'Arianna', 'Jaxson', 'Eliana',
-      'Greyson', 'Peyton', 'Roman', 'Melanie', 'Ezekiel', 'Gianna', 'Miles',
-      'Isabelle', 'Micah', 'Julia', 'Vincent', 'Valentina', 'Bryce', 'Clara',
-      'Theo', 'Vivian', 'Maximus', 'Reagan', 'Max', 'Mackenzie', 'Harrison',
-      'Madeline', 'Weston', 'Brielle', 'Bryson', 'Delilah', 'Antonio',
-      'Isla', 'Beau', 'Rylee', 'Damian', 'Arielle', 'Bentley', 'Kendall',
-      'Carlos', 'Jordyn', 'Ryker', 'Jocelyn', 'Tristan', 'Payton', 'Declan',
-      'Liliana', 'Knox', 'Maria', 'Kaden', 'Trinity', 'Kyle', 'Ximena',
-      'Griffin', 'Jade', 'Miguel', 'Josie', 'Cole', 'Eden', 'Tyler',
-      'Ayla', 'Ryder', 'Raelynn', 'Ashton', 'Elise', 'Brantley', 'Remi',
-      'Felix', 'Emberly', 'Bennett', 'Mya', 'Preston', 'Kyla', 'Silas',
-      'Ariyah', 'Rhett', 'Arya', 'Zander', 'Norah', 'Andres', 'Khloe',
-      'Jasper', 'Makenna', 'Iker', 'Amara', 'Calvin', 'Adriana', 'Emmett',
-      'Cali', 'Waylon', 'Esther', 'Axel', 'Alyssa', 'River', 'Anastasia',
-      'Brody', 'Ryleigh', 'Luca', 'Finley', 'Jude', 'Makenzie', 'Lukas',
-      'Hope', 'Enzo', 'Brianna', 'Crew', 'Callie', 'Koda', 'Sloane',
-      'Paxton', 'Gracie', 'Hendrix', 'Daniella', 'Rowan', 'Daphne', 'Zayden',
-      'Harmony', 'Knox', 'Alana', 'Bodhi', 'Gemma', 'Cruz', 'Laila',
-      'Rylan', 'Raegan', 'Zion', 'Journee', 'Maddox', 'Presley', 'Ronan',
-      'Zara', 'Cade', 'Amira', 'Nash', 'Aylin', 'Chance', 'Catalina',
-      'Lennox', 'Belen', 'Kash', 'Lexi', 'Krew', 'Myra', 'Kyrie', 'Fernanda',
-      'Titan', 'Charlee', 'Ridge', 'Dahlia', 'Sage', 'Maliyah', 'Sergio',
-      'Amiyah', 'Travis', 'Lia', 'Callum', 'Nayeli', 'Kane', 'Ariah',
-      'Royal', 'Alani', 'Zayne', 'Kaia', 'Crew', 'Ari', 'Koda', 'Luciana',
-      'Paxton', 'Allie', 'Hendrix', 'Raelynn', 'Rowan', 'Makenna', 'Zayden',
-      'Brielle', 'Knox', 'Emberly', 'Bodhi', 'Arielle', 'Cruz', 'Kendall',
-      'Rylan', 'Jordyn', 'Maddox', 'Payton', 'Ronan', 'Liliana', 'Cade',
-      'Trinity', 'Nash', 'Maria', 'Chance', 'Ximena', 'Lennox', 'Jade',
-      'Kash', 'Josie', 'Krew', 'Eden', 'Kyrie', 'Ayla', 'Titan', 'Raelynn',
-      'Ridge', 'Elise', 'Sage', 'Mya', 'Sergio', 'Kyla', 'Travis', 'Ariyah',
-      'Callum', 'Norah', 'Kane', 'Khloe', 'Royal', 'Makenna', 'Zayne', 'Amara',
-      'Crew', 'Ari', 'Koda', 'Luciana', 'Paxton', 'Allie', 'Hendrix', 'Raelynn',
-      'Rowan', 'Makenna', 'Zayden', 'Brielle', 'Knox', 'Emberly', 'Bodhi', 'Arielle',
+      'Emma',
+      'Liam',
+      'Olivia',
+      'Noah',
+      'Ava',
+      'William',
+      'Sophia',
+      'James',
+      'Isabella',
+      'Benjamin',
+      'Charlotte',
+      'Lucas',
+      'Amelia',
+      'Henry',
+      'Mia',
+      'Alexander',
+      'Harper',
+      'Mason',
+      'Evelyn',
+      'Michael',
+      'Abigail',
+      'Ethan',
+      'Emily',
+      'Daniel',
+      'Elizabeth',
+      'Jacob',
+      'Sofia',
+      'Logan',
+      'Avery',
+      'Jackson',
+      'Ella',
+      'Levi',
+      'Madison',
+      'Sebastian',
+      'Scarlett',
+      'Mateo',
+      'Victoria',
+      'Jack',
+      'Aria',
+      'Owen',
+      'Grace',
+      'Theodore',
+      'Chloe',
+      'Aiden',
+      'Camila',
+      'Samuel',
+      'Penelope',
+      'Joseph',
+      'Riley',
+      'John',
+      'Layla',
+      'David',
+      'Lillian',
+      'Wyatt',
+      'Nora',
+      'Matthew',
+      'Zoey',
+      'Luke',
+      'Mila',
+      'Asher',
+      'Aubrey',
+      'Carter',
+      'Hannah',
+      'Julian',
+      'Lily',
+      'Grayson',
+      'Addison',
+      'Leo',
+      'Eleanor',
+      'Jayden',
+      'Natalie',
+      'Gabriel',
+      'Luna',
+      'Isaac',
+      'Savannah',
+      'Lincoln',
+      'Leah',
+      'Anthony',
+      'Zoe',
+      'Hudson',
+      'Stella',
+      'Dylan',
+      'Hazel',
+      'Ezra',
+      'Ellie',
+      'Thomas',
+      'Paisley',
+      'Charles',
+      'Audrey',
+      'Christopher',
+      'Skylar',
+      'Jaxon',
+      'Violet',
+      'Maverick',
+      'Claire',
+      'Josiah',
+      'Bella',
+      'Isaiah',
+      'Aurora',
+      'Andrew',
+      'Lucy',
+      'Elias',
+      'Anna',
+      'Joshua',
+      'Caroline',
+      'Nathan',
+      'Genesis',
+      'Caleb',
+      'Aaliyah',
+      'Ryan',
+      'Kennedy',
+      'Adrian',
+      'Kinsley',
+      'Miles',
+      'Allison',
+      'Eli',
+      'Maya',
+      'Aaron',
+      'Sarah',
+      'Ian',
+      'Madelyn',
+      'Adam',
+      'Adeline',
+      'Axel',
+      'Alexa',
+      'Tyler',
+      'Ariana',
+      'Justin',
+      'Elena',
+      'Evan',
+      'Gabriella',
+      'Landon',
+      'Naomi',
+      'Jason',
+      'Alice',
+      'Parker',
+      'Sadie',
+      'Hunter',
+      'Hailey',
+      'Nolan',
+      'Eva',
+      'Zachary',
+      'Emilia',
+      'Easton',
+      'Autumn',
+      'Blake',
+      'Quinn',
+      'Nevaeh',
+      'Colton',
+      'Piper',
+      'Jordan',
+      'Ruby',
+      'Brayden',
+      'Serenity',
+      'Nicholas',
+      'Willow',
+      'Angel',
+      'Everly',
+      'Dominic',
+      'Cora',
+      'Austin',
+      'Kaylee',
+      'Ian',
+      'Lydia',
+      'Adam',
+      'Aubree',
+      'Elias',
+      'Arianna',
+      'Jaxson',
+      'Eliana',
+      'Greyson',
+      'Peyton',
+      'Roman',
+      'Melanie',
+      'Ezekiel',
+      'Gianna',
+      'Miles',
+      'Isabelle',
+      'Micah',
+      'Julia',
+      'Vincent',
+      'Valentina',
+      'Bryce',
+      'Clara',
+      'Theo',
+      'Vivian',
+      'Maximus',
+      'Reagan',
+      'Max',
+      'Mackenzie',
+      'Harrison',
+      'Madeline',
+      'Weston',
+      'Brielle',
+      'Bryson',
+      'Delilah',
+      'Antonio',
+      'Isla',
+      'Beau',
+      'Rylee',
+      'Damian',
+      'Arielle',
+      'Bentley',
+      'Kendall',
+      'Carlos',
+      'Jordyn',
+      'Ryker',
+      'Jocelyn',
+      'Tristan',
+      'Payton',
+      'Declan',
+      'Liliana',
+      'Knox',
+      'Maria',
+      'Kaden',
+      'Trinity',
+      'Kyle',
+      'Ximena',
+      'Griffin',
+      'Jade',
+      'Miguel',
+      'Josie',
+      'Cole',
+      'Eden',
+      'Tyler',
+      'Ayla',
+      'Ryder',
+      'Raelynn',
+      'Ashton',
+      'Elise',
+      'Brantley',
+      'Remi',
+      'Felix',
+      'Emberly',
+      'Bennett',
+      'Mya',
+      'Preston',
+      'Kyla',
+      'Silas',
+      'Ariyah',
+      'Rhett',
+      'Arya',
+      'Zander',
+      'Norah',
+      'Andres',
+      'Khloe',
+      'Jasper',
+      'Makenna',
+      'Iker',
+      'Amara',
+      'Calvin',
+      'Adriana',
+      'Emmett',
+      'Cali',
+      'Waylon',
+      'Esther',
+      'Axel',
+      'Alyssa',
+      'River',
+      'Anastasia',
+      'Brody',
+      'Ryleigh',
+      'Luca',
+      'Finley',
+      'Jude',
+      'Makenzie',
+      'Lukas',
+      'Hope',
+      'Enzo',
+      'Brianna',
+      'Crew',
+      'Callie',
+      'Koda',
+      'Sloane',
+      'Paxton',
+      'Gracie',
+      'Hendrix',
+      'Daniella',
+      'Rowan',
+      'Daphne',
+      'Zayden',
+      'Harmony',
+      'Knox',
+      'Alana',
+      'Bodhi',
+      'Gemma',
+      'Cruz',
+      'Laila',
+      'Rylan',
+      'Raegan',
+      'Zion',
+      'Journee',
+      'Maddox',
+      'Presley',
+      'Ronan',
+      'Zara',
+      'Cade',
+      'Amira',
+      'Nash',
+      'Aylin',
+      'Chance',
+      'Catalina',
+      'Lennox',
+      'Belen',
+      'Kash',
+      'Lexi',
+      'Krew',
+      'Myra',
+      'Kyrie',
+      'Fernanda',
+      'Titan',
+      'Charlee',
+      'Ridge',
+      'Dahlia',
+      'Sage',
+      'Maliyah',
+      'Sergio',
+      'Amiyah',
+      'Travis',
+      'Lia',
+      'Callum',
+      'Nayeli',
+      'Kane',
+      'Ariah',
+      'Royal',
+      'Alani',
+      'Zayne',
+      'Kaia',
+      'Crew',
+      'Ari',
+      'Koda',
+      'Luciana',
+      'Paxton',
+      'Allie',
+      'Hendrix',
+      'Raelynn',
+      'Rowan',
+      'Makenna',
+      'Zayden',
+      'Brielle',
+      'Knox',
+      'Emberly',
+      'Bodhi',
+      'Arielle',
+      'Cruz',
+      'Kendall',
+      'Rylan',
+      'Jordyn',
+      'Maddox',
+      'Payton',
+      'Ronan',
+      'Liliana',
+      'Cade',
+      'Trinity',
+      'Nash',
+      'Maria',
+      'Chance',
+      'Ximena',
+      'Lennox',
+      'Jade',
+      'Kash',
+      'Josie',
+      'Krew',
+      'Eden',
+      'Kyrie',
+      'Ayla',
+      'Titan',
+      'Raelynn',
+      'Ridge',
+      'Elise',
+      'Sage',
+      'Mya',
+      'Sergio',
+      'Kyla',
+      'Travis',
+      'Ariyah',
+      'Callum',
+      'Norah',
+      'Kane',
+      'Khloe',
+      'Royal',
+      'Makenna',
+      'Zayne',
+      'Amara',
+      'Crew',
+      'Ari',
+      'Koda',
+      'Luciana',
+      'Paxton',
+      'Allie',
+      'Hendrix',
+      'Raelynn',
+      'Rowan',
+      'Makenna',
+      'Zayden',
+      'Brielle',
+      'Knox',
+      'Emberly',
+      'Bodhi',
+      'Arielle',
     ];
 
     final jobs = [
-      'Software Engineer', 'Doctor', 'Teacher', 'Artist', 'Designer', 'Writer',
-      'Photographer', 'Chef', 'Musician', 'Actor', 'Lawyer', 'Engineer',
-      'Entrepreneur', 'Consultant', 'Marketing Manager', 'Sales Rep',
-      'Nurse', 'Psychologist', 'Architect', 'Pilot', 'Journalist', 'Scientist',
-      'Fitness Trainer', 'Real Estate Agent', 'Financial Advisor', 'Student',
+      'Software Engineer',
+      'Doctor',
+      'Teacher',
+      'Artist',
+      'Designer',
+      'Writer',
+      'Photographer',
+      'Chef',
+      'Musician',
+      'Actor',
+      'Lawyer',
+      'Engineer',
+      'Entrepreneur',
+      'Consultant',
+      'Marketing Manager',
+      'Sales Rep',
+      'Nurse',
+      'Psychologist',
+      'Architect',
+      'Pilot',
+      'Journalist',
+      'Scientist',
+      'Fitness Trainer',
+      'Real Estate Agent',
+      'Financial Advisor',
+      'Student',
     ];
 
     final interests = [
-      'Travel', 'Music', 'Sports', 'Art', 'Food', 'Movies', 'Books', 'Fitness',
-      'Photography', 'Dancing', 'Cooking', 'Hiking', 'Yoga', 'Gaming',
-      'Fashion', 'Nature', 'Technology', 'Animals', 'Volunteering', 'Wine',
-      'Coffee', 'Beach', 'Mountains', 'Concerts', 'Museums', 'Theater',
+      'Travel',
+      'Music',
+      'Sports',
+      'Art',
+      'Food',
+      'Movies',
+      'Books',
+      'Fitness',
+      'Photography',
+      'Dancing',
+      'Cooking',
+      'Hiking',
+      'Yoga',
+      'Gaming',
+      'Fashion',
+      'Nature',
+      'Technology',
+      'Animals',
+      'Volunteering',
+      'Wine',
+      'Coffee',
+      'Beach',
+      'Mountains',
+      'Concerts',
+      'Museums',
+      'Theater',
     ];
 
     final locations = [
-      'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia',
-      'San Antonio', 'San Diego', 'Dallas', 'San Jose', 'Austin', 'Jacksonville',
-      'Fort Worth', 'Columbus', 'Charlotte', 'San Francisco', 'Indianapolis',
-      'Seattle', 'Denver', 'Washington', 'Boston', 'El Paso', 'Nashville',
-      'Detroit', 'Oklahoma City', 'Portland', 'Las Vegas', 'Memphis', 'Louisville',
-      'Baltimore', 'Milwaukee', 'Albuquerque', 'Tucson', 'Fresno', 'Sacramento',
-      'Mesa', 'Kansas City', 'Atlanta', 'Long Beach', 'Colorado Springs',
-      'Raleigh', 'Miami', 'Virginia Beach', 'Omaha', 'Oakland', 'Minneapolis',
-      'Tulsa', 'Arlington', 'Tampa', 'New Orleans',
+      'New York',
+      'Los Angeles',
+      'Chicago',
+      'Houston',
+      'Phoenix',
+      'Philadelphia',
+      'San Antonio',
+      'San Diego',
+      'Dallas',
+      'San Jose',
+      'Austin',
+      'Jacksonville',
+      'Fort Worth',
+      'Columbus',
+      'Charlotte',
+      'San Francisco',
+      'Indianapolis',
+      'Seattle',
+      'Denver',
+      'Washington',
+      'Boston',
+      'El Paso',
+      'Nashville',
+      'Detroit',
+      'Oklahoma City',
+      'Portland',
+      'Las Vegas',
+      'Memphis',
+      'Louisville',
+      'Baltimore',
+      'Milwaukee',
+      'Albuquerque',
+      'Tucson',
+      'Fresno',
+      'Sacramento',
+      'Mesa',
+      'Kansas City',
+      'Atlanta',
+      'Long Beach',
+      'Colorado Springs',
+      'Raleigh',
+      'Miami',
+      'Virginia Beach',
+      'Omaha',
+      'Oakland',
+      'Minneapolis',
+      'Tulsa',
+      'Arlington',
+      'Tampa',
+      'New Orleans',
     ];
 
     return List.generate(50, (index) {
@@ -377,20 +842,24 @@ class DatingService {
         name: name,
         age: age,
         bio: _generateBio(name, age),
-        photos: List.generate(photoCount, (i) => 
-          'https://via.placeholder.com/400x600/${_getRandomColor()}/FFFFFF?text=${name}+${i + 1}'),
+        photos: List.generate(
+          photoCount,
+          (i) =>
+              'https://via.placeholder.com/400x600/${_getRandomColor()}/FFFFFF?text=$name+${i + 1}',
+        ),
         location: locations[random.nextInt(locations.length)],
         distance: distance,
-        interests: interests..shuffle()..take(interestCount).toList(),
+        interests: interests
+          ..shuffle()
+          ..take(interestCount).toList(),
         job: jobs[random.nextInt(jobs.length)],
         education: _getRandomEducation(),
         height: 150 + random.nextInt(50), // 150-200 cm
         lookingFor: _getRandomLookingFor(),
         isVerified: random.nextBool(),
-        lastActive: DateTime.now().subtract(Duration(
-          hours: random.nextInt(24),
-          minutes: random.nextInt(60),
-        )),
+        lastActive: DateTime.now().subtract(
+          Duration(hours: random.nextInt(24), minutes: random.nextInt(60)),
+        ),
       );
     });
   }
@@ -418,7 +887,7 @@ class DatingService {
       'Dancer, traveler, and life enthusiast 💃',
       'Engineer by profession, explorer by passion 🔧',
     ];
-    
+
     return bios[Random().nextInt(bios.length)];
   }
 
@@ -450,9 +919,24 @@ class DatingService {
 
   static String _getRandomColor() {
     final colors = [
-      'FF6B6B', '4ECDC4', '45B7D1', '96CEB4', 'FFEAA7', 'DDA0DD',
-      '98D8C8', 'F7DC6F', 'BB8FCE', '85C1E9', 'F8C471', '82E0AA',
-      'F1948A', '85C1E9', 'F7DC6F', 'D7BDE2', 'A9DFBF', 'F9E79F',
+      'FF6B6B',
+      '4ECDC4',
+      '45B7D1',
+      '96CEB4',
+      'FFEAA7',
+      'DDA0DD',
+      '98D8C8',
+      'F7DC6F',
+      'BB8FCE',
+      '85C1E9',
+      'F8C471',
+      '82E0AA',
+      'F1948A',
+      '85C1E9',
+      'F7DC6F',
+      'D7BDE2',
+      'A9DFBF',
+      'F9E79F',
     ];
     return colors[Random().nextInt(colors.length)];
   }
