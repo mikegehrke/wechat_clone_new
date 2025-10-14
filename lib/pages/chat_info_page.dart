@@ -14,7 +14,8 @@ class ChatInfoPage extends StatefulWidget {
   State<ChatInfoPage> createState() => _ChatInfoPageState();
 }
 
-class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderStateMixin {
+class _ChatInfoPageState extends State<ChatInfoPage>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -64,7 +65,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
                   backgroundColor: Colors.grey[300],
                   child: widget.chat.avatar == null
                       ? Text(
-                          (widget.chat.name ?? 'U')[0].toUpperCase(),
+                          widget.chat.name[0].toUpperCase(),
                           style: const TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
@@ -75,7 +76,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  widget.chat.name ?? 'Unknown',
+                  widget.chat.name,
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -109,7 +110,9 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
                       label: 'Audio',
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Audio call coming soon!')),
+                          const SnackBar(
+                            content: Text('Audio call coming soon!'),
+                          ),
                         );
                       },
                     ),
@@ -118,7 +121,9 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
                       label: 'Video',
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Video call coming soon!')),
+                          const SnackBar(
+                            content: Text('Video call coming soon!'),
+                          ),
                         );
                       },
                     ),
@@ -127,7 +132,9 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
                       label: 'Search',
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Search in chat coming soon!')),
+                          const SnackBar(
+                            content: Text('Search in chat coming soon!'),
+                          ),
                         );
                       },
                     ),
@@ -136,7 +143,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
               ],
             ),
           ),
-          
+
           // Tabs
           TabBar(
             controller: _tabController,
@@ -149,19 +156,15 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
               Tab(text: 'Files'),
             ],
           ),
-          
+
           // Tab views
           Expanded(
             child: TabBarView(
               controller: _tabController,
-              children: [
-                _buildMediaTab(),
-                _buildLinksTab(),
-                _buildFilesTab(),
-              ],
+              children: [_buildMediaTab(), _buildLinksTab(), _buildFilesTab()],
             ),
           ),
-          
+
           // Settings
           Container(
             color: Colors.grey[100],
@@ -260,10 +263,7 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
           children: [
             Icon(icon, color: const Color(0xFF07C160)),
             const SizedBox(height: 8),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 12),
-            ),
+            Text(label, style: const TextStyle(fontSize: 12)),
           ],
         ),
       ),
@@ -272,8 +272,11 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
 
   Widget _buildMediaTab() {
     return FutureBuilder<List<Message>>(
-      future: ChatService.getMessages(chatId: widget.chat.id).then((messages) => 
-        messages.where((message) => message.type == MessageType.image).toList()),
+      future: ChatService.getMessages(chatId: widget.chat.id).then(
+        (messages) => messages
+            .where((message) => message.type == MessageType.image)
+            .toList(),
+      ),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -343,10 +346,14 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
       ),
     );
   }
+
   Widget _buildFilesTab() {
     return FutureBuilder<List<Message>>(
-      future: ChatService.getMessages(chatId: widget.chat.id).then((messages) => 
-        messages.where((message) => message.type == MessageType.file).toList()),
+      future: ChatService.getMessages(chatId: widget.chat.id).then(
+        (messages) => messages
+            .where((message) => message.type == MessageType.file)
+            .toList(),
+      ),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -359,7 +366,11 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.insert_drive_file, size: 64, color: Colors.grey[400]),
+                Icon(
+                  Icons.insert_drive_file,
+                  size: 64,
+                  color: Colors.grey[400],
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'No files',
@@ -375,7 +386,10 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
           itemBuilder: (context, index) {
             final message = files[index];
             return ListTile(
-              leading: const Icon(Icons.insert_drive_file, color: Color(0xFF07C160)),
+              leading: const Icon(
+                Icons.insert_drive_file,
+                color: Color(0xFF07C160),
+              ),
               title: Text(message.metadata?['filename'] ?? 'File'),
               subtitle: Text(message.metadata?['size'] ?? ''),
               onTap: () {
@@ -452,9 +466,9 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
               // await ChatService.leaveGroup(widget.chat.id, currentUserId);
               if (mounted) {
                 Navigator.pop(context); // Go back to chat list
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Left group')),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Left group')));
               }
             },
             child: const Text('Exit', style: TextStyle(color: Colors.red)),
@@ -469,7 +483,9 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Block Contact'),
-        content: Text('Block ${widget.chat.name}? They won\'t be able to call or message you.'),
+        content: Text(
+          'Block ${widget.chat.name}? They won\'t be able to call or message you.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -505,9 +521,9 @@ class _ChatInfoPageState extends State<ChatInfoPage> with SingleTickerProviderSt
             onPressed: () {
               Navigator.pop(context);
               // TODO: Report chat
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Reported')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Reported')));
             },
             child: const Text('Report', style: TextStyle(color: Colors.red)),
           ),

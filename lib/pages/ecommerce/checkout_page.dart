@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../models/product.dart';
-import '../../services/ecommerce_service.dart';
 
 class CheckoutPage extends StatefulWidget {
   final List<CartItem> cartItems;
@@ -13,11 +12,12 @@ class CheckoutPage extends StatefulWidget {
 
 class _CheckoutPageState extends State<CheckoutPage> {
   String _shippingAddress = '123 Main St, Apartment 4B';
-  String _paymentMethod = 'Credit Card';
   bool _isProcessing = false;
 
   double get _subtotal => widget.cartItems.fold(
-    0, (sum, item) => sum + (item.product.price * item.quantity));
+    0,
+    (sum, item) => sum + (item.product.price * item.quantity),
+  );
   double get _shipping => 5.99;
   double get _tax => _subtotal * 0.08;
   double get _total => _subtotal + _shipping + _tax;
@@ -44,11 +44,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
                 ),
                 const SizedBox(height: 12),
                 ...widget.cartItems.map((item) => _buildOrderItem(item)),
-                
+
                 const SizedBox(height: 24),
                 const Divider(),
                 const SizedBox(height: 24),
-                
+
                 // Shipping address
                 const Text(
                   'Shipping Address',
@@ -74,11 +74,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
                 const Divider(),
                 const SizedBox(height: 24),
-                
+
                 // Price summary
                 const Text(
                   'Order Summary',
@@ -106,7 +106,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
               ],
             ),
           ),
-          
+
           SafeArea(
             child: Container(
               padding: const EdgeInsets.all(20),
@@ -144,7 +144,10 @@ class _CheckoutPageState extends State<CheckoutPage> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Text('${item.quantity}x', style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(
+            '${item.quantity}x',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
           const SizedBox(width: 8),
           Expanded(child: Text(item.product.title)),
           Text('\$${(item.product.price * item.quantity).toStringAsFixed(2)}'),
@@ -178,7 +181,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
   Future<void> _placeOrder() async {
     setState(() => _isProcessing = true);
     await Future.delayed(const Duration(seconds: 2));
-    
+
     if (mounted) {
       Navigator.popUntil(context, (route) => route.isFirst);
       ScaffoldMessenger.of(context).showSnackBar(

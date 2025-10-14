@@ -4,7 +4,6 @@ import '../providers/auth_provider.dart';
 import '../models/chat.dart';
 import '../models/message.dart';
 import '../services/chat_service.dart';
-import '../services/firebase_auth_service.dart';
 import 'chat_detail_page.dart';
 import 'contacts_page_real.dart';
 import 'package:intl/intl.dart';
@@ -31,9 +30,7 @@ class _ChatListPageRealState extends State<ChatListPageReal> {
     final currentUser = Provider.of<AuthProvider>(context).currentUser;
 
     if (currentUser == null) {
-      return const Scaffold(
-        body: Center(child: Text('Please log in')),
-      );
+      return const Scaffold(body: Center(child: Text('Please log in')));
     }
 
     return Scaffold(
@@ -58,10 +55,7 @@ class _ChatListPageRealState extends State<ChatListPageReal> {
               )
             : const Text(
                 'Chats',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
         actions: [
           IconButton(
@@ -153,9 +147,9 @@ class _ChatListPageRealState extends State<ChatListPageReal> {
           final chats = _searchController.text.isEmpty
               ? allChats
               : allChats.where((chat) {
-                  return chat.name
-                      .toLowerCase()
-                      .contains(_searchController.text.toLowerCase());
+                  return chat.name.toLowerCase().contains(
+                    _searchController.text.toLowerCase(),
+                  );
                 }).toList();
 
           if (chats.isEmpty) {
@@ -186,9 +180,7 @@ class _ChatListPageRealState extends State<ChatListPageReal> {
                     _searchController.text.isEmpty
                         ? 'Tap + to start a conversation'
                         : 'Try a different search term',
-                    style: TextStyle(
-                      color: Colors.grey[500],
-                    ),
+                    style: TextStyle(color: Colors.grey[500]),
                   ),
                   if (_searchController.text.isEmpty) ...[
                     const SizedBox(height: 24),
@@ -236,25 +228,23 @@ class _ChatListPageRealState extends State<ChatListPageReal> {
 
     // Format last message time
     String timeString = '';
-    if (chat.lastActivity != null) {
-      final now = DateTime.now();
-      final diff = now.difference(chat.lastActivity);
+    final now = DateTime.now();
+    final diff = now.difference(chat.lastActivity);
 
-      if (diff.inDays > 0) {
-        if (diff.inDays == 1) {
-          timeString = 'Yesterday';
-        } else if (diff.inDays < 7) {
-          timeString = DateFormat('EEEE').format(chat.lastActivity);
-        } else {
-          timeString = DateFormat('dd/MM/yy').format(chat.lastActivity);
-        }
-      } else if (diff.inHours > 0) {
-        timeString = '${diff.inHours}h ago';
-      } else if (diff.inMinutes > 0) {
-        timeString = '${diff.inMinutes}m ago';
+    if (diff.inDays > 0) {
+      if (diff.inDays == 1) {
+        timeString = 'Yesterday';
+      } else if (diff.inDays < 7) {
+        timeString = DateFormat('EEEE').format(chat.lastActivity);
       } else {
-        timeString = 'Just now';
+        timeString = DateFormat('dd/MM/yy').format(chat.lastActivity);
       }
+    } else if (diff.inHours > 0) {
+      timeString = '${diff.inHours}h ago';
+    } else if (diff.inMinutes > 0) {
+      timeString = '${diff.inMinutes}m ago';
+    } else {
+      timeString = 'Just now';
     }
 
     // Format last message preview
@@ -290,7 +280,9 @@ class _ChatListPageRealState extends State<ChatListPageReal> {
           CircleAvatar(
             radius: 28,
             backgroundColor: const Color(0xFF07C160),
-            backgroundImage: chat.avatar != null ? NetworkImage(chat.avatar!) : null,
+            backgroundImage: chat.avatar != null
+                ? NetworkImage(chat.avatar!)
+                : null,
             child: chat.avatar == null
                 ? Text(
                     chatName.isNotEmpty ? chatName[0].toUpperCase() : '?',
@@ -384,9 +376,7 @@ class _ChatListPageRealState extends State<ChatListPageReal> {
   void _navigateToContacts() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const ContactsPageReal(),
-      ),
+      MaterialPageRoute(builder: (context) => const ContactsPageReal()),
     );
   }
 }

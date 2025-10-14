@@ -2,9 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import '../models/chat.dart';
 import '../models/message.dart';
-import '../models/user.dart' as app_models;
 import '../services/chat_service.dart';
 import '../services/firebase_auth_service.dart';
 import '../providers/auth_provider.dart';
@@ -32,7 +30,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final ImagePicker _imagePicker = ImagePicker();
-  
+
   bool _isTyping = false;
   Map<String, bool> _typingUsers = {};
 
@@ -138,16 +136,16 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   Future<void> _sendImage(ImageSource source) async {
     try {
       final XFile? image = await _imagePicker.pickImage(source: source);
-      
+
       if (image == null) return;
 
       final currentUserId = FirebaseAuthService.currentUserId;
       if (currentUserId == null) return;
 
       // Show sending indicator
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sending image...')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Sending image...')));
 
       await ChatService.sendImageMessage(
         chatId: widget.chatId,
@@ -184,10 +182,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
           children: [
             const Text(
               'Send Attachment',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             Row(
@@ -218,7 +213,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                   onTap: () {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Voice messages coming soon!')),
+                      const SnackBar(
+                        content: Text('Voice messages coming soon!'),
+                      ),
                     );
                   },
                 ),
@@ -229,7 +226,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                   onTap: () {
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Document sharing coming soon!')),
+                      const SnackBar(
+                        content: Text('Document sharing coming soon!'),
+                      ),
                     );
                   },
                 ),
@@ -255,17 +254,11 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
           Container(
             width: 60,
             height: 60,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             child: Icon(icon, color: Colors.white, size: 30),
           ),
           const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(fontSize: 12),
-          ),
+          Text(label, style: const TextStyle(fontSize: 12)),
         ],
       ),
     );
@@ -322,11 +315,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   @override
   Widget build(BuildContext context) {
     final currentUser = Provider.of<AuthProvider>(context).currentUser;
-    
+
     if (currentUser == null) {
-      return const Scaffold(
-        body: Center(child: Text('Please log in')),
-      );
+      return const Scaffold(body: Center(child: Text('Please log in')));
     }
 
     return Scaffold(
@@ -380,10 +371,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.call),
-            onPressed: _showCallOptions,
-          ),
+          IconButton(icon: const Icon(Icons.call), onPressed: _showCallOptions),
           IconButton(
             icon: const Icon(Icons.more_vert),
             onPressed: () {
@@ -402,15 +390,15 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
                     child: CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF07C160)),
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Color(0xFF07C160),
+                      ),
                     ),
                   );
                 }
 
                 if (snapshot.hasError) {
-                  return Center(
-                    child: Text('Error: ${snapshot.error}'),
-                  );
+                  return Center(child: Text('Error: ${snapshot.error}'));
                 }
 
                 final messages = snapshot.data ?? [];
@@ -451,7 +439,8 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                   itemBuilder: (context, index) {
                     final message = messages[index];
                     final isMe = message.senderId == currentUser.id;
-                    final showAvatar = index == 0 ||
+                    final showAvatar =
+                        index == 0 ||
                         messages[index - 1].senderId != message.senderId;
 
                     return _buildMessageBubble(message, isMe, showAvatar);
@@ -517,12 +506,14 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
   Widget _buildMessageBubble(Message message, bool isMe, bool showAvatar) {
     final timestamp = message.timestamp is String
         ? DateTime.parse(message.timestamp as String)
-        : message.timestamp as DateTime;
+        : message.timestamp;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
-        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isMe
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isMe && showAvatar && widget.isGroup)
@@ -533,9 +524,9 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
             )
           else if (!isMe && widget.isGroup)
             const SizedBox(width: 32),
-          
+
           if (!isMe) const SizedBox(width: 8),
-          
+
           Flexible(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -572,24 +563,21 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                         },
                       ),
                     ),
-                  
+
                   if (message.content != null && message.content!.isNotEmpty)
                     Text(
                       message.content!,
                       style: const TextStyle(fontSize: 15),
                     ),
-                  
+
                   const SizedBox(height: 4),
-                  
+
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         DateFormat('HH:mm').format(timestamp),
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                       ),
                       if (isMe) ...[
                         const SizedBox(width: 4),
@@ -609,7 +597,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
               ),
             ),
           ),
-          
+
           if (isMe) const SizedBox(width: 8),
         ],
       ),

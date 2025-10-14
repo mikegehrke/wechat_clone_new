@@ -17,7 +17,8 @@ class PaymentPage extends StatefulWidget {
   State<PaymentPage> createState() => _PaymentPageState();
 }
 
-class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin {
+class _PaymentPageState extends State<PaymentPage>
+    with TickerProviderStateMixin {
   late TabController _tabController;
   Wallet? _wallet;
   List<PaymentMethod> _paymentMethods = [];
@@ -142,10 +143,7 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
             const SizedBox(height: 16),
             Text(_error!, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadData,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
           ],
         ),
       );
@@ -160,10 +158,7 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
             SizedBox(height: 16),
             Text(
               'No wallet found',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.grey),
             ),
           ],
         ),
@@ -180,9 +175,9 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
             onAddMoney: _addMoney,
             onWithdrawMoney: _withdrawMoney,
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Quick actions
           Row(
             children: [
@@ -219,27 +214,28 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
               ),
             ],
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Recent transactions
           const Text(
             'Recent Transactions',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          
+
           const SizedBox(height: 16),
-          
-          ..._wallet!.transactions.take(5).map((transaction) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: TransactionItem(
-              transaction: transaction,
-              onTap: () => _navigateToTransactionDetail(transaction),
-            ),
-          )),
+
+          ..._wallet!.transactions
+              .take(5)
+              .map(
+                (transaction) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: TransactionItem(
+                    transaction: transaction,
+                    onTap: () => _navigateToTransactionDetail(transaction),
+                  ),
+                ),
+              ),
         ],
       ),
     );
@@ -259,10 +255,7 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
             const SizedBox(height: 16),
             Text(_error!, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadData,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
           ],
         ),
       );
@@ -277,18 +270,12 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
             const SizedBox(height: 16),
             const Text(
               'No payment methods',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.grey),
             ),
             const SizedBox(height: 8),
             const Text(
               'Add a payment method to get started',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -339,10 +326,7 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
             const SizedBox(height: 16),
             Text(_error!, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadData,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
           ],
         ),
       );
@@ -357,10 +341,7 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
             SizedBox(height: 16),
             Text(
               'No transactions yet',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.grey),
             ),
           ],
         ),
@@ -375,7 +356,7 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: TransactionItem(
-            transaction: transaction as PaymentTransaction,
+            transaction: transaction,
             onTap: () => _navigateToTransactionDetail(transaction),
           ),
         );
@@ -397,10 +378,7 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
             const SizedBox(height: 16),
             Text(_error!, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadData,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
           ],
         ),
       );
@@ -415,10 +393,7 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
             SizedBox(height: 16),
             Text(
               'No subscriptions',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.grey),
             ),
           ],
         ),
@@ -477,10 +452,7 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
             const SizedBox(height: 8),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
             ),
           ],
         ),
@@ -510,10 +482,7 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
           children: [
             const Text(
               'Quick Actions',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Row(
@@ -581,7 +550,9 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
                     onTap: () {
                       Navigator.pop(context);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('QR scanner coming soon!')),
+                        const SnackBar(
+                          content: Text('QR scanner coming soon!'),
+                        ),
                       );
                     },
                   ),
@@ -604,10 +575,7 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
           children: [
             Text(
               paymentMethod.displayName,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             ListTile(
@@ -645,9 +613,9 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
   }
 
   void _showSubscriptionOptions(Subscription subscription) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${subscription.planName} options')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('${subscription.planName} options')));
   }
 
   void _cancelSubscription(Subscription subscription) {
@@ -659,7 +627,7 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
   void _navigateToTransactionDetail(dynamic transaction) {
     // Convert WalletTransaction to PaymentTransaction if needed
     PaymentTransaction paymentTx;
-    
+
     if (transaction is WalletTransaction) {
       paymentTx = PaymentTransaction(
         id: transaction.id,
@@ -674,7 +642,7 @@ class _PaymentPageState extends State<PaymentPage> with TickerProviderStateMixin
     } else {
       paymentTx = transaction as PaymentTransaction;
     }
-    
+
     Navigator.push(
       context,
       MaterialPageRoute(

@@ -4,6 +4,7 @@ import '../providers/auth_provider.dart';
 import '../services/user_service.dart';
 import '../services/chat_service.dart';
 import '../models/app_foundations.dart';
+import '../models/chat.dart';
 import 'chat_detail_page.dart';
 
 class ContactsPage extends StatefulWidget {
@@ -79,13 +80,22 @@ class _ContactsPageState extends State<ContactsPage> {
                 children: [
                   Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
                   const SizedBox(height: 16),
-                  const Text('Error loading users', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Error loading users',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                   const SizedBox(height: 8),
-                  Text('${snapshot.error}', style: TextStyle(color: Colors.grey[600]), textAlign: TextAlign.center),
+                  Text(
+                    '${snapshot.error}',
+                    style: TextStyle(color: Colors.grey[600]),
+                    textAlign: TextAlign.center,
+                  ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => setState(() {}),
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF07C160)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF07C160),
+                    ),
                     child: const Text('Retry'),
                   ),
                 ],
@@ -94,7 +104,10 @@ class _ContactsPageState extends State<ContactsPage> {
           }
 
           final users = snapshot.data ?? [];
-          final currentUserId = Provider.of<AuthProvider>(context, listen: false).currentUser?.id;
+          final currentUserId = Provider.of<AuthProvider>(
+            context,
+            listen: false,
+          ).currentUser?.id;
           final otherUsers = users.where((u) => u.id != currentUserId).toList();
 
           final filteredUsers = _searchController.text.isEmpty
@@ -111,11 +124,30 @@ class _ContactsPageState extends State<ContactsPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(_searchController.text.isEmpty ? Icons.people_outline : Icons.search_off, size: 64, color: Colors.grey[400]),
+                  Icon(
+                    _searchController.text.isEmpty
+                        ? Icons.people_outline
+                        : Icons.search_off,
+                    size: 64,
+                    color: Colors.grey[400],
+                  ),
                   const SizedBox(height: 16),
-                  Text(_searchController.text.isEmpty ? 'No users found' : 'No results', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    _searchController.text.isEmpty
+                        ? 'No users found'
+                        : 'No results',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: 8),
-                  Text(_searchController.text.isEmpty ? 'Register more accounts' : 'Try different search', style: TextStyle(color: Colors.grey[600])),
+                  Text(
+                    _searchController.text.isEmpty
+                        ? 'Register more accounts'
+                        : 'Try different search',
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
                 ],
               ),
             );
@@ -130,14 +162,37 @@ class _ContactsPageState extends State<ContactsPage> {
                 leading: CircleAvatar(
                   radius: 24,
                   backgroundColor: const Color(0xFF07C160),
-                  backgroundImage: user.avatarUrl != null && user.avatarUrl!.isNotEmpty ? NetworkImage(user.avatarUrl!) : null,
+                  backgroundImage:
+                      user.avatarUrl != null && user.avatarUrl!.isNotEmpty
+                      ? NetworkImage(user.avatarUrl!)
+                      : null,
                   child: user.avatarUrl == null || user.avatarUrl!.isEmpty
-                      ? Text((user.username ?? user.email ?? 'U')[0].toUpperCase(), style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold))
+                      ? Text(
+                          (user.username ?? user.email ?? 'U')[0].toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
                       : null,
                 ),
-                title: Text(user.username ?? user.displayName ?? 'User', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black87)),
-                subtitle: Text(user.email ?? user.phoneNumber, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
-                trailing: const Icon(Icons.chat_bubble_outline, color: Color(0xFF07C160)),
+                title: Text(
+                  user.username ?? user.displayName ?? 'User',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
+                ),
+                subtitle: Text(
+                  user.email ?? user.phoneNumber,
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+                trailing: const Icon(
+                  Icons.chat_bubble_outline,
+                  color: Color(0xFF07C160),
+                ),
               );
             },
           );
@@ -147,19 +202,43 @@ class _ContactsPageState extends State<ContactsPage> {
   }
 
   Future<void> _openChat(UserAccount user) async {
-    final currentUser = Provider.of<AuthProvider>(context, listen: false).currentUser;
+    final currentUser = Provider.of<AuthProvider>(
+      context,
+      listen: false,
+    ).currentUser;
     if (currentUser == null) return;
 
-    showDialog(context: context, barrierDismissible: false, builder: (context) => const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF07C160)))));
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF07C160)),
+        ),
+      ),
+    );
 
     try {
-      final chatId = await ChatService.getOrCreateDirectChat(userId1: currentUser.id, userId2: user.id);
+      final chatId = await ChatService.getOrCreateDirectChat(
+        userId1: currentUser.id,
+        userId2: user.id,
+      );
       final chat = await ChatService.getChatById(chatId);
 
       if (mounted) {
         Navigator.pop(context);
         if (chat != null) {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ChatDetailPage(chat: chat)));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChatDetailPage(
+                chatId: chat.id,
+                chatName: chat.name,
+                chatAvatar: chat.avatar,
+                isGroup: chat.type == ChatType.group,
+              ),
+            ),
+          );
         } else {
           _showError('Chat not found');
         }
@@ -173,6 +252,8 @@ class _ContactsPageState extends State<ContactsPage> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), backgroundColor: Colors.red));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
   }
 }

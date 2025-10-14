@@ -6,11 +6,7 @@ class GameReviewItem extends StatelessWidget {
   final GameReview review;
   final VoidCallback? onLike;
 
-  const GameReviewItem({
-    super.key,
-    required this.review,
-    this.onLike,
-  });
+  const GameReviewItem({super.key, required this.review, this.onLike});
 
   @override
   Widget build(BuildContext context) {
@@ -18,9 +14,7 @@ class GameReviewItem extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[200]!),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,7 +64,10 @@ class GameReviewItem extends StatelessWidget {
               ),
               if (review.isVerified)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.green[50],
                     borderRadius: BorderRadius.circular(4),
@@ -87,62 +84,53 @@ class GameReviewItem extends StatelessWidget {
                 ),
             ],
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Review text
           Text(
             review.review,
-            style: const TextStyle(
-              fontSize: 14,
-              height: 1.5,
-            ),
+            style: const TextStyle(fontSize: 14, height: 1.5),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Play time badge (not in model)
           // if (review.playTime > 0)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.access_time, size: 12, color: Colors.grey[600]),
-                  const SizedBox(width: 4),
-                  Text(
-                    '50 hours played',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(4),
             ),
-          
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.access_time, size: 12, color: Colors.grey[600]),
+                const SizedBox(width: 4),
+                Text(
+                  '50 hours played',
+                  style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          ),
+
           const SizedBox(height: 12),
-          
+
           // Actions
           Row(
             children: [
               TextButton.icon(
                 onPressed: onLike,
                 icon: Icon(
-                  false ? Icons.thumb_up : Icons.thumb_up_outlined,
+                  Icons.thumb_up_outlined,
                   size: 16,
-                  color: false ? const Color(0xFF07C160) : Colors.grey,
+                  color: Colors.grey,
                 ),
                 label: Text(
                   'Helpful${review.helpfulCount > 0 ? ' (${review.helpfulCount})' : ''}',
-                  style: TextStyle(
-                    color: false ? const Color(0xFF07C160) : Colors.grey[700],
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: Colors.grey[700], fontSize: 13),
                 ),
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -150,13 +138,14 @@ class GameReviewItem extends StatelessWidget {
               ),
               TextButton.icon(
                 onPressed: () {},
-                icon: Icon(Icons.flag_outlined, size: 16, color: Colors.grey[700]),
+                icon: Icon(
+                  Icons.flag_outlined,
+                  size: 16,
+                  color: Colors.grey[700],
+                ),
                 label: Text(
                   'Report',
-                  style: TextStyle(
-                    color: Colors.grey[700],
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: Colors.grey[700], fontSize: 13),
                 ),
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 8),

@@ -6,7 +6,6 @@ import '../../providers/auth_provider.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/custom_button.dart';
 import 'register_page.dart';
-import '../main_navigation.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -31,7 +30,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      
+
       try {
         final success = await authProvider.login(
           _emailController.text.trim(),
@@ -45,7 +44,10 @@ class _LoginPageState extends State<LoginPage> {
         if (!success && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(authProvider.error ?? 'Login failed - User not found. Please register first.'),
+              content: Text(
+                authProvider.error ??
+                    'Login failed - User not found. Please register first.',
+              ),
               backgroundColor: Colors.red,
               duration: const Duration(seconds: 4),
             ),
@@ -67,14 +69,14 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _loginWithGoogle() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
+
     try {
       final success = await authProvider.loginWithGoogle();
-      
+
       print('🔴 Google Login Success: $success');
       print('🔴 Current User: ${authProvider.currentUser?.username}');
       print('🔴 IsAuthenticated: ${authProvider.isAuthenticated}');
-      
+
       if (!success && mounted && authProvider.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -98,14 +100,14 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _loginWithApple() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    
+
     try {
       final success = await authProvider.loginWithApple();
-      
+
       print('🍎 Apple Login Success: $success');
       print('🍎 Current User: ${authProvider.currentUser?.username}');
       print('🍎 IsAuthenticated: ${authProvider.isAuthenticated}');
-      
+
       if (!success && mounted && authProvider.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -127,12 +129,11 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-
   Future<void> _loginWithPhone() async {
     // Show phone number input dialog
     final phoneController = TextEditingController();
     final otpController = TextEditingController();
-    
+
     final phone = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
@@ -177,22 +178,24 @@ class _LoginPageState extends State<LoginPage> {
         ],
       ),
     );
-    
+
     if (phone == null || phone.isEmpty) return;
-    
+
     try {
       // Show loading
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Sending OTP...')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Sending OTP...')));
       }
 
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final verificationId = await authProvider.sendPhoneVerificationCode(phone);
-      
+      final verificationId = await authProvider.sendPhoneVerificationCode(
+        phone,
+      );
+
       if (!mounted || verificationId == null) return;
-      
+
       // Show OTP input dialog
       final otp = await showDialog<String>(
         context: context,
@@ -239,25 +242,25 @@ class _LoginPageState extends State<LoginPage> {
           ],
         ),
       );
-      
+
       if (otp == null || otp.isEmpty) return;
-      
+
       // Show verifying
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Verifying OTP...')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Verifying OTP...')));
       }
 
       final success = await authProvider.verifyPhoneCode(
         verificationId: verificationId,
         smsCode: otp,
       );
-      
+
       print('📱 Phone Login Success: $success');
       print('📱 Current User: ${authProvider.currentUser?.username}');
       print('📱 IsAuthenticated: ${authProvider.isAuthenticated}');
-      
+
       if (!success && mounted && authProvider.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -293,170 +296,175 @@ class _LoginPageState extends State<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 16),
-                
-                // Logo/Title
-                const Icon(
-                  Icons.chat_bubble_outline,
-                  size: 60,
-                  color: Color(0xFF07C160),
-                ),
-                const SizedBox(height: 12),
-                
-                const Text(
-                  'Welcome Back',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+
+                  // Logo/Title
+                  const Icon(
+                    Icons.chat_bubble_outline,
+                    size: 60,
+                    color: Color(0xFF07C160),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                
-                // Email Field
-                CustomTextField(
-                  controller: _emailController,
-                  label: 'Email',
-                  hint: 'Enter your email',
-                  keyboardType: TextInputType.emailAddress,
-                  prefixIcon: Icons.email_outlined,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                
-                // Password Field
-                CustomTextField(
-                  controller: _passwordController,
-                  label: 'Password',
-                  hint: 'Enter your password',
-                  obscureText: _obscurePassword,
-                  prefixIcon: Icons.lock_outline,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                  const SizedBox(height: 12),
+
+                  const Text(
+                    'Welcome Back',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Email Field
+                  CustomTextField(
+                    controller: _emailController,
+                    label: 'Email',
+                    hint: 'Enter your email',
+                    keyboardType: TextInputType.emailAddress,
+                    prefixIcon: Icons.email_outlined,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      if (!RegExp(
+                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                      ).hasMatch(value)) {
+                        return 'Please enter a valid email';
+                      }
+                      return null;
                     },
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your password';
-                    }
-                    if (value.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-                
-                // Login Button
-                Consumer<AuthProvider>(
-                  builder: (context, authProvider, child) {
-                    return CustomButton(
-                      text: 'Sign In',
-                      onPressed: authProvider.isLoading ? null : _login,
-                      isLoading: authProvider.isLoading,
-                    );
-                  },
-                ),
-                const SizedBox(height: 24),
-                
-                // Divider
-                const Row(
-                  children: [
-                    Expanded(child: Divider()),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('OR', style: TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 16),
+
+                  // Password Field
+                  CustomTextField(
+                    controller: _passwordController,
+                    label: 'Password',
+                    hint: 'Enter your password',
+                    obscureText: _obscurePassword,
+                    prefixIcon: Icons.lock_outline,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
                     ),
-                    Expanded(child: Divider()),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                
-                // Google Sign-In Button
-                OutlinedButton.icon(
-                  onPressed: _loginWithGoogle,
-                  icon: Image.network(
-                    'https://www.google.com/favicon.ico',
-                    width: 24,
-                    height: 24,
-                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.g_mobiledata, size: 24),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      if (value.length < 6) {
+                        return 'Password must be at least 6 characters';
+                      }
+                      return null;
+                    },
                   ),
-                  label: const Text('Google'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: const BorderSide(color: Colors.grey),
+                  const SizedBox(height: 24),
+
+                  // Login Button
+                  Consumer<AuthProvider>(
+                    builder: (context, authProvider, child) {
+                      return CustomButton(
+                        text: 'Sign In',
+                        onPressed: authProvider.isLoading ? null : _login,
+                        isLoading: authProvider.isLoading,
+                      );
+                    },
                   ),
-                ),
-                const SizedBox(height: 12),
-                
-                // Apple Sign-In Button (nur iOS/macOS)
-                if (!kIsWeb && (Platform.isIOS || Platform.isMacOS))
+                  const SizedBox(height: 24),
+
+                  // Divider
+                  const Row(
+                    children: [
+                      Expanded(child: Divider()),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Text('OR', style: TextStyle(color: Colors.grey)),
+                      ),
+                      Expanded(child: Divider()),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Google Sign-In Button
                   OutlinedButton.icon(
-                    onPressed: _loginWithApple,
-                    icon: const Icon(Icons.apple, size: 24),
-                    label: const Text('Apple'),
+                    onPressed: _loginWithGoogle,
+                    icon: Image.network(
+                      'https://www.google.com/favicon.ico',
+                      width: 24,
+                      height: 24,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.g_mobiledata, size: 24),
+                    ),
+                    label: const Text('Google'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       side: const BorderSide(color: Colors.grey),
-                      foregroundColor: Colors.black,
                     ),
                   ),
-                if (!kIsWeb && (Platform.isIOS || Platform.isMacOS))
                   const SizedBox(height: 12),
-                
-                // Phone Login Button
-                OutlinedButton.icon(
-                  onPressed: _loginWithPhone,
-                  icon: const Icon(Icons.phone, size: 24),
-                  label: const Text('Phone'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    side: const BorderSide(color: Colors.grey),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                
-                // Register Link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      "Don't have an account? ",
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (context) => const RegisterPage(),
-                          ),
-                        );
-                      },
-                      child: const Text(
-                        'Sign Up',
-                        style: TextStyle(
-                          color: Color(0xFF07C160),
-                          fontWeight: FontWeight.bold,
-                        ),
+
+                  // Apple Sign-In Button (nur iOS/macOS)
+                  if (!kIsWeb && (Platform.isIOS || Platform.isMacOS))
+                    OutlinedButton.icon(
+                      onPressed: _loginWithApple,
+                      icon: const Icon(Icons.apple, size: 24),
+                      label: const Text('Apple'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: const BorderSide(color: Colors.grey),
+                        foregroundColor: Colors.black,
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 24),
+                  if (!kIsWeb && (Platform.isIOS || Platform.isMacOS))
+                    const SizedBox(height: 12),
+
+                  // Phone Login Button
+                  OutlinedButton.icon(
+                    onPressed: _loginWithPhone,
+                    icon: const Icon(Icons.phone, size: 24),
+                    label: const Text('Phone'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      side: const BorderSide(color: Colors.grey),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Register Link
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Don't have an account? ",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const RegisterPage(),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          'Sign Up',
+                          style: TextStyle(
+                            color: Color(0xFF07C160),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),

@@ -60,15 +60,18 @@ class _ContactsPageRealState extends State<ContactsPageReal> {
       } else {
         _filteredUsers = _allUsers.where((user) {
           return user.username.toLowerCase().contains(query.toLowerCase()) ||
-              (user.email?.toLowerCase().contains(query.toLowerCase()) ?? false);
+              (user.email.toLowerCase().contains(query.toLowerCase()));
         }).toList();
       }
     });
   }
 
   Future<void> _startChat(app_models.User user) async {
-    final currentUser = Provider.of<AuthProvider>(context, listen: false).currentUser;
-    
+    final currentUser = Provider.of<AuthProvider>(
+      context,
+      listen: false,
+    ).currentUser;
+
     if (currentUser == null) return;
 
     try {
@@ -109,7 +112,7 @@ class _ContactsPageRealState extends State<ContactsPageReal> {
     } catch (e) {
       if (mounted) {
         Navigator.pop(context); // Close loading dialog
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to start chat: $e'),
@@ -125,9 +128,7 @@ class _ContactsPageRealState extends State<ContactsPageReal> {
     final currentUser = Provider.of<AuthProvider>(context).currentUser;
 
     if (currentUser == null) {
-      return const Scaffold(
-        body: Center(child: Text('Please log in')),
-      );
+      return const Scaffold(body: Center(child: Text('Please log in')));
     }
 
     return Scaffold(
@@ -137,10 +138,7 @@ class _ContactsPageRealState extends State<ContactsPageReal> {
         foregroundColor: Colors.white,
         title: const Text(
           'Contacts',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -179,9 +177,7 @@ class _ContactsPageRealState extends State<ContactsPageReal> {
           ),
 
           // Users list
-          Expanded(
-            child: _buildBody(),
-          ),
+          Expanded(child: _buildBody()),
         ],
       ),
     );
@@ -205,10 +201,7 @@ class _ContactsPageRealState extends State<ContactsPageReal> {
             const SizedBox(height: 16),
             Text('Error: $_error'),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadUsers,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadUsers, child: const Text('Retry')),
           ],
         ),
       );
@@ -242,9 +235,7 @@ class _ContactsPageRealState extends State<ContactsPageReal> {
               _searchController.text.isEmpty
                   ? 'Add friends to start chatting'
                   : 'Try a different search term',
-              style: TextStyle(
-                color: Colors.grey[500],
-              ),
+              style: TextStyle(color: Colors.grey[500]),
             ),
           ],
         ),
@@ -266,7 +257,9 @@ class _ContactsPageRealState extends State<ContactsPageReal> {
       leading: CircleAvatar(
         radius: 28,
         backgroundColor: const Color(0xFF07C160),
-        backgroundImage: user.avatar != null ? NetworkImage(user.avatar!) : null,
+        backgroundImage: user.avatar != null
+            ? NetworkImage(user.avatar!)
+            : null,
         child: user.avatar == null
             ? Text(
                 user.username.isNotEmpty ? user.username[0].toUpperCase() : '?',
@@ -280,10 +273,7 @@ class _ContactsPageRealState extends State<ContactsPageReal> {
       ),
       title: Text(
         user.username,
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
-        ),
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
       ),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -291,10 +281,7 @@ class _ContactsPageRealState extends State<ContactsPageReal> {
           if (user.status != null && user.status!.isNotEmpty)
             Text(
               user.status!,
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 13, color: Colors.grey[600]),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -320,13 +307,10 @@ class _ContactsPageRealState extends State<ContactsPageReal> {
                 ),
               ],
             )
-          else if (user.lastSeen != null)
+          else
             Text(
-              'Last seen ${_formatLastSeen(user.lastSeen!)}',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[500],
-              ),
+              'Last seen ${_formatLastSeen(user.lastSeen)}',
+              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
             ),
         ],
       ),

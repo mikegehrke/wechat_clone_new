@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:story_view/story_view.dart';
 import '../models/story.dart';
-import '../services/story_service.dart';
 import '../widgets/story_circle.dart';
 import '../widgets/story_viewer.dart';
 
@@ -34,7 +31,7 @@ class _StoriesPageState extends State<StoriesPage> {
       // In real app, load from StoryService
       // For demo, create mock data
       await Future.delayed(const Duration(seconds: 1));
-      
+
       setState(() {
         _storyGroups = _createMockStoryGroups();
         _isLoading = false;
@@ -59,8 +56,10 @@ class _StoriesPageState extends State<StoriesPage> {
             id: '1',
             userId: 'user1',
             username: 'alice_johnson',
-            userAvatar: 'https://via.placeholder.com/100x100/FF6B6B/FFFFFF?text=A',
-            contentUrl: 'https://via.placeholder.com/400x600/FF6B6B/FFFFFF?text=Story+1',
+            userAvatar:
+                'https://via.placeholder.com/100x100/FF6B6B/FFFFFF?text=A',
+            contentUrl:
+                'https://via.placeholder.com/400x600/FF6B6B/FFFFFF?text=Story+1',
             type: StoryType.image,
             caption: 'Beautiful sunset! 🌅',
             createdAt: DateTime.now().subtract(const Duration(hours: 2)),
@@ -69,8 +68,10 @@ class _StoriesPageState extends State<StoriesPage> {
             id: '2',
             userId: 'user1',
             username: 'alice_johnson',
-            userAvatar: 'https://via.placeholder.com/100x100/FF6B6B/FFFFFF?text=A',
-            contentUrl: 'https://via.placeholder.com/400x600/4ECDC4/FFFFFF?text=Story+2',
+            userAvatar:
+                'https://via.placeholder.com/100x100/FF6B6B/FFFFFF?text=A',
+            contentUrl:
+                'https://via.placeholder.com/400x600/4ECDC4/FFFFFF?text=Story+2',
             type: StoryType.image,
             caption: 'Coffee time ☕',
             createdAt: DateTime.now().subtract(const Duration(hours: 1)),
@@ -87,8 +88,10 @@ class _StoriesPageState extends State<StoriesPage> {
             id: '3',
             userId: 'user2',
             username: 'bob_smith',
-            userAvatar: 'https://via.placeholder.com/100x100/45B7D1/FFFFFF?text=B',
-            contentUrl: 'https://via.placeholder.com/400x600/45B7D1/FFFFFF?text=Story+3',
+            userAvatar:
+                'https://via.placeholder.com/100x100/45B7D1/FFFFFF?text=B',
+            contentUrl:
+                'https://via.placeholder.com/400x600/45B7D1/FFFFFF?text=Story+3',
             type: StoryType.video,
             caption: 'Amazing dance moves! 💃',
             createdAt: DateTime.now().subtract(const Duration(hours: 3)),
@@ -106,8 +109,10 @@ class _StoriesPageState extends State<StoriesPage> {
             id: '4',
             userId: 'user3',
             username: 'carol_davis',
-            userAvatar: 'https://via.placeholder.com/100x100/96CEB4/FFFFFF?text=C',
-            contentUrl: 'https://via.placeholder.com/400x600/96CEB4/FFFFFF?text=Poll:+Best+Food?',
+            userAvatar:
+                'https://via.placeholder.com/100x100/96CEB4/FFFFFF?text=C',
+            contentUrl:
+                'https://via.placeholder.com/400x600/96CEB4/FFFFFF?text=Poll:+Best+Food?',
             type: StoryType.poll,
             caption: 'Best food?',
             createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
@@ -124,8 +129,10 @@ class _StoriesPageState extends State<StoriesPage> {
             id: '5',
             userId: 'user4',
             username: 'david_wilson',
-            userAvatar: 'https://via.placeholder.com/100x100/FFEAA7/FFFFFF?text=D',
-            contentUrl: 'https://via.placeholder.com/400x600/FFEAA7/000000?text=Hello+World!',
+            userAvatar:
+                'https://via.placeholder.com/100x100/FFEAA7/FFFFFF?text=D',
+            contentUrl:
+                'https://via.placeholder.com/400x600/FFEAA7/000000?text=Hello+World!',
             type: StoryType.text,
             caption: 'Hello World!',
             createdAt: DateTime.now().subtract(const Duration(minutes: 15)),
@@ -141,10 +148,7 @@ class _StoriesPageState extends State<StoriesPage> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text(
-          'Stories',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Stories', style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(
             icon: const Icon(Icons.camera_alt, color: Colors.white),
@@ -170,11 +174,7 @@ class _StoriesPageState extends State<StoriesPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.white,
-            ),
+            const Icon(Icons.error_outline, size: 64, color: Colors.white),
             const SizedBox(height: 16),
             Text(
               _error!,
@@ -182,10 +182,7 @@ class _StoriesPageState extends State<StoriesPage> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadStories,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadStories, child: const Text('Retry')),
           ],
         ),
       );
@@ -222,7 +219,7 @@ class _StoriesPageState extends State<StoriesPage> {
             ],
           ),
         ),
-        
+
         // Stories content
         Expanded(
           child: _storyGroups.isEmpty
@@ -246,19 +243,12 @@ class _StoriesPageState extends State<StoriesPage> {
               border: Border.all(color: Colors.white, width: 2),
               color: Colors.grey[800],
             ),
-            child: const Icon(
-              Icons.add,
-              color: Colors.white,
-              size: 24,
-            ),
+            child: const Icon(Icons.add, color: Colors.white, size: 24),
           ),
           const SizedBox(height: 4),
           const Text(
             'Your Story',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-            ),
+            style: TextStyle(color: Colors.white, fontSize: 12),
           ),
         ],
       ),
@@ -287,10 +277,7 @@ class _StoriesPageState extends State<StoriesPage> {
           const SizedBox(height: 8),
           const Text(
             'Share your first story!',
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: Colors.white70, fontSize: 16),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
@@ -300,10 +287,7 @@ class _StoriesPageState extends State<StoriesPage> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
           ),
         ],
@@ -330,7 +314,7 @@ class _StoriesPageState extends State<StoriesPage> {
 
   Widget _buildStoryCard(StoryGroup storyGroup) {
     final firstStory = storyGroup.stories.first;
-    
+
     return GestureDetector(
       onTap: () => _viewStoryGroup(storyGroup),
       child: Container(
@@ -347,10 +331,7 @@ class _StoriesPageState extends State<StoriesPage> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                Colors.transparent,
-                Colors.black.withOpacity(0.7),
-              ],
+              colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
             ),
           ),
           child: Column(
@@ -389,7 +370,7 @@ class _StoriesPageState extends State<StoriesPage> {
                   ],
                 ),
               ),
-              
+
               // Story info
               Padding(
                 padding: const EdgeInsets.all(12),
@@ -398,10 +379,7 @@ class _StoriesPageState extends State<StoriesPage> {
                   children: [
                     Text(
                       firstStory.caption ?? '',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -471,10 +449,7 @@ class _StoriesPageState extends State<StoriesPage> {
               padding: EdgeInsets.all(16),
               child: Text(
                 'Create Story',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
             ListTile(
@@ -535,18 +510,14 @@ class _StoriesPageState extends State<StoriesPage> {
   void _createTextStory() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const TextStoryCreator(),
-      ),
+      MaterialPageRoute(builder: (context) => const TextStoryCreator()),
     );
   }
 
   void _createPollStory() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const PollStoryCreator(),
-      ),
+      MaterialPageRoute(builder: (context) => const PollStoryCreator()),
     );
   }
 }
@@ -625,21 +596,23 @@ class _TextStoryCreatorState extends State<TextStoryCreator> {
             children: [
               const Text('Background:', style: TextStyle(color: Colors.white)),
               const SizedBox(width: 16),
-              ...Colors.primaries.map((color) => GestureDetector(
-                onTap: () => setState(() => _backgroundColor = color),
-                child: Container(
-                  width: 30,
-                  height: 30,
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                    border: _backgroundColor == color
-                        ? Border.all(color: Colors.white, width: 2)
-                        : null,
+              ...Colors.primaries.map(
+                (color) => GestureDetector(
+                  onTap: () => setState(() => _backgroundColor = color),
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      border: _backgroundColor == color
+                          ? Border.all(color: Colors.white, width: 2)
+                          : null,
+                    ),
                   ),
                 ),
-              )),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -648,21 +621,23 @@ class _TextStoryCreatorState extends State<TextStoryCreator> {
             children: [
               const Text('Text Color:', style: TextStyle(color: Colors.white)),
               const SizedBox(width: 16),
-              ...Colors.primaries.map((color) => GestureDetector(
-                onTap: () => setState(() => _textColor = color),
-                child: Container(
-                  width: 30,
-                  height: 30,
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                    border: _textColor == color
-                        ? Border.all(color: Colors.white, width: 2)
-                        : null,
+              ...Colors.primaries.map(
+                (color) => GestureDetector(
+                  onTap: () => setState(() => _textColor = color),
+                  child: Container(
+                    width: 30,
+                    height: 30,
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      border: _textColor == color
+                          ? Border.all(color: Colors.white, width: 2)
+                          : null,
+                    ),
                   ),
                 ),
-              )),
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -688,10 +663,10 @@ class _TextStoryCreatorState extends State<TextStoryCreator> {
 
   void _saveTextStory() {
     if (_textController.text.trim().isEmpty) return;
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Text story created!')),
-    );
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Text story created!')));
     Navigator.pop(context);
   }
 
@@ -722,10 +697,7 @@ class _PollStoryCreatorState extends State<PollStoryCreator> {
       appBar: AppBar(
         title: const Text('Create Poll'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.check),
-            onPressed: _savePollStory,
-          ),
+          IconButton(icon: const Icon(Icons.check), onPressed: _savePollStory),
         ],
       ),
       body: Padding(
@@ -775,15 +747,15 @@ class _PollStoryCreatorState extends State<PollStoryCreator> {
     if (_questionController.text.trim().isEmpty ||
         _option1Controller.text.trim().isEmpty ||
         _option2Controller.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all fields')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
       return;
     }
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Poll story created!')),
-    );
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Poll story created!')));
     Navigator.pop(context);
   }
 

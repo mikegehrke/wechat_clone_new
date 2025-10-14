@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../providers/video_provider.dart';
@@ -16,7 +15,6 @@ class TikTokFeedPage extends StatefulWidget {
 
 class _TikTokFeedPageState extends State<TikTokFeedPage> {
   final PageController _pageController = PageController();
-  int _currentIndex = 0;
   final String _currentUserId = 'demo_user_1'; // In real app, get from auth
 
   @override
@@ -81,10 +79,6 @@ class _TikTokFeedPageState extends State<TikTokFeedPage> {
             controller: _pageController,
             scrollDirection: Axis.vertical,
             onPageChanged: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-              
               // Load more videos when reaching the end
               if (index >= videoProvider.videos.length - 2) {
                 videoProvider.loadMoreVideos();
@@ -109,7 +103,7 @@ class _TikTokFeedPageState extends State<TikTokFeedPage> {
           videoUrl: video.videoUrl,
           thumbnailUrl: video.thumbnailUrl,
         ),
-        
+
         // Video info overlay
         Positioned(
           bottom: 0,
@@ -121,10 +115,7 @@ class _TikTokFeedPageState extends State<TikTokFeedPage> {
               gradient: LinearGradient(
                 begin: Alignment.bottomCenter,
                 end: Alignment.topCenter,
-                colors: [
-                  Colors.black.withOpacity(0.8),
-                  Colors.transparent,
-                ],
+                colors: [Colors.black.withOpacity(0.8), Colors.transparent],
               ),
             ),
             child: Column(
@@ -140,17 +131,14 @@ class _TikTokFeedPageState extends State<TikTokFeedPage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                
+
                 // Description
                 Text(
                   video.description,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Action buttons
                 Row(
                   children: [
@@ -158,11 +146,16 @@ class _TikTokFeedPageState extends State<TikTokFeedPage> {
                       child: Row(
                         children: [
                           _buildActionButton(
-                            icon: video.isLiked ? Icons.favorite : Icons.favorite_border,
+                            icon: video.isLiked
+                                ? Icons.favorite
+                                : Icons.favorite_border,
                             label: video.formattedLikes,
                             color: video.isLiked ? Colors.red : Colors.white,
                             onTap: () {
-                              context.read<VideoProvider>().toggleLike(video.id, _currentUserId);
+                              context.read<VideoProvider>().toggleLike(
+                                video.id,
+                                _currentUserId,
+                              );
                             },
                           ),
                           const SizedBox(width: 24),
@@ -190,7 +183,7 @@ class _TikTokFeedPageState extends State<TikTokFeedPage> {
             ),
           ),
         ),
-        
+
         // Right side action buttons
         Positioned(
           right: 16,
@@ -202,7 +195,10 @@ class _TikTokFeedPageState extends State<TikTokFeedPage> {
                 label: video.formattedLikes,
                 color: video.isLiked ? Colors.red : Colors.white,
                 onTap: () {
-                  context.read<VideoProvider>().toggleLike(video.id, _currentUserId);
+                  context.read<VideoProvider>().toggleLike(
+                    video.id,
+                    _currentUserId,
+                  );
                 },
               ),
               const SizedBox(height: 24),
@@ -227,16 +223,14 @@ class _TikTokFeedPageState extends State<TikTokFeedPage> {
                 label: 'Save',
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Save feature coming soon!'),
-                    ),
+                    const SnackBar(content: Text('Save feature coming soon!')),
                   );
                 },
               ),
             ],
           ),
         ),
-        
+
         // Top navigation
         Positioned(
           top: 0,
@@ -259,7 +253,10 @@ class _TikTokFeedPageState extends State<TikTokFeedPage> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(12),
@@ -274,11 +271,7 @@ class _TikTokFeedPageState extends State<TikTokFeedPage> {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      Icon(
-                        Icons.search,
-                        color: Colors.white,
-                        size: 24,
-                      ),
+                      Icon(Icons.search, color: Colors.white, size: 24),
                     ],
                   ),
                 ],
@@ -301,11 +294,7 @@ class _TikTokFeedPageState extends State<TikTokFeedPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            color: color,
-            size: 20,
-          ),
+          Icon(icon, color: color, size: 20),
           const SizedBox(width: 4),
           Text(
             label,
@@ -336,11 +325,7 @@ class _TikTokFeedPageState extends State<TikTokFeedPage> {
               color: Colors.black.withOpacity(0.3),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
+            child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(height: 4),
           Text(
@@ -373,7 +358,7 @@ class _TikTokFeedPageState extends State<TikTokFeedPage> {
         'Check out this video: ${video.description}\n\nShared from WeChat Clone App',
         subject: 'Amazing video from ${video.username}',
       );
-      
+
       // Update share count
       context.read<VideoProvider>().shareVideo(video.id);
     } catch (e) {

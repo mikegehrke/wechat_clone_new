@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../models/social.dart';
-import '../../models/message.dart' as msg;
 import '../../services/social_service.dart';
 
 class SocialChatPage extends StatefulWidget {
@@ -34,14 +33,14 @@ class _SocialChatPageState extends State<SocialChatPage> {
 
   Future<void> _loadMessages() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final messages = await SocialService.getChatMessages(widget.chat.id);
       setState(() {
         _messages = messages;
         _isLoading = false;
       });
-      
+
       _scrollToBottom();
     } catch (e) {
       setState(() => _isLoading = false);
@@ -80,21 +79,6 @@ class _SocialChatPageState extends State<SocialChatPage> {
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
-                // Online indicator removed (not in SocialChat model)
-                if (false)
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: Colors.green,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
-                      ),
-                    ),
-                  ),
               ],
             ),
             const SizedBox(width: 12),
@@ -111,10 +95,7 @@ class _SocialChatPageState extends State<SocialChatPage> {
                   ),
                   Text(
                     'Active', // Online status not in model
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -126,28 +107,19 @@ class _SocialChatPageState extends State<SocialChatPage> {
             icon: const Icon(Icons.videocam),
             onPressed: _startVideoCall,
           ),
-          IconButton(
-            icon: const Icon(Icons.call),
-            onPressed: _startVoiceCall,
-          ),
+          IconButton(icon: const Icon(Icons.call), onPressed: _startVoiceCall),
           PopupMenuButton(
             itemBuilder: (context) => [
               const PopupMenuItem(
                 value: 'view_profile',
                 child: Text('View Profile'),
               ),
-              const PopupMenuItem(
-                value: 'media',
-                child: Text('Media & Files'),
-              ),
+              const PopupMenuItem(value: 'media', child: Text('Media & Files')),
               const PopupMenuItem(
                 value: 'mute',
                 child: Text('Mute Notifications'),
               ),
-              const PopupMenuItem(
-                value: 'clear',
-                child: Text('Clear Chat'),
-              ),
+              const PopupMenuItem(value: 'clear', child: Text('Clear Chat')),
             ],
           ),
         ],
@@ -159,36 +131,41 @@ class _SocialChatPageState extends State<SocialChatPage> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _messages.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey[400]),
-                            const SizedBox(height: 16),
-                            const Text('No messages yet'),
-                            const SizedBox(height: 8),
-                            const Text(
-                              'Start the conversation!',
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.chat_bubble_outline,
+                          size: 64,
+                          color: Colors.grey[400],
                         ),
-                      )
-                    : ListView.builder(
-                        controller: _scrollController,
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _messages.length,
-                        itemBuilder: (context, index) {
-                          final message = _messages[index];
-                          final isMe = message.senderId == 'demo_user_1';
-                          final showAvatar = index == _messages.length - 1 ||
-                              _messages[index + 1].senderId != message.senderId;
-                          
-                          return _buildMessageBubble(message, isMe, showAvatar);
-                        },
-                      ),
+                        const SizedBox(height: 16),
+                        const Text('No messages yet'),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Start the conversation!',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final message = _messages[index];
+                      final isMe = message.senderId == 'demo_user_1';
+                      final showAvatar =
+                          index == _messages.length - 1 ||
+                          _messages[index + 1].senderId != message.senderId;
+
+                      return _buildMessageBubble(message, isMe, showAvatar);
+                    },
+                  ),
           ),
-          
+
           // Input area
           Container(
             padding: const EdgeInsets.all(12),
@@ -252,11 +229,17 @@ class _SocialChatPageState extends State<SocialChatPage> {
     );
   }
 
-  Widget _buildMessageBubble(SocialMessage message, bool isMe, bool showAvatar) {
+  Widget _buildMessageBubble(
+    SocialMessage message,
+    bool isMe,
+    bool showAvatar,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
-        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isMe
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isMe && showAvatar)
@@ -270,15 +253,20 @@ class _SocialChatPageState extends State<SocialChatPage> {
             )
           else if (!isMe)
             const SizedBox(width: 32),
-          
+
           const SizedBox(width: 8),
-          
+
           Flexible(
             child: Column(
-              crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: isMe
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: isMe ? const Color(0xFF07C160) : Colors.grey[200],
                     borderRadius: BorderRadius.only(
@@ -289,7 +277,7 @@ class _SocialChatPageState extends State<SocialChatPage> {
                     ),
                   ),
                   child: Text(
-                    message.content ?? '',
+                    message.content,
                     style: TextStyle(
                       color: isMe ? Colors.white : Colors.black,
                       fontSize: 15,
@@ -302,10 +290,7 @@ class _SocialChatPageState extends State<SocialChatPage> {
                   children: [
                     Text(
                       _formatTime(message.createdAt),
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                     ),
                     if (isMe) ...[
                       const SizedBox(width: 4),
@@ -370,11 +355,11 @@ class _SocialChatPageState extends State<SocialChatPage> {
     } catch (e) {
       _messageController.text = messageText;
       setState(() => _isSending = false);
-      
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send message: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to send message: $e')));
       }
     }
   }
@@ -386,7 +371,10 @@ class _SocialChatPageState extends State<SocialChatPage> {
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Color(0xFF07C160)),
+              leading: const Icon(
+                Icons.photo_library,
+                color: Color(0xFF07C160),
+              ),
               title: const Text('Photo & Video'),
               onTap: () {
                 Navigator.pop(context);
@@ -400,7 +388,10 @@ class _SocialChatPageState extends State<SocialChatPage> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.insert_drive_file, color: Color(0xFF07C160)),
+              leading: const Icon(
+                Icons.insert_drive_file,
+                color: Color(0xFF07C160),
+              ),
               title: const Text('Document'),
               onTap: () {
                 Navigator.pop(context);
@@ -427,14 +418,14 @@ class _SocialChatPageState extends State<SocialChatPage> {
   }
 
   void _startVideoCall() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Starting video call...')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Starting video call...')));
   }
 
   void _startVoiceCall() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Starting voice call...')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Starting voice call...')));
   }
 }

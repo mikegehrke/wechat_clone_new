@@ -97,19 +97,25 @@ class _ChatListPageState extends State<ChatListPage> {
                 case 'new_group':
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const CreateGroupPage()),
+                    MaterialPageRoute(
+                      builder: (context) => const CreateGroupPage(),
+                    ),
                   );
                   break;
                 case 'new_chat':
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const ContactsPage()),
+                    MaterialPageRoute(
+                      builder: (context) => const ContactsPage(),
+                    ),
                   );
                   break;
                 case 'debug':
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const DebugTestPage()),
+                    MaterialPageRoute(
+                      builder: (context) => const DebugTestPage(),
+                    ),
                   );
                   break;
               }
@@ -157,26 +163,32 @@ class _ChatListPageState extends State<ChatListPage> {
           }
 
           if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
+            return Center(child: Text('Error: ${snapshot.error}'));
           }
 
           final chats = snapshot.data ?? [];
-          
+
           // Separate chats by type
-          final pinnedChats = chats.where((c) => c.isPinned && !c.isArchived).toList();
-          final normalChats = chats.where((c) => !c.isPinned && !c.isArchived).toList();
+          final pinnedChats = chats
+              .where((c) => c.isPinned && !c.isArchived)
+              .toList();
+          final normalChats = chats
+              .where((c) => !c.isPinned && !c.isArchived)
+              .toList();
           final archivedChats = chats.where((c) => c.isArchived).toList();
-          
+
           // Combine for display
-          final displayChats = _showArchived ? archivedChats : [...pinnedChats, ...normalChats];
-          
+          final displayChats = _showArchived
+              ? archivedChats
+              : [...pinnedChats, ...normalChats];
+
           // Filter chats based on search and unread filter
           final filteredChats = displayChats.where((chat) {
             // Search filter
             if (_searchController.text.isNotEmpty) {
-              if (!chat.name.toLowerCase().contains(_searchController.text.toLowerCase())) {
+              if (!chat.name.toLowerCase().contains(
+                _searchController.text.toLowerCase(),
+              )) {
                 return false;
               }
             }
@@ -204,19 +216,14 @@ class _ChatListPageState extends State<ChatListPage> {
                     _searchController.text.isEmpty
                         ? (_showOnlyUnread ? 'No unread chats' : 'No chats yet')
                         : 'No chats found',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     _searchController.text.isEmpty
                         ? 'Start a conversation!'
                         : 'Try a different search term',
-                    style: TextStyle(
-                      color: Colors.grey[500],
-                    ),
+                    style: TextStyle(color: Colors.grey[500]),
                   ),
                 ],
               ),
@@ -230,7 +237,10 @@ class _ChatListPageState extends State<ChatListPage> {
                 InkWell(
                   onTap: () => setState(() => _showArchived = true),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     color: Colors.grey[100],
                     child: Row(
                       children: [
@@ -253,22 +263,33 @@ class _ChatListPageState extends State<ChatListPage> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Icon(Icons.chevron_right, color: Colors.grey[600], size: 20),
+                        Icon(
+                          Icons.chevron_right,
+                          color: Colors.grey[600],
+                          size: 20,
+                        ),
                       ],
                     ),
                   ),
                 ),
-              
+
               // Back from archive button
               if (_showArchived)
                 InkWell(
                   onTap: () => setState(() => _showArchived = false),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                     color: Colors.grey[100],
                     child: Row(
                       children: [
-                        Icon(Icons.arrow_back, color: Colors.grey[700], size: 20),
+                        Icon(
+                          Icons.arrow_back,
+                          color: Colors.grey[700],
+                          size: 20,
+                        ),
                         const SizedBox(width: 12),
                         Text(
                           'Back to chats',
@@ -293,268 +314,342 @@ class _ChatListPageState extends State<ChatListPage> {
                     final unreadCount = chat.unreadCount;
                     final isPinned = chat.isPinned;
                     final isMuted = chat.isMuted;
-                    
+
                     return Dismissible(
-                key: Key(chat.id),
-                background: Container(
-                  color: Colors.blue,
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.only(left: 20),
-                  child: const Icon(Icons.archive, color: Colors.white),
-                ),
-                secondaryBackground: Container(
-                  color: Colors.red,
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 20),
-                  child: const Icon(Icons.delete, color: Colors.white),
-                ),
-                direction: DismissDirection.horizontal,
-                confirmDismiss: (direction) async {
-                  if (direction == DismissDirection.endToStart) {
-                    // Delete
-                    return await showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Delete Chat'),
-                        content: const Text('Are you sure you want to delete this chat?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Cancel'),
+                      key: Key(chat.id),
+                      background: Container(
+                        color: Colors.blue,
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.only(left: 20),
+                        child: const Icon(Icons.archive, color: Colors.white),
+                      ),
+                      secondaryBackground: Container(
+                        color: Colors.red,
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 20),
+                        child: const Icon(Icons.delete, color: Colors.white),
+                      ),
+                      direction: DismissDirection.horizontal,
+                      confirmDismiss: (direction) async {
+                        if (direction == DismissDirection.endToStart) {
+                          // Delete
+                          return await showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('Delete Chat'),
+                              content: const Text(
+                                'Are you sure you want to delete this chat?',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text('Cancel'),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text(
+                                    'Delete',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        } else {
+                          // Archive/Unarchive (swipe right)
+                          try {
+                            await ChatService.toggleArchive(
+                              chat.id,
+                              chat.isArchived,
+                            );
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    chat.isArchived
+                                        ? 'Chat unarchived'
+                                        : 'Chat archived',
+                                  ),
+                                ),
+                              );
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                          return false; // Don't dismiss the card
+                        }
+                      },
+                      onDismissed: (direction) async {
+                        if (direction == DismissDirection.endToStart) {
+                          // Delete
+                          await ChatService.deleteChat(chat.id);
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Chat deleted')),
+                            );
+                          }
+                        } else {
+                          // This won't be called since we return false for archive
+                        }
+                      },
+                      child: Container(
+                        color: isPinned ? Colors.grey[50] : Colors.white,
+                        child: ListTile(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatDetailPage(
+                                  chatId: chat.id,
+                                  chatName: chat.name,
+                                  chatAvatar: chat.avatar,
+                                  isGroup: chat.type == ChatType.group,
+                                ),
+                              ),
+                            );
+                          },
+                          onLongPress: () =>
+                              _showChatOptions(context, chat, currentUserId),
+                          leading: Stack(
+                            children: [
+                              CircleAvatar(
+                                radius: 24,
+                                backgroundImage: chat.avatar != null
+                                    ? NetworkImage(chat.avatar!)
+                                    : null,
+                                backgroundColor: Colors.grey[300],
+                                child: chat.avatar == null
+                                    ? Text(
+                                        chat.name[0].toUpperCase(),
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                              // Online indicator
+                              if (chat.isOnline)
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: Container(
+                                    width: 14,
+                                    height: 14,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF07C160),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              // Verified badge
+                              if (chat.isVerified)
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(2),
+                                    decoration: const BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.verified,
+                                      size: 12,
+                                      color: Colors.blue,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                          title: Row(
+                            children: [
+                              if (isPinned)
+                                const Padding(
+                                  padding: EdgeInsets.only(right: 4),
+                                  child: Icon(
+                                    Icons.push_pin,
+                                    size: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              if (isMuted)
+                                const Padding(
+                                  padding: EdgeInsets.only(right: 4),
+                                  child: Icon(
+                                    Icons.volume_off,
+                                    size: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              Expanded(
+                                child: Text(
+                                  chat.name,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: hasUnread
+                                        ? FontWeight.bold
+                                        : FontWeight.w500,
+                                    color: Colors.black87,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Text(
+                                _formatTime(chat.lastActivity),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: hasUnread
+                                      ? const Color(0xFF07C160)
+                                      : Colors.grey[600],
+                                  fontWeight: hasUnread
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                          subtitle: Row(
+                            children: [
+                              // Draft indicator
+                              if (chat.draftMessage != null &&
+                                  chat.draftMessage!.isNotEmpty)
+                                const Padding(
+                                  padding: EdgeInsets.only(right: 4),
+                                  child: Text(
+                                    'Draft:',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                )
+                              // Typing indicator
+                              else if (chat.isTyping)
+                                const Padding(
+                                  padding: EdgeInsets.only(right: 4),
+                                  child: Text(
+                                    'typing...',
+                                    style: TextStyle(
+                                      color: Color(0xFF07C160),
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                )
+                              // Message status icons (for sent messages)
+                              else if (chat.lastMessage?.senderId ==
+                                  currentUserId)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 4),
+                                  child: Icon(
+                                    chat.lastMessage?.status ==
+                                            MessageStatus.read
+                                        ? Icons.done_all
+                                        : chat.lastMessage?.status ==
+                                              MessageStatus.delivered
+                                        ? Icons.done_all
+                                        : Icons.done,
+                                    size: 16,
+                                    color:
+                                        chat.lastMessage?.status ==
+                                            MessageStatus.read
+                                        ? Colors.blue
+                                        : Colors.grey,
+                                  ),
+                                ),
+                              Expanded(
+                                child: Text(
+                                  chat.draftMessage ??
+                                      _getLastMessageText(chat),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: hasUnread
+                                        ? Colors.black87
+                                        : Colors.grey[600],
+                                    fontWeight: hasUnread
+                                        ? FontWeight.w500
+                                        : FontWeight.normal,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+                              ),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (chat.hasDisappearingMessages)
+                                    const Padding(
+                                      padding: EdgeInsets.only(left: 4),
+                                      child: Icon(
+                                        Icons.timer,
+                                        size: 12,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                  if (isMuted && !hasUnread)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 4),
+                                      child: Icon(
+                                        Icons.volume_off,
+                                        size: 12,
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  if (hasUnread)
+                                    Container(
+                                      margin: const EdgeInsets.only(left: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 6,
+                                        vertical: 2,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: isMuted
+                                            ? Colors.grey
+                                            : const Color(0xFF07C160),
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(10),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        unreadCount > 99
+                                            ? '99+'
+                                            : unreadCount.toString(),
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                        ),
                       ),
                     );
-                  } else {
-                    // Archive/Unarchive (swipe right)
-                    try {
-                      await ChatService.toggleArchive(chat.id, chat.isArchived);
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(chat.isArchived ? 'Chat unarchived' : 'Chat archived'),
-                          ),
-                        );
-                      }
-                    } catch (e) {
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-                        );
-                      }
-                    }
-                    return false; // Don't dismiss the card
-                  }
-                },
-                onDismissed: (direction) async {
-                  if (direction == DismissDirection.endToStart) {
-                    // Delete
-                    await ChatService.deleteChat(chat.id);
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Chat deleted')),
-                      );
-                    }
-                  } else {
-                    // This won't be called since we return false for archive
-                  }
-                },
-                child: Container(
-                  color: isPinned ? Colors.grey[50] : Colors.white,
-                  child: ListTile(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChatDetailPage(chat: chat),
-                        ),
-                      );
-                    },
-                    onLongPress: () => _showChatOptions(context, chat, currentUserId),
-                  leading: Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 24,
-                        backgroundImage: chat.avatar != null 
-                            ? NetworkImage(chat.avatar!) 
-                            : null,
-                        backgroundColor: Colors.grey[300],
-                        child: chat.avatar == null
-                            ? Text(
-                                chat.name[0].toUpperCase(),
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : null,
-                      ),
-                      // Online indicator
-                      if (chat.isOnline)
-                        Positioned(
-                          right: 0,
-                          bottom: 0,
-                          child: Container(
-                            width: 14,
-                            height: 14,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF07C160),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 2),
-                            ),
-                          ),
-                        ),
-                      // Verified badge
-                      if (chat.isVerified)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.verified, size: 12, color: Colors.blue),
-                          ),
-                        ),
-                    ],
-                  ),
-                  title: Row(
-                    children: [
-                      if (isPinned)
-                        const Padding(
-                          padding: EdgeInsets.only(right: 4),
-                          child: Icon(Icons.push_pin, size: 12, color: Colors.grey),
-                        ),
-                      if (isMuted)
-                        const Padding(
-                          padding: EdgeInsets.only(right: 4),
-                          child: Icon(Icons.volume_off, size: 12, color: Colors.grey),
-                        ),
-                      Expanded(
-                        child: Text(
-                          chat.name,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: hasUnread ? FontWeight.bold : FontWeight.w500,
-                            color: Colors.black87,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Text(
-                        _formatTime(chat.lastActivity),
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: hasUnread ? const Color(0xFF07C160) : Colors.grey[600],
-                          fontWeight: hasUnread ? FontWeight.bold : FontWeight.normal,
-                        ),
-                      ),
-                    ],
-                  ),
-                  subtitle: Row(
-                    children: [
-                      // Draft indicator
-                      if (chat.draftMessage != null && chat.draftMessage!.isNotEmpty)
-                        const Padding(
-                          padding: EdgeInsets.only(right: 4),
-                          child: Text(
-                            'Draft:',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        )
-                      // Typing indicator
-                      else if (chat.isTyping)
-                        const Padding(
-                          padding: EdgeInsets.only(right: 4),
-                          child: Text(
-                            'typing...',
-                            style: TextStyle(
-                              color: Color(0xFF07C160),
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        )
-                      // Message status icons (for sent messages)
-                      else if (chat.lastMessage?.senderId == currentUserId)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 4),
-                          child: Icon(
-                            chat.lastMessage?.status == MessageStatus.read
-                                ? Icons.done_all
-                                : chat.lastMessage?.status == MessageStatus.delivered
-                                    ? Icons.done_all
-                                    : Icons.done,
-                            size: 16,
-                            color: chat.lastMessage?.status == MessageStatus.read
-                                ? Colors.blue
-                                : Colors.grey,
-                          ),
-                        ),
-                      Expanded(
-                        child: Text(
-                          chat.draftMessage ?? _getLastMessageText(chat),
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: hasUnread ? Colors.black87 : Colors.grey[600],
-                            fontWeight: hasUnread ? FontWeight.w500 : FontWeight.normal,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (chat.hasDisappearingMessages)
-                            const Padding(
-                              padding: EdgeInsets.only(left: 4),
-                              child: Icon(Icons.timer, size: 12, color: Colors.grey),
-                            ),
-                          if (isMuted && !hasUnread)
-                            Padding(
-                              padding: const EdgeInsets.only(left: 4),
-                              child: Icon(Icons.volume_off, size: 12, color: Colors.grey[600]),
-                            ),
-                          if (hasUnread)
-                            Container(
-                              margin: const EdgeInsets.only(left: 8),
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: isMuted ? Colors.grey : const Color(0xFF07C160),
-                                borderRadius: const BorderRadius.all(Radius.circular(10)),
-                              ),
-                              child: Text(
-                                unreadCount > 99 ? '99+' : unreadCount.toString(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  },
                 ),
               ),
-            );
-          },
-        ),
-      ),
-    ],
-  );
+            ],
+          );
         },
       ),
       floatingActionButton: FloatingActionButton(
@@ -572,10 +667,10 @@ class _ChatListPageState extends State<ChatListPage> {
 
   String _formatTime(DateTime? time) {
     if (time == null) return '';
-    
+
     final now = DateTime.now();
     final diff = now.difference(time);
-    
+
     if (diff.inDays == 0) {
       final h = time.hour.toString().padLeft(2, '0');
       final m = time.minute.toString().padLeft(2, '0');
@@ -583,7 +678,15 @@ class _ChatListPageState extends State<ChatListPage> {
     } else if (diff.inDays == 1) {
       return 'Yesterday';
     } else if (diff.inDays < 7) {
-      final weekday = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][time.weekday - 1];
+      final weekday = [
+        'Mon',
+        'Tue',
+        'Wed',
+        'Thu',
+        'Fri',
+        'Sat',
+        'Sun',
+      ][time.weekday - 1];
       return weekday;
     } else {
       return '${time.day}/${time.month}/${time.year}';
@@ -592,9 +695,9 @@ class _ChatListPageState extends State<ChatListPage> {
 
   String _getLastMessageText(Chat chat) {
     if (chat.lastMessage == null) return 'No messages yet';
-    
+
     final message = chat.lastMessage!;
-    
+
     switch (message.type) {
       case MessageType.image:
         return '📷 Photo';
@@ -619,7 +722,9 @@ class _ChatListPageState extends State<ChatListPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(chat.isPinned ? Icons.push_pin_outlined : Icons.push_pin),
+              leading: Icon(
+                chat.isPinned ? Icons.push_pin_outlined : Icons.push_pin,
+              ),
               title: Text(chat.isPinned ? 'Unpin Chat' : 'Pin Chat'),
               onTap: () async {
                 Navigator.pop(context);
@@ -627,13 +732,20 @@ class _ChatListPageState extends State<ChatListPage> {
                   await ChatService.togglePin(chat.id, chat.isPinned);
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(chat.isPinned ? 'Chat unpinned' : 'Chat pinned')),
+                      SnackBar(
+                        content: Text(
+                          chat.isPinned ? 'Chat unpinned' : 'Chat pinned',
+                        ),
+                      ),
                     );
                   }
                 } catch (e) {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                      SnackBar(
+                        content: Text('Error: $e'),
+                        backgroundColor: Colors.red,
+                      ),
                     );
                   }
                 }
@@ -648,13 +760,20 @@ class _ChatListPageState extends State<ChatListPage> {
                   await ChatService.toggleMute(chat.id, chat.isMuted);
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(chat.isMuted ? 'Chat unmuted' : 'Chat muted')),
+                      SnackBar(
+                        content: Text(
+                          chat.isMuted ? 'Chat unmuted' : 'Chat muted',
+                        ),
+                      ),
                     );
                   }
                 } catch (e) {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                      SnackBar(
+                        content: Text('Error: $e'),
+                        backgroundColor: Colors.red,
+                      ),
                     );
                   }
                 }
@@ -669,13 +788,20 @@ class _ChatListPageState extends State<ChatListPage> {
                   await ChatService.toggleArchive(chat.id, chat.isArchived);
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(chat.isArchived ? 'Chat unarchived' : 'Chat archived')),
+                      SnackBar(
+                        content: Text(
+                          chat.isArchived ? 'Chat unarchived' : 'Chat archived',
+                        ),
+                      ),
                     );
                   }
                 } catch (e) {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                      SnackBar(
+                        content: Text('Error: $e'),
+                        backgroundColor: Colors.red,
+                      ),
                     );
                   }
                 }
@@ -699,14 +825,19 @@ class _ChatListPageState extends State<ChatListPage> {
             ),
             ListTile(
               leading: const Icon(Icons.delete, color: Colors.red),
-              title: const Text('Delete Chat', style: TextStyle(color: Colors.red)),
+              title: const Text(
+                'Delete Chat',
+                style: TextStyle(color: Colors.red),
+              ),
               onTap: () async {
                 Navigator.pop(context);
                 final confirm = await showDialog<bool>(
                   context: context,
                   builder: (context) => AlertDialog(
                     title: const Text('Delete Chat'),
-                    content: const Text('Are you sure you want to delete this chat?'),
+                    content: const Text(
+                      'Are you sure you want to delete this chat?',
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context, false),
@@ -714,7 +845,10 @@ class _ChatListPageState extends State<ChatListPage> {
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context, true),
-                        child: const Text('Delete', style: TextStyle(color: Colors.red)),
+                        child: const Text(
+                          'Delete',
+                          style: TextStyle(color: Colors.red),
+                        ),
                       ),
                     ],
                   ),

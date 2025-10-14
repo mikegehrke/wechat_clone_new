@@ -4,7 +4,6 @@ import '../services/streaming_service.dart';
 import '../widgets/video_content_card.dart';
 import '../widgets/movie_card.dart';
 import '../widgets/series_card.dart';
-import '../widgets/streaming_search_bar.dart';
 import 'streaming/video_player_page.dart';
 import 'streaming/movie_detail_page.dart';
 import 'streaming/series_detail_page.dart';
@@ -16,16 +15,15 @@ class StreamingPage extends StatefulWidget {
   State<StreamingPage> createState() => _StreamingPageState();
 }
 
-class _StreamingPageState extends State<StreamingPage> with TickerProviderStateMixin {
+class _StreamingPageState extends State<StreamingPage>
+    with TickerProviderStateMixin {
   late TabController _tabController;
   List<VideoContent> _trendingVideos = [];
   List<VideoContent> _liveVideos = [];
   List<Movie> _movies = [];
   List<Series> _series = [];
-  List<String> _categories = [];
   bool _isLoading = false;
   String? _error;
-  final String _currentUserId = 'demo_user_1'; // In real app, get from auth
 
   @override
   void initState() {
@@ -60,7 +58,6 @@ class _StreamingPageState extends State<StreamingPage> with TickerProviderStateM
         _liveVideos = futures[1] as List<VideoContent>;
         _movies = futures[2] as List<Movie>;
         _series = futures[3] as List<Series>;
-        _categories = futures[4] as List<String>;
         _isLoading = false;
       });
     } catch (e) {
@@ -129,9 +126,7 @@ class _StreamingPageState extends State<StreamingPage> with TickerProviderStateM
 
   Widget _buildTrendingTab() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.red),
-      );
+      return const Center(child: CircularProgressIndicator(color: Colors.red));
     }
 
     if (_error != null) {
@@ -143,10 +138,7 @@ class _StreamingPageState extends State<StreamingPage> with TickerProviderStateM
             const SizedBox(height: 16),
             Text(_error!, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadData,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
           ],
         ),
       );
@@ -171,9 +163,7 @@ class _StreamingPageState extends State<StreamingPage> with TickerProviderStateM
 
   Widget _buildLiveTab() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.red),
-      );
+      return const Center(child: CircularProgressIndicator(color: Colors.red));
     }
 
     if (_error != null) {
@@ -185,10 +175,7 @@ class _StreamingPageState extends State<StreamingPage> with TickerProviderStateM
             const SizedBox(height: 16),
             Text(_error!, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadData,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
           ],
         ),
       );
@@ -203,10 +190,7 @@ class _StreamingPageState extends State<StreamingPage> with TickerProviderStateM
             SizedBox(height: 16),
             Text(
               'No live streams available',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.grey),
             ),
           ],
         ),
@@ -232,9 +216,7 @@ class _StreamingPageState extends State<StreamingPage> with TickerProviderStateM
 
   Widget _buildMoviesTab() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.red),
-      );
+      return const Center(child: CircularProgressIndicator(color: Colors.red));
     }
 
     if (_error != null) {
@@ -246,10 +228,7 @@ class _StreamingPageState extends State<StreamingPage> with TickerProviderStateM
             const SizedBox(height: 16),
             Text(_error!, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadData,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
           ],
         ),
       );
@@ -277,9 +256,7 @@ class _StreamingPageState extends State<StreamingPage> with TickerProviderStateM
 
   Widget _buildSeriesTab() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Colors.red),
-      );
+      return const Center(child: CircularProgressIndicator(color: Colors.red));
     }
 
     if (_error != null) {
@@ -291,10 +268,7 @@ class _StreamingPageState extends State<StreamingPage> with TickerProviderStateM
             const SizedBox(height: 16),
             Text(_error!, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadData,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
           ],
         ),
       );
@@ -323,27 +297,21 @@ class _StreamingPageState extends State<StreamingPage> with TickerProviderStateM
   void _navigateToVideo(VideoContent video) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => VideoPlayerPage(video: video),
-      ),
+      MaterialPageRoute(builder: (context) => VideoPlayerPage(video: video)),
     );
   }
 
   void _navigateToMovie(Movie movie) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => MovieDetailPage(movie: movie),
-      ),
+      MaterialPageRoute(builder: (context) => MovieDetailPage(movie: movie)),
     );
   }
 
   void _navigateToSeries(Series series) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => SeriesDetailPage(series: series),
-      ),
+      MaterialPageRoute(builder: (context) => SeriesDetailPage(series: series)),
     );
   }
 
@@ -364,10 +332,7 @@ class _StreamingPageState extends State<StreamingPage> with TickerProviderStateM
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.grey[900],
-        title: const Text(
-          'Search',
-          style: TextStyle(color: Colors.white),
-        ),
+        title: const Text('Search', style: TextStyle(color: Colors.white)),
         content: const TextField(
           style: TextStyle(color: Colors.white),
           decoration: InputDecoration(

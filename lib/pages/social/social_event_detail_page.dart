@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../models/social.dart';
-import '../../services/social_service.dart';
 
 class SocialEventDetailPage extends StatefulWidget {
   final SocialEvent event;
@@ -44,23 +43,27 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
                     )
                   : Container(
                       color: Colors.blue[100],
-                      child: const Icon(Icons.event, size: 64, color: Colors.blue),
+                      child: const Icon(
+                        Icons.event,
+                        size: 64,
+                        color: Colors.blue,
+                      ),
                     ),
             ),
             actions: [
-              IconButton(
-                icon: const Icon(Icons.share),
-                onPressed: _shareEvent,
-              ),
+              IconButton(icon: const Icon(Icons.share), onPressed: _shareEvent),
               PopupMenuButton(
                 itemBuilder: (context) => [
                   const PopupMenuItem(value: 'save', child: Text('Save Event')),
-                  const PopupMenuItem(value: 'report', child: Text('Report Event')),
+                  const PopupMenuItem(
+                    value: 'report',
+                    child: Text('Report Event'),
+                  ),
                 ],
               ),
             ],
           ),
-          
+
           // Content
           SliverToBoxAdapter(
             child: Padding(
@@ -77,14 +80,14 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Date & Time
                   _buildInfoRow(
                     Icons.calendar_today,
                     'Date & Time',
                     _formatDateTime(_event.startDate, _event.endDate),
                   ),
-                  
+
                   // Location
                   _buildInfoRow(
                     Icons.location_on,
@@ -92,7 +95,7 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
                     _event.location,
                     onTap: _openMap,
                   ),
-                  
+
                   // Organizer
                   _buildInfoRow(
                     Icons.person,
@@ -100,11 +103,11 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
                     'Event Organizer',
                     onTap: _viewOrganizer,
                   ),
-                  
+
                   const SizedBox(height: 24),
                   const Divider(),
                   const SizedBox(height: 24),
-                  
+
                   // Attendees section
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -127,7 +130,7 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Attendees avatars
                   SizedBox(
                     height: 60,
@@ -141,10 +144,13 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
                             children: [
                               CircleAvatar(
                                 radius: 20,
-                                backgroundColor: Colors.blue[100 + (index * 50)],
+                                backgroundColor:
+                                    Colors.blue[100 + (index * 50)],
                                 child: Text(
                                   String.fromCharCode(65 + index),
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 4),
@@ -158,28 +164,22 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
                       },
                     ),
                   ),
-                  
+
                   const SizedBox(height: 24),
                   const Divider(),
                   const SizedBox(height: 24),
-                  
+
                   // About section
                   const Text(
                     'About Event',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 12),
                   Text(
                     _event.description,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      height: 1.5,
-                    ),
+                    style: const TextStyle(fontSize: 15, height: 1.5),
                   ),
-                  
+
                   const SizedBox(height: 100), // Space for bottom button
                 ],
               ),
@@ -187,7 +187,7 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
           ),
         ],
       ),
-      
+
       // Bottom action button
       bottomNavigationBar: SafeArea(
         child: Container(
@@ -236,7 +236,12 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value, {VoidCallback? onTap}) {
+  Widget _buildInfoRow(
+    IconData icon,
+    String label,
+    String value, {
+    VoidCallback? onTap,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: InkWell(
@@ -259,10 +264,7 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
                 children: [
                   Text(
                     label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -284,13 +286,25 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
   }
 
   String _formatDateTime(DateTime start, DateTime end) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
     final startDate = '${months[start.month - 1]} ${start.day}, ${start.year}';
     final startTime = _formatTime(start);
     final endTime = _formatTime(end);
-    
+
     return '$startDate\n$startTime - $endTime';
   }
 
@@ -307,7 +321,7 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
     try {
       // In real app, would toggle join status
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       setState(() {
         _isLoading = false;
       });
@@ -322,11 +336,11 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
       }
     } catch (e) {
       setState(() => _isLoading = false);
-      
+
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed: $e')));
       }
     }
   }
@@ -343,9 +357,9 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
               title: const Text('Copy Link'),
               onTap: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Link copied')),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Link copied')));
               },
             ),
             ListTile(
@@ -360,9 +374,9 @@ class _SocialEventDetailPageState extends State<SocialEventDetailPage> {
   }
 
   void _openMap() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Opening maps...')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Opening maps...')));
   }
 
   void _viewOrganizer() {

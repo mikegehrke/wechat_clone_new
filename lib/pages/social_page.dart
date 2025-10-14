@@ -10,7 +10,6 @@ import 'social/social_user_profile_page.dart';
 import 'social/social_chat_page.dart';
 import 'social/social_event_detail_page.dart';
 import 'social/create_post_page.dart';
-import '../widgets/story_circle.dart';
 
 class SocialPage extends StatefulWidget {
   const SocialPage({super.key});
@@ -144,10 +143,7 @@ class _SocialPageState extends State<SocialPage> with TickerProviderStateMixin {
             const SizedBox(height: 16),
             Text(_error!, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadData,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
           ],
         ),
       );
@@ -162,18 +158,12 @@ class _SocialPageState extends State<SocialPage> with TickerProviderStateMixin {
             SizedBox(height: 16),
             Text(
               'No posts yet',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.grey),
             ),
             SizedBox(height: 8),
             Text(
               'Start by creating your first post!',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ],
         ),
@@ -217,10 +207,7 @@ class _SocialPageState extends State<SocialPage> with TickerProviderStateMixin {
             const SizedBox(height: 16),
             Text(_error!, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadData,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
           ],
         ),
       );
@@ -235,10 +222,7 @@ class _SocialPageState extends State<SocialPage> with TickerProviderStateMixin {
             SizedBox(height: 16),
             Text(
               'No people found',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.grey),
             ),
           ],
         ),
@@ -277,10 +261,7 @@ class _SocialPageState extends State<SocialPage> with TickerProviderStateMixin {
             const SizedBox(height: 16),
             Text(_error!, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadData,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
           ],
         ),
       );
@@ -295,18 +276,12 @@ class _SocialPageState extends State<SocialPage> with TickerProviderStateMixin {
             SizedBox(height: 16),
             Text(
               'No messages yet',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.grey),
             ),
             SizedBox(height: 8),
             Text(
               'Start a conversation with someone!',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ],
         ),
@@ -320,10 +295,7 @@ class _SocialPageState extends State<SocialPage> with TickerProviderStateMixin {
         final chat = _chats[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
-          child: SocialChatCard(
-            chat: chat,
-            onTap: () => _navigateToChat(chat),
-          ),
+          child: SocialChatCard(chat: chat, onTap: () => _navigateToChat(chat)),
         );
       },
     );
@@ -343,10 +315,7 @@ class _SocialPageState extends State<SocialPage> with TickerProviderStateMixin {
             const SizedBox(height: 16),
             Text(_error!, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadData,
-              child: const Text('Retry'),
-            ),
+            ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
           ],
         ),
       );
@@ -361,10 +330,7 @@ class _SocialPageState extends State<SocialPage> with TickerProviderStateMixin {
             SizedBox(height: 16),
             Text(
               'No events found',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.grey),
             ),
           ],
         ),
@@ -392,18 +358,14 @@ class _SocialPageState extends State<SocialPage> with TickerProviderStateMixin {
   void _createPost() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const CreatePostPage(),
-      ),
+      MaterialPageRoute(builder: (context) => const CreatePostPage()),
     );
   }
 
   void _navigateToPost(SocialPost post) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => SocialPostDetailPage(post: post),
-      ),
+      MaterialPageRoute(builder: (context) => SocialPostDetailPage(post: post)),
     );
   }
 
@@ -419,9 +381,7 @@ class _SocialPageState extends State<SocialPage> with TickerProviderStateMixin {
   void _navigateToChat(SocialChat chat) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => SocialChatPage(chat: chat),
-      ),
+      MaterialPageRoute(builder: (context) => SocialChatPage(chat: chat)),
     );
   }
 
@@ -447,33 +407,41 @@ class _SocialPageState extends State<SocialPage> with TickerProviderStateMixin {
   }
 
   void _sharePost(SocialPost post) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Post shared!')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Post shared!')));
   }
 
   void _bookmarkPost(SocialPost post) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${post.isBookmarked ? 'Removed from' : 'Added to'} bookmarks')),
+      SnackBar(
+        content: Text(
+          '${post.isBookmarked ? 'Removed from' : 'Added to'} bookmarks',
+        ),
+      ),
     );
   }
 
   void _followUser(SocialUser user) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${user.isPrivate ? 'Follow request sent to' : 'Started following'} ${user.displayName}')),
+      SnackBar(
+        content: Text(
+          '${user.isPrivate ? 'Follow request sent to' : 'Started following'} ${user.displayName}',
+        ),
+      ),
     );
   }
 
   void _messageUser(SocialUser user) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Messaging ${user.displayName}')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Messaging ${user.displayName}')));
   }
 
   void _attendEvent(SocialEvent event) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Attending ${event.title}')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Attending ${event.title}')));
   }
 
   void _interestedInEvent(SocialEvent event) {

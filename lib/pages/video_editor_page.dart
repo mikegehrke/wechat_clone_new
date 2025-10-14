@@ -1,19 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:path/path.dart' as path;
 import '../widgets/video_timeline.dart';
 import '../widgets/video_tools_panel.dart';
 import '../widgets/video_preview.dart';
-import '../models/video_edit_session.dart';
 
 class VideoEditorPage extends StatefulWidget {
   final String? videoPath;
-  
-  const VideoEditorPage({
-    super.key,
-    this.videoPath,
-  });
+
+  const VideoEditorPage({super.key, this.videoPath});
 
   @override
   State<VideoEditorPage> createState() => _VideoEditorPageState();
@@ -21,26 +16,25 @@ class VideoEditorPage extends StatefulWidget {
 
 class _VideoEditorPageState extends State<VideoEditorPage> {
   VideoPlayerController? _controller;
-  VideoEditSession? _editSession;
   bool _isInitialized = false;
   bool _isPlaying = false;
   Duration _currentPosition = Duration.zero;
   Duration _totalDuration = Duration.zero;
-  
+
   // Editing states
   bool _showTools = false;
   String _selectedTool = 'trim';
   double _playbackSpeed = 1.0;
-  
+
   // Video properties
   double _brightness = 0.0;
   double _contrast = 1.0;
   double _saturation = 1.0;
   String _selectedFilter = 'none';
-  
+
   // Text overlays
   List<TextOverlay> _textOverlays = [];
-  
+
   // Audio tracks
   List<AudioTrack> _audioTracks = [];
 
@@ -62,7 +56,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
     try {
       _controller = VideoPlayerController.file(File(videoPath));
       await _controller!.initialize();
-      
+
       _controller!.addListener(() {
         if (mounted) {
           setState(() {
@@ -72,11 +66,6 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
           });
         }
       });
-
-      _editSession = VideoEditSession(
-        videoPath: videoPath,
-        duration: _controller!.value.duration,
-      );
 
       setState(() {
         _isInitialized = true;
@@ -156,15 +145,17 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
 
   void _addTextOverlay() {
     setState(() {
-      _textOverlays.add(TextOverlay(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        text: 'New Text',
-        position: const Offset(0.5, 0.5),
-        fontSize: 24,
-        color: Colors.white,
-        startTime: _currentPosition,
-        endTime: _currentPosition + const Duration(seconds: 3),
-      ));
+      _textOverlays.add(
+        TextOverlay(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          text: 'New Text',
+          position: const Offset(0.5, 0.5),
+          fontSize: 24,
+          color: Colors.white,
+          startTime: _currentPosition,
+          endTime: _currentPosition + const Duration(seconds: 3),
+        ),
+      );
     });
   }
 
@@ -228,7 +219,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
 
   Future<void> _exportWithQuality(String quality) async {
     Navigator.pop(context);
-    
+
     // Show progress dialog
     showDialog(
       context: context,
@@ -248,9 +239,9 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
     try {
       // Simulate export process
       await Future.delayed(const Duration(seconds: 3));
-      
+
       Navigator.pop(context);
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Video exported successfully in $quality!'),
@@ -306,7 +297,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
                   )
                 : _buildVideoPlaceholder(),
           ),
-          
+
           // Timeline
           Expanded(
             flex: 2,
@@ -321,7 +312,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
                   )
                 : Container(),
           ),
-          
+
           // Tools Panel
           if (_showTools)
             Expanded(
@@ -342,7 +333,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
                 onSpeedChanged: _setPlaybackSpeed,
               ),
             ),
-          
+
           // Bottom Controls
           Container(
             padding: const EdgeInsets.all(16),
@@ -358,7 +349,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
                     size: 32,
                   ),
                 ),
-                
+
                 // Speed
                 IconButton(
                   onPressed: () {
@@ -382,7 +373,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
                   },
                   icon: const Icon(Icons.speed, color: Colors.white),
                 ),
-                
+
                 // Tools Toggle
                 IconButton(
                   onPressed: () => setState(() => _showTools = !_showTools),
@@ -392,7 +383,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
                     size: 32,
                   ),
                 ),
-                
+
                 // Add Media
                 IconButton(
                   onPressed: _pickVideo,
@@ -413,11 +404,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.video_library,
-              size: 80,
-              color: Colors.white,
-            ),
+            const Icon(Icons.video_library, size: 80, color: Colors.white),
             const SizedBox(height: 16),
             const Text(
               'No Video Selected',
@@ -430,10 +417,7 @@ class _VideoEditorPageState extends State<VideoEditorPage> {
             const SizedBox(height: 8),
             const Text(
               'Tap + to add a video',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.white70, fontSize: 16),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
@@ -505,11 +489,7 @@ class Transition {
   final String type;
   final Duration duration;
 
-  Transition({
-    required this.id,
-    required this.type,
-    required this.duration,
-  });
+  Transition({required this.id, required this.type, required this.duration});
 }
 
 class Effect {
@@ -517,11 +497,7 @@ class Effect {
   final String type;
   final Map<String, dynamic> parameters;
 
-  Effect({
-    required this.id,
-    required this.type,
-    required this.parameters,
-  });
+  Effect({required this.id, required this.type, required this.parameters});
 }
 
 class TextOverlay {
